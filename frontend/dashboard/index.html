@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Welkom — LuzeX Community</title>
+  <meta name="description" content="Welkom" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/assets/site.webmanifest" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body data-pagina="overzicht">
+  <header id="balk"></header>
+
+  <main class="kolom kolom-smal">
+    <div class="pagina-kop">
+      <p class="kicker">Mijn Community</p>
+      <h1 id="kop">Welkom</h1>
+    </div>
+    <nav class="tabs" aria-label="Mijn Community">
+      <a href="/dashboard/" class="actief" aria-current="page">Mijn artikelen</a>
+      <a href="/dashboard/profiel.html">Mijn profiel</a>
+      <a href="/dashboard/account.html">Account</a>
+    </nav>
+    <div class="panel" id="abonnement-panel">
+      <h2>Je abonnement</h2>
+      <p class="subtitle" id="abonnement-tekst"></p>
+    </div>
+
+    <div class="sectie-kop"><h2 style="font-size:24px">Nieuw voor jou</h2><a class="text-link" href="/artikelen.html">Alle artikelen →</a></div>
+    <div class="kaarten" id="artikelen"><p class="leeg">Artikelen laden…</p></div>
+  </main>
+
+  <footer id="voet"></footer>
+  <script src="/common.js"></script>
+  <script src="/dashboard/dashboard.js"></script>
+</body>
+</html>

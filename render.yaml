@@ -1,0 +1,92 @@
+# Render Blueprint voor de LuzeX Community — maakt de app, de nieuwsbrief-cron en een eigen
+# database aan. Bewust volledig los van ACCRD: eigen database, eigen service, eigen geheimen.
+# Gebruik: render.com → "New +" → "Blueprint" → kies deze repository → "Apply".
+#
+# Regio Frankfurt (enige EU-regio van Render) voor AVG-dataresidentie, net als ACCRD.
+# Geen gratis plan: dat valt in slaap bij inactiviteit, en dan laadt een link uit de nieuwsbrief
+# eerst een halve minuut.
+
+services:
+  - name: luzex-community
+    type: web
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/keuzelijsten
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: luzex-community-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4100
+      # Publieke adres van de app: gebruikt in links in mails (bevestigen, reset, nieuwsbrief).
+      - key: APP_URL
+        value: https://community.luzex.nl
+      # Render vraagt deze bij het aanmaken; zo komt het admin-wachtwoord nooit in git.
+      - key: SEED_ADMIN_EMAIL
+        sync: false
+      - key: SEED_ADMIN_WACHTWOORD
+        sync: false
+      # Mailgun of SendGrid via SMTP — zie README.md. Zonder SMTP_HOST worden mails alleen gelogd.
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_WACHTWOORD
+        sync: false
+      - key: SMTP_AFZENDER
+        sync: false
+
+  # De nieuwsbrief. Draait elke dag om 07:00 UTC (08:00/09:00 NL) en beslist zelf of het een
+  # verzenddag is (maandag bij wekelijks, de 1e bij maandelijks) — Job stelt de frequentie in
+  # het adminpaneel in. Losse cron en geen timer in de webservice, zodat er nooit dubbel verstuurd wordt.
+  - name: luzex-community-nieuwsbrief
+    type: cron
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    schedule: "0 7 * * *"
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    dockerCommand: node dist/nieuwsbriefCron.js
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: luzex-community-db
+          property: connectionString
+      # Moet gelijk zijn aan die van de webservice: de afmeldlinks worden ermee ondertekend.
+      - key: JWT_SECRET
+        fromService:
+          type: web
+          name: luzex-community
+          envVarKey: JWT_SECRET
+      - key: NODE_ENV
+        value: production
+      - key: APP_URL
+        value: https://community.luzex.nl
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_WACHTWOORD
+        sync: false
+      - key: SMTP_AFZENDER
+        sync: false
+
+databases:
+  - name: luzex-community-db
+    plan: basic-256mb
+    region: frankfurt
+    postgresMajorVersion: "16"
+    diskSizeGB: 1

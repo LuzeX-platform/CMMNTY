@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>E-mailadres bevestigen — LuzeX Community</title>
+  <meta name="description" content="E-mailadres bevestigen bij de LuzeX Community." />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/assets/site.webmanifest" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body data-pagina="bevestigen">
+  <header id="balk"></header>
+
+  <main class="auth-kolom">
+    <div class="panel auth-kaart">
+      <h1>E-mailadres bevestigen</h1>
+      <p class="subtitle" id="status">Even geduld…</p>
+      <form id="opnieuw" novalidate hidden>
+        <label for="email">Stuur een nieuwe bevestigingslink naar</label>
+        <input id="email" name="email" type="email" autocomplete="email" required />
+        <button type="submit">Nieuwe link sturen</button>
+        <p class="error" id="fout" role="alert"></p>
+        <p class="success" id="succes"></p>
+      </form>
+    </div>
+  </main>
+
+  <footer id="voet"></footer>
+  <script src="/common.js"></script>
+  <script src="/auth.js"></script>
+</body>
+</html>

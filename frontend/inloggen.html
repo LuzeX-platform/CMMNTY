@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inloggen — LuzeX Community</title>
+  <meta name="description" content="Inloggen bij de LuzeX Community." />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/assets/site.webmanifest" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body data-pagina="inloggen">
+  <header id="balk"></header>
+
+  <main class="auth-kolom">
+    <div class="panel auth-kaart">
+      <h1>Inloggen</h1>
+      <p class="subtitle">Welkom terug in de Community.</p>
+      <form id="formulier" novalidate>
+        <label for="email">E-mailadres</label>
+        <input id="email" name="email" type="email" autocomplete="email" required />
+        <label for="wachtwoord">Wachtwoord</label>
+        <input id="wachtwoord" name="wachtwoord" type="password" autocomplete="current-password" required />
+        <button type="submit">Inloggen</button>
+        <p class="error" id="fout" role="alert"></p>
+        <p class="success" id="succes"></p>
+      </form>
+      <p class="auth-voet"><a href="/wachtwoord-vergeten.html">Wachtwoord vergeten?</a></p>
+      <p class="auth-voet">Nog geen lid? <a href="/registreren.html">Meld je gratis aan</a></p>
+    </div>
+  </main>
+
+  <footer id="voet"></footer>
+  <script src="/common.js"></script>
+  <script src="/auth.js"></script>
+</body>
+</html>

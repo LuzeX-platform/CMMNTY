@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gebruikers — Admin — LuzeX Community</title>
+  <meta name="description" content="Gebruikers" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/assets/site.webmanifest" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body data-pagina="gebruikers">
+  <header id="balk"></header>
+
+  <main class="kolom">
+    <div class="pagina-kop">
+      <p class="kicker">Admin</p>
+      <h1 id="kop">Gebruikers</h1>
+    </div>
+    <nav class="tabs" aria-label="Admin">
+      <a href="/admin/">Artikelen</a>
+      <a href="/admin/gebruikers.html" class="actief" aria-current="page">Gebruikers</a>
+      <a href="/admin/nieuwsbrief.html">Nieuwsbrief</a>
+    </nav>
+    <div class="stat-rij" id="stats"></div>
+    <div class="panel">
+      <h2>Alle gebruikers</h2>
+      <p class="subtitle">Zolang er geen betaling is, zet je hier handmatig iemand op Pro.</p>
+      <div class="tabel-scroll">
+        <table class="tabel">
+          <thead><tr><th>Naam</th><th>E-mail</th><th>Status</th><th>Nieuwsbrief</th><th>Directory</th><th>Lid sinds</th><th>Abonnement</th></tr></thead>
+          <tbody id="gebruikers"><tr><td colspan="7">Laden…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer id="voet"></footer>
+  <script src="/common.js"></script>
+  <script src="/admin/admin.js"></script>
+</body>
+</html>

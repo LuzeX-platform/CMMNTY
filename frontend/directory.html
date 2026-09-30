@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Directory — LuzeX Community</title>
+  <meta name="description" content="Vind zelfstandige zorgprofessionals op specialisme en regio." />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/assets/site.webmanifest" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header id="balk"></header>
+
+  <main class="kolom">
+    <div class="pagina-kop">
+      <p class="kicker">Directory</p>
+      <h1>Vind een collega.</h1>
+      <p class="lead">Zelfstandige zorgprofessionals uit de Community, op specialisme en regio. Zelf ook hier staan? <a href="/dashboard/profiel.html">Publiceer je profiel</a> — gratis voor leden.</p>
+    </div>
+
+    <form class="filters" id="filters">
+      <div class="filter">
+        <label for="specialisme">Specialisme</label>
+        <select id="specialisme"><option value="">Alle specialismen</option></select>
+      </div>
+      <div class="filter">
+        <label for="regio">Regio</label>
+        <select id="regio"><option value="">Alle regio's</option></select>
+      </div>
+      <div class="filter">
+        <label for="zoek">Zoeken</label>
+        <input id="zoek" type="search" placeholder="Naam of praktijk" />
+      </div>
+    </form>
+
+    <div class="kaarten" id="profielen"><p class="leeg">Profielen laden…</p></div>
+  </main>
+
+  <footer id="voet"></footer>
+  <script src="/common.js"></script>
+  <script src="/directory.js"></script>
+</body>
+</html>

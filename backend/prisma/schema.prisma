@@ -1,0 +1,90 @@
+// LuzeX Community — datamodel. Bewust een eigen database, los van ACCRD (zie README.md).
+// Zelfde stack als ACCRD: Prisma 5 + PostgreSQL 16.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Gebruiker {
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  wachtwoordHash      String
+  naam                String
+  // "lid" of "admin". Admin (Job) wordt alleen via de seed aangemaakt, nooit via registratie.
+  rol                 String    @default("lid")
+  // "gratis" of "pro". Zonder betaling (MVP) zet de admin dit handmatig; Stripe komt later.
+  abonnement          String    @default("gratis")
+  emailBevestigdOp    DateTime?
+  // Alleen de sha256-hash van het token staat hier; het ruwe token staat alleen in de mail.
+  bevestigTokenHash   String?   @unique
+  resetTokenHash      String?   @unique
+  resetTokenVerlooptOp DateTime?
+  nieuwsbrief         Boolean   @default(true)
+  mislukteInlogpogingen Int     @default(0)
+  vergrendeldTot      DateTime?
+  aangemaaktOp        DateTime  @default(now())
+  bijgewerktOp        DateTime  @updatedAt
+
+  profiel  Profiel?
+}
+
+// ZZP-directory. Eén profiel per gebruiker; alleen zichtbaar als `gepubliceerd`.
+model Profiel {
+  gebruikerId   String   @id
+  gebruiker     Gebruiker @relation(fields: [gebruikerId], references: [id], onDelete: Cascade)
+  weergavenaam  String
+  praktijknaam  String?
+  specialismen  String[]
+  telefoon      String?
+  website       String?
+  contactEmail  String?
+  bio           String?  @db.VarChar(250)
+  regio         String?
+  gepubliceerd  Boolean  @default(false)
+  bijgewerktOp  DateTime @updatedAt
+}
+
+model Artikel {
+  id            String    @id @default(uuid())
+  titel         String
+  slug          String    @unique
+  samenvatting  String
+  inhoud        String    // Markdown
+  // "gratis" of "pro"
+  toegang       String    @default("gratis")
+  categorie     String?
+  auteurNaam    String    @default("Job")
+  coverAfbeelding Bytes?
+  coverMime     String?
+  // null = concept. Een datum in de toekomst = ingepland; verschijnt vanzelf.
+  gepubliceerdOp DateTime?
+  aangemaaktOp  DateTime  @default(now())
+  bijgewerktOp  DateTime  @updatedAt
+
+  @@index([gepubliceerdOp])
+}
+
+model NieuwsbriefVerzending {
+  id           String   @id @default(uuid())
+  verstuurdOp  DateTime @default(now())
+  // "gratis" of "pro"
+  segment      String
+  artikelIds   String[]
+  aantalOntvangers Int
+  // "automatisch" (cron) of "handmatig" (admin-knop)
+  aanleiding   String   @default("automatisch")
+
+  @@index([verstuurdOp])
+}
+
+// Eén rij (id = "standaard") met instellingen die Job zelf in het adminpaneel beheert.
+model Instellingen {
+  id                    String @id @default("standaard")
+  // "wekelijks", "maandelijks" of "uit"
+  nieuwsbriefFrequentie String @default("wekelijks")
+}
