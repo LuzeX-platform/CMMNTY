@@ -86,7 +86,7 @@ export function bouwHtml({ artikelen, frequentie, appUrl, naam, afmeldLink }: Bo
             ${badge}
             <h2 style="margin:10px 0 6px;font-size:19px;line-height:1.3;color:#1d1d1f">${escapeHtml(a.titel)}</h2>
             <p style="margin:0 0 14px;font-size:15px;line-height:1.55;color:#585249">${escapeHtml(a.samenvatting)}</p>
-            <a href="${url}" style="font-size:14px;font-weight:600;color:#1d1d1f">Lees meer in de Community →</a>
+            <a href="${url}" style="font-size:14px;font-weight:600;color:#1d1d1f">Lees meer op CMMNTY →</a>
           </td></tr>
         </table>
       </td></tr>`;
@@ -100,16 +100,16 @@ export function bouwHtml({ artikelen, frequentie, appUrl, naam, afmeldLink }: Bo
     <tr><td align="center" style="padding:32px 16px">
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;margin:0 auto">
         <tr><td style="padding:0 4px 24px">
-          <p style="margin:0 0 6px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#3b2e24">LuzeX Community</p>
+          <p style="margin:0 0 6px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#3b2e24">LuzeX CMMNTY</p>
           <h1 style="margin:0 0 10px;font-size:26px;line-height:1.2">Hoi ${escapeHtml(naam)},</h1>
           <p style="margin:0;font-size:16px;line-height:1.55;color:#585249">Dit is er ${periode} nieuw in zorginnovatie. Kort, praktisch en zonder jargon.</p>
         </td></tr>
         ${blokken}
         <tr><td align="center" style="padding:10px 0 28px">
-          <a href="${appUrl}/artikelen.html" style="display:inline-block;padding:13px 26px;border-radius:980px;background:#1d1d1f;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none">Lees meer in de Community</a>
+          <a href="${appUrl}/artikelen.html" style="display:inline-block;padding:13px 26px;border-radius:980px;background:#1d1d1f;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none">Lees meer op CMMNTY</a>
         </td></tr>
         <tr><td style="padding:0 4px;font-size:12px;line-height:1.5;color:#6e6760">
-          Je ontvangt deze mail omdat je lid bent van de LuzeX Community.
+          Je ontvangt deze mail omdat je lid bent van LuzeX CMMNTY.
           <a href="${afmeldLink}" style="color:#6e6760">Afmelden voor de nieuwsbrief</a>.
         </td></tr>
       </table>
@@ -127,5 +127,5 @@ export function bouwTekst({ artikelen, frequentie, appUrl, naam, afmeldLink }: B
         `${a.toegang === "pro" ? "[Pro] " : ""}${a.titel}\n${a.samenvatting}\nLees meer: ${appUrl}/artikelen/${encodeURIComponent(a.slug)}`,
     )
     .join("\n\n");
-  return `Hoi ${naam},\n\nDit is er ${periode} nieuw in zorginnovatie:\n\n${blokken}\n\nLees meer in de Community: ${appUrl}/artikelen.html\n\n--\nAfmelden voor de nieuwsbrief: ${afmeldLink}`;
+  return `Hoi ${naam},\n\nDit is er ${periode} nieuw in zorginnovatie:\n\n${blokken}\n\nLees meer op CMMNTY: ${appUrl}/artikelen.html\n\n--\nAfmelden voor de nieuwsbrief: ${afmeldLink}`;
 }

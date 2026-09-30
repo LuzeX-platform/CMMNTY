@@ -3,7 +3,7 @@ import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 
 // Zelfde opzet als ACCRD: Argon2id voor wachtwoorden, een ondertekend JWT in een httpOnly-
-// cookie als sessie. Geen 2FA: de Community bevat geen gevoelige (financiële) gegevens, en
+// cookie als sessie. Geen 2FA: CMMNTY bevat geen gevoelige (financiële) gegevens, en
 // een drempel bij het lezen van artikelen kost meer lezers dan hij aan veiligheid oplevert.
 const SESSION_TTL_SECONDEN = 30 * 24 * 60 * 60; // 30 dagen: lezers willen niet elke week inloggen
 

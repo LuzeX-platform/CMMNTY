@@ -1,8 +1,8 @@
-/* LuzeX Community — design system.
+/* LuzeX CMMNTY — design system.
    De tokens (kleuren, glas, radius, schaduwen) zijn 1-op-1 overgenomen uit ACCRD
    (platform/frontend/styles.css in luzex-ACCRD), inclusief de toelichting en contrastmetingen.
    Pas ze daar én hier aan, zodat beide producten dezelfde huisstijl houden.
-   Alles na het tokenblok is Community-specifiek, maar volgt dezelfde componenten
+   Alles na het tokenblok is CMMNTY-specifiek, maar volgt dezelfde componenten
    (pil-knoppen, zwevende glazen balk, glazen panelen, kicker, badge). */
 
 :root {

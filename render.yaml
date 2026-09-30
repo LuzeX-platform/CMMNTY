@@ -1,4 +1,4 @@
-# Render Blueprint voor de LuzeX Community — maakt de app, de nieuwsbrief-cron en een eigen
+# Render Blueprint voor LuzeX CMMNTY — maakt de app, de nieuwsbrief-cron en een eigen
 # database aan. Bewust volledig los van ACCRD: eigen database, eigen service, eigen geheimen.
 # Gebruik: render.com → "New +" → "Blueprint" → kies deze repository → "Apply".
 #
@@ -27,8 +27,12 @@ services:
       - key: PORT
         value: 4100
       # Publieke adres van de app: gebruikt in links in mails (bevestigen, reset, nieuwsbrief).
+      # Bewust niet vast in dit bestand: zolang het eigen domein (cmmnty.luzex.nl) nog niet
+      # gekoppeld is, blijft het leeg en valt de app terug op het Render-adres
+      # (RENDER_EXTERNAL_URL, door Render zelf gezet). Na het koppelen van het domein hier in
+      # het Render-dashboard https://cmmnty.luzex.nl invullen.
       - key: APP_URL
-        value: https://community.luzex.nl
+        sync: false
       # Render vraagt deze bij het aanmaken; zo komt het admin-wachtwoord nooit in git.
       - key: SEED_ADMIN_EMAIL
         sync: false
@@ -71,8 +75,11 @@ services:
           envVarKey: JWT_SECRET
       - key: NODE_ENV
         value: production
+      # Een cron heeft geen eigen webadres (geen RENDER_EXTERNAL_URL), dus dit moet altijd
+      # ingevuld zijn: hetzelfde publieke adres als de webservice. Nu nog
+      # https://luzex-community.onrender.com, na het koppelen van het domein https://cmmnty.luzex.nl.
       - key: APP_URL
-        value: https://community.luzex.nl
+        sync: false
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT
