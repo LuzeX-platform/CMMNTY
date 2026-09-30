@@ -115,16 +115,16 @@ function tekenBalk(gebruiker) {
 
   const acties = gebruiker
     ? `${gebruiker.rol === "admin" ? '<a class="text-link" href="/admin/">Admin</a>' : ""}
-       <a class="pil-knop pil-knop-donker" href="/dashboard/">Mijn Community</a>`
+       <a class="pil-knop pil-knop-donker" href="/dashboard/">Mijn CMMNTY</a>`
     : `<a class="text-link balk-inloggen" href="/inloggen.html">Inloggen</a>
        <a class="pil-knop pil-knop-donker" href="/registreren.html">Gratis lid worden</a>`;
 
   houder.className = "balkhouder";
   houder.innerHTML = `
     <div class="balk">
-      <a href="/" class="merk" aria-label="LuzeX Community — naar de homepage">
+      <a href="/" class="merk" aria-label="LuzeX CMMNTY — naar de homepage">
         <span class="brand-logo" role="img" aria-label="LuzeX"></span>
-        <span class="merk-product">Community</span>
+        <span class="merk-product">CMMNTY</span>
       </a>
       <nav class="balk-nav" aria-label="Hoofdnavigatie">${links}</nav>
       <div class="balk-acties">${acties}</div>
@@ -142,7 +142,7 @@ function tekenVoet() {
         <p class="voet-tagline">Zorginnovatie in jip-en-janneke taal. Voor zorgprofessionals die het zelf doen.</p>
       </div>
       <div class="voet-kolom">
-        <p class="voet-kop">Community</p>
+        <p class="voet-kop">CMMNTY</p>
         <a href="/artikelen.html">Artikelen</a>
         <a href="/directory.html">Directory</a>
         <a href="/registreren.html">Lid worden</a>

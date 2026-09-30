@@ -13,7 +13,9 @@ import {
 } from "./nieuwsbrief.js";
 
 export function appUrl(): string {
-  return (process.env.APP_URL ?? "http://localhost:4100").replace(/\/+$/, "");
+  // APP_URL wint (eigen domein); anders het adres dat Render zelf meegeeft; lokaal localhost.
+  const url = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || "http://localhost:4100";
+  return url.replace(/\/+$/, "");
 }
 
 export async function leesFrequentie(): Promise<Frequentie> {

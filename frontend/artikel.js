@@ -22,7 +22,7 @@ function slotHtml(reden) {
       <h2 style="margin-top:12px">Dit artikel is voor Pro-leden</h2>
       <p>Pro-abonnementen komen binnenkort. Wil je nu al toegang? Stuur Job een mailtje.</p>
       <div class="formulier-acties">
-        <a class="pil-knop pil-knop-donker" href="mailto:job@luzex.nl?subject=Pro-toegang%20Community">Mail Job</a>
+        <a class="pil-knop pil-knop-donker" href="mailto:job@luzex.nl?subject=Pro-toegang%20CMMNTY">Mail Job</a>
         <a class="pil-knop pil-knop-glas" href="/artikelen.html?toegang=gratis">Gratis artikelen lezen</a>
       </div>
     </div>`;
@@ -31,7 +31,7 @@ function slotHtml(reden) {
 (async () => {
   try {
     const a = await api(`/api/artikelen/${encodeURIComponent(slug)}`);
-    document.title = `${a.titel} — LuzeX Community`;
+    document.title = `${a.titel} — LuzeX CMMNTY`;
     document.querySelector('meta[name="description"]').setAttribute("content", a.samenvatting);
 
     houder.innerHTML = `

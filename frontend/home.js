@@ -13,6 +13,6 @@
   if (gebruiker) {
     const knop = document.getElementById("hero-tweede");
     knop.href = "/dashboard/";
-    knop.textContent = "Mijn Community";
+    knop.textContent = "Mijn CMMNTY";
   }
 })();

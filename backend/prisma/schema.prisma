@@ -1,4 +1,4 @@
-// LuzeX Community — datamodel. Bewust een eigen database, los van ACCRD (zie README.md).
+// LuzeX CMMNTY — datamodel. Bewust een eigen database, los van ACCRD (zie README.md).
 // Zelfde stack als ACCRD: Prisma 5 + PostgreSQL 16.
 
 generator client {

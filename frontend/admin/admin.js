@@ -74,7 +74,7 @@ async function editorPagina() {
 
   if (id) {
     const a = await api(`/api/admin/artikelen/${id}`);
-    document.title = `${a.titel} — Admin — LuzeX Community`;
+    document.title = `${a.titel} — Admin — LuzeX CMMNTY`;
     $("kop").textContent = "Artikel bewerken";
     for (const sleutel of ["titel", "slug", "auteurNaam", "toegang", "samenvatting", "inhoud"]) $(sleutel).value = a[sleutel] ?? "";
     $("categorie").value = a.categorie ?? "";

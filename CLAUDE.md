@@ -1,4 +1,4 @@
-# CLAUDE.md — LuzeX Community
+# CLAUDE.md — LuzeX CMMNTY
 
 Zie README.md voor wat de app doet en hoe je hem draait. Hier de afspraken voor wie code schrijft.
 
@@ -14,7 +14,7 @@ backend/            Fastify 5 + Prisma 5 + PostgreSQL 16, TypeScript (ESM, NodeN
   src/nieuwsbriefCron.ts       dagelijkse Render-cron
   test/               node:test via tsx; api.test.ts draait alleen met TEST_DATABASE_URL
 frontend/           losse HTML + één script per pagina(groep), geen build-stap
-  styles.css          design tokens 1-op-1 uit ACCRD (platform/frontend/styles.css) + Community-componenten
+  styles.css          design tokens 1-op-1 uit ACCRD (platform/frontend/styles.css) + CMMNTY-componenten
   common.js           balk, voettekst, api(), sessie, kaartjes — door elke pagina geladen
 ```
 

@@ -24,7 +24,7 @@ function getTransporter(): Transporter | null {
 }
 
 function afzender(): string {
-  return process.env.SMTP_AFZENDER ?? "LuzeX Community <community@mail.luzex.nl>";
+  return process.env.SMTP_AFZENDER ?? "LuzeX CMMNTY <cmmnty@mail.luzex.nl>";
 }
 
 interface Mail {
@@ -47,9 +47,9 @@ export async function verstuurMail({ naar, onderwerp, tekst, html, headers }: Ma
 export async function verstuurBevestigingsmail(naar: string, naam: string, link: string): Promise<void> {
   await verstuurMail({
     naar,
-    onderwerp: "Bevestig je e-mailadres — LuzeX Community",
+    onderwerp: "Bevestig je e-mailadres — LuzeX CMMNTY",
     tekst:
-      `Hoi ${naam},\n\nWelkom bij de LuzeX Community. Bevestig je e-mailadres via deze link:\n${link}\n\n` +
+      `Hoi ${naam},\n\nWelkom bij LuzeX CMMNTY. Bevestig je e-mailadres via deze link:\n${link}\n\n` +
       "Heb je je niet aangemeld? Dan kun je deze e-mail negeren.",
   });
 }
@@ -57,9 +57,9 @@ export async function verstuurBevestigingsmail(naar: string, naam: string, link:
 export async function verstuurWachtwoordResetMail(naar: string, link: string): Promise<void> {
   await verstuurMail({
     naar,
-    onderwerp: "Wachtwoord opnieuw instellen — LuzeX Community",
+    onderwerp: "Wachtwoord opnieuw instellen — LuzeX CMMNTY",
     tekst:
-      `Je hebt een nieuw wachtwoord aangevraagd voor de LuzeX Community.\n\nStel het in via deze link (1 uur geldig):\n${link}\n\n` +
+      `Je hebt een nieuw wachtwoord aangevraagd voor LuzeX CMMNTY.\n\nStel het in via deze link (1 uur geldig):\n${link}\n\n` +
       "Heb je dit niet zelf aangevraagd? Dan kun je deze e-mail negeren.",
   });
 }

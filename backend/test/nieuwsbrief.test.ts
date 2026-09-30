@@ -46,14 +46,14 @@ test("bouwHtml/bouwTekst: links naar artikelen, afmeldlink en ontsnapte titels",
       },
     ],
     frequentie: "wekelijks" as const,
-    appUrl: "https://community.luzex.nl",
+    appUrl: "https://cmmnty.luzex.nl",
     naam: "Sanne",
-    afmeldLink: "https://community.luzex.nl/afmelden.html?token=abc",
+    afmeldLink: "https://cmmnty.luzex.nl/afmelden.html?token=abc",
   };
   const html = bouwHtml(opties);
-  assert.match(html, /https:\/\/community\.luzex\.nl\/artikelen\/ai-en-jij/);
+  assert.match(html, /https:\/\/cmmnty\.luzex\.nl\/artikelen\/ai-en-jij/);
   assert.match(html, /AI &lt;script&gt;/);
-  assert.match(html, /Lees meer in de Community/);
+  assert.match(html, /Lees meer op CMMNTY/);
   assert.match(html, /afmelden\.html\?token=abc/);
   const tekst = bouwTekst(opties);
   assert.match(tekst, /\[Pro\] AI <script>/);

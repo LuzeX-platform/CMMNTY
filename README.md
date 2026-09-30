@@ -1,4 +1,4 @@
-# LuzeX Community
+# LuzeX CMMNTY
 
 Een web app onder het LuzeX-merk voor zorgprofessionals: artikelen over innovatie in de zorg
 (gratis en Pro), een ZZP-directory en een automatische nieuwsbrief.
@@ -75,8 +75,13 @@ GitHub Actions draait beide bij elke push (`.github/workflows/test.yml`).
 1. Render → **New + → Blueprint** → kies deze repository → **Apply**.
 2. Vul bij het aanmaken in: `SEED_ADMIN_EMAIL` en `SEED_ADMIN_WACHTWOORD` (Jobs login) en de
    `SMTP_*`-waarden (voor beide services: web én nieuwsbrief-cron).
-3. Pas `APP_URL` aan als het domein anders wordt dan `https://community.luzex.nl`, en koppel het
-   domein in Render (Settings → Custom Domains).
+3. `APP_URL` (het adres in links in mails):
+   - **webservice**: mag leeg blijven zolang er geen eigen domein is — dan gebruikt de app
+     automatisch `https://luzex-community.onrender.com`;
+   - **nieuwsbrief-cron**: altijd invullen, met hetzelfde adres als de webservice.
+4. Eigen domein: in Render *Settings → Custom Domains* `cmmnty.luzex.nl` toevoegen, bij Vimexx
+   een CNAME `cmmnty` → `luzex-community.onrender.com.` aanmaken, en daarna `APP_URL` op beide
+   services op `https://cmmnty.luzex.nl` zetten.
 
 ### Mailgun of SendGrid
 
@@ -88,7 +93,7 @@ Beide via SMTP; kiezen is alleen andere waarden invullen.
 | `SMTP_PORT` | `587` | `587` |
 | `SMTP_USER` | `postmaster@mg.luzex.nl` | `apikey` |
 | `SMTP_WACHTWOORD` | SMTP-wachtwoord van het domein | de API-key |
-| `SMTP_AFZENDER` | `LuzeX Community <community@mg.luzex.nl>` | idem, geverifieerd adres |
+| `SMTP_AFZENDER` | `LuzeX CMMNTY <cmmnty@mg.luzex.nl>` | idem, geverifieerd adres |
 
 Zet SPF/DKIM voor het afzenddomein goed (staat in het Mailgun/SendGrid-dashboard), anders
 belandt de nieuwsbrief in spam. Mailgun EU houdt de data in de EU (AVG).

@@ -9,5 +9,5 @@ app.listen({ port: PORT, host: "0.0.0.0" }, (err, address) => {
     app.log.error(err);
     process.exit(1);
   }
-  app.log.info(`LuzeX Community draait op ${address}`);
+  app.log.info(`LuzeX CMMNTY draait op ${address}`);
 });
