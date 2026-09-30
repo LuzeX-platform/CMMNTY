@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nieuw artikel — Admin — LuzeX Community</title>
+  <meta name="description" content="Nieuw artikel" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/assets/site.webmanifest" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body data-pagina="editor">
+  <header id="balk"></header>
+
+  <main class="kolom">
+    <div class="pagina-kop">
+      <p class="kicker">Admin</p>
+      <h1 id="kop">Nieuw artikel</h1>
+    </div>
+    <nav class="tabs" aria-label="Admin">
+      <a href="/admin/" class="actief" aria-current="page">Artikelen</a>
+      <a href="/admin/gebruikers.html">Gebruikers</a>
+      <a href="/admin/nieuwsbrief.html">Nieuwsbrief</a>
+    </nav>
+    <form class="panel" id="formulier" novalidate>
+      <label for="titel">Titel</label>
+      <input id="titel" type="text" maxlength="200" required placeholder="Hoe AI je administratie 2 uur per week kan besparen" />
+
+      <div class="veld-rij">
+        <div>
+          <label for="slug">Slug (URL)</label>
+          <input id="slug" type="text" maxlength="80" placeholder="automatisch uit de titel" />
+          <p class="veld-hint" id="slug-hint"></p>
+        </div>
+        <div>
+          <label for="auteurNaam">Auteur</label>
+          <input id="auteurNaam" type="text" maxlength="120" value="Job" />
+        </div>
+      </div>
+
+      <div class="veld-rij">
+        <div>
+          <label for="toegang">Toegang</label>
+          <select id="toegang">
+            <option value="gratis">Gratis — iedereen kan het lezen</option>
+            <option value="pro">Pro — alleen Pro-leden</option>
+          </select>
+        </div>
+        <div>
+          <label for="categorie">Categorie</label>
+          <select id="categorie"><option value="">Geen categorie</option></select>
+        </div>
+      </div>
+
+      <label for="samenvatting">Korte samenvatting (preview)</label>
+      <textarea id="samenvatting" rows="2" maxlength="400" required placeholder="Eén of twee zinnen. Deze tekst staat op de kaartjes en in de nieuwsbrief."></textarea>
+
+      <label for="cover">Coverafbeelding <span style="font-weight:400">— optioneel, JPG/PNG/WebP, max 2 MB</span></label>
+      <input id="cover" type="file" accept="image/jpeg,image/png,image/webp" />
+      <img id="cover-voorbeeld" class="cover-voorbeeld" alt="" hidden />
+      <button type="button" class="text-link" id="cover-weg" hidden>Afbeelding verwijderen</button>
+
+      <label for="inhoud">Inhoud <span style="font-weight:400">— Markdown: ## kopje, **vet**, *schuin*, - lijstje, [link](https://…)</span></label>
+      <div class="editor-grid">
+        <textarea id="inhoud" required placeholder="## Waarom dit ertoe doet&#10;&#10;Schrijf hier je artikel…"></textarea>
+        <div class="voorvertoning artikel-inhoud" id="voorvertoning" aria-label="Voorvertoning"></div>
+      </div>
+      <p class="veld-hint" id="leestijd"></p>
+
+      <div class="veld-rij">
+        <div>
+          <label for="publicatie">Publicatie</label>
+          <select id="publicatie">
+            <option value="concept">Concept — nog niet zichtbaar</option>
+            <option value="nu">Nu publiceren</option>
+            <option value="datum">Op datum…</option>
+          </select>
+        </div>
+        <div id="datum-veld" hidden>
+          <label for="publicatiedatum">Publicatiedatum</label>
+          <input id="publicatiedatum" type="datetime-local" />
+        </div>
+      </div>
+
+      <div class="formulier-acties">
+        <button type="submit">Opslaan</button>
+        <a class="text-link" id="bekijk" href="#" target="_blank" hidden>Bekijk artikel ↗</a>
+        <span style="flex:1"></span>
+        <button type="button" class="gevaar" id="verwijder" hidden>Verwijderen</button>
+      </div>
+      <p class="error" id="fout" role="alert"></p>
+      <p class="success" id="succes"></p>
+    </form>
+  </main>
+
+  <footer id="voet"></footer>
+  <script src="/common.js"></script>
+  <script src="/admin/admin.js"></script>
+</body>
+</html>

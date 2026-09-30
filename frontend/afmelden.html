@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Afmelden nieuwsbrief — LuzeX Community</title>
+  <meta name="description" content="Afmelden nieuwsbrief bij de LuzeX Community." />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/assets/site.webmanifest" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body data-pagina="afmelden">
+  <header id="balk"></header>
+
+  <main class="auth-kolom">
+    <div class="panel auth-kaart">
+      <h1>Afmelden</h1>
+      <p class="subtitle" id="status">Wil je de nieuwsbrief niet meer ontvangen?</p>
+      <form id="formulier" novalidate>
+        <button type="submit">Ja, meld mij af</button>
+        <p class="error" id="fout" role="alert"></p>
+        <p class="success" id="succes"></p>
+      </form>
+      <p class="auth-voet">Je account en profiel blijven gewoon bestaan. Je kunt je later weer aanmelden in <a href="/dashboard/account.html">je account</a>.</p>
+    </div>
+  </main>
+
+  <footer id="voet"></footer>
+  <script src="/common.js"></script>
+  <script src="/auth.js"></script>
+</body>
+</html>

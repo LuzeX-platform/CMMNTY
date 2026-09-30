@@ -1,0 +1,1555 @@
+/* LuzeX Community — design system.
+   De tokens (kleuren, glas, radius, schaduwen) zijn 1-op-1 overgenomen uit ACCRD
+   (platform/frontend/styles.css in luzex-ACCRD), inclusief de toelichting en contrastmetingen.
+   Pas ze daar én hier aan, zodat beide producten dezelfde huisstijl houden.
+   Alles na het tokenblok is Community-specifiek, maar volgt dezelfde componenten
+   (pil-knoppen, zwevende glazen balk, glazen panelen, kicker, badge). */
+
+:root {
+  color-scheme: light dark;
+
+  /* Histor Intuitive (PPG1022-2, #cfc6bc): een warme greige met roze ondertoon, LRV 57.
+     Vervangt het koele #f5f5f7. Bijkomend voordeel: witte panelen staken hier duidelijk
+     tegen af (1,69:1) waar dat op het oude bijna-wit nauwelijks zichtbaar was (1,09:1). */
+  --bg: #cfc6bc;
+  --bg-elevated: #ffffff;
+  --surface: #ffffff;
+  --surface-translucent: rgba(255, 255, 255, 0.72);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.12);
+  --text: #1d1d1f;
+  /* Warmer én donkerder dan de vorige koele grijzen. Noodzakelijk, niet cosmetisch: op de
+     greige achtergrond haalde #6e6e73 nog maar 3,01:1 en #86868b zelfs 2,15:1. Nu 4,58:1 en
+     3,30:1 op de achtergrond, en 7,73:1 / 5,57:1 op de witte panelen. */
+  --text-secondary: #585249;
+  --text-tertiary: #6e6760;
+
+  /* Het logo is strikt monochroom, dus het accent is dat ook: grafiet in plaats van het
+     Apple-blauw waarmee dit begon. --accent-contrast is de kleur die op een accentvlak leesbaar
+     is; die draait mee in donkere modus, waar het accent juist licht wordt. */
+  --accent: #1d1d1f;
+  --accent-hover: #3a3a3c;
+  --accent-active: #000000;
+  --accent-contrast: #ffffff;
+  --accent-tint: rgba(29, 29, 31, 0.07);
+  --accent-ring: rgba(29, 29, 31, 0.3);
+
+  --success: #248a3d;
+  --success-tint: rgba(52, 199, 89, 0.14);
+  --warning: #b25000;
+  --warning-tint: rgba(255, 149, 0, 0.16);
+  --danger: #d70015;
+  --danger-tint: rgba(255, 59, 48, 0.12);
+  /* Voor een status die klaar is maar nog geen geld heeft opgeleverd: definitief. Groen is
+     bewaard voor betaald — dan pas is de cyclus rond. */
+  --info: #0a63ad;
+  --info-tint: rgba(10, 99, 173, 0.13);
+  --neutral-tint: rgba(0, 0, 0, 0.06);
+  --purple: #6e40c9;
+  --purple-tint: rgba(139, 92, 246, 0.14);
+
+  /* ---------- Liquid Glass ----------
+     Het effect komt niet van het glas maar van de kleur eronder: zonder gekleurd licht
+     achter het paneel is glas alleen maar grijs. Vandaar --glas-licht-*: de vlekken die
+     achter de inhoud staan. De waarden hieronder staan bewust als token, zodat het
+     materiaal op één plek te verstellen is en niet op veertig.
+
+     Het dunste punt van de gradient staat hier op 0,26 en niet op de 0,20 uit het ontwerp.
+     Gemeten: met 0,20 haalt --text-secondary (#585249) op glas boven een terracotta vlek
+     nog 4,58:1 — net boven de norm, zonder marge. Met 0,26 is dat 4,78:1. De regel is dat
+     glas dekkender wordt, niet dat tekst lichter wordt; dit is die afweging.
+
+     Het licht zit als witte lijn BINNENIN de bovenrand (de eerste inset-schaduw), niet als
+     kader eromheen. Een border-highlight zou het paneel laten zweven als een sticker. */
+  --glas-bg: linear-gradient(142deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.26) 46%, rgba(255, 255, 255, 0.40));
+  --glas-rand: rgba(255, 255, 255, 0.58);
+  --glas-schaduw:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -18px 34px rgba(255, 255, 255, 0.20),
+    /* Het ontwerp geeft 0 26px 64px. Zo'n schaduw reikt 38px bóven het paneel uit, en daar
+       staan de kale labels van het periodefilter. Gemeten kost dat "Periode" 0,09 en komt het
+       op 4,49:1 — net onder de norm, want --text-secondary haalt op de kale achtergrond zelf
+       maar 4,58:1 en er is dus niets weg te geven. Met 30px verschuiving en 54px vervaging
+       reikt de schaduw nog 24px omhoog: onder de tekst, en even zwaar onder het paneel. */
+    0 30px 54px rgba(29, 29, 31, 0.20);
+  --glas-blur: blur(30px) saturate(190%);
+
+  /* Dunner glas voor kleine onderdelen (knoppen, velden, chips). Vier lagen
+     backdrop-filter tegelijk in beeld is het maximum dat vloeiend blijft; kleine
+     onderdelen krijgen daarom minder vervaging, niet minder glas. */
+  --glas-dun-bg: linear-gradient(142deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.22) 50%, rgba(255, 255, 255, 0.34));
+  --glas-dun-blur: blur(18px) saturate(170%);
+  --glas-dun-schaduw: inset 0 1px 0 rgba(255, 255, 255, 0.80), 0 10px 26px rgba(29, 29, 31, 0.12);
+
+  /* De dekkende tegenhanger: terugval zonder backdrop-filter, en de ondergrond onder
+     cijfers die iemand moet lezen. Dit is de kleur die het glas gemiddeld oplevert boven
+     de kale achtergrond, nagerekend en niet geschat — zo verspringt er niets. */
+  --glas-vast: #e4d8cb;
+
+  /* De glans die er in negen seconden één keer overheen loopt. Meer dan één is een casino. */
+  --glas-glans: linear-gradient(112deg, transparent 26%, rgba(255, 255, 255, 0.62) 44%, transparent 62%);
+
+  /* Het licht achter het glas. De opaciteiten zijn begrensd door de contrastmeting, niet
+     door smaak: boven glas houdt --text-secondary 4,5:1 zolang terracotta onder 0,48 en
+     olijf onder 0,40 blijft. Diep bruin haalt die grens al bij 0,15 en hoort daarom niet
+     achter tekst — dat is de vlek voor de randen van de pagina. */
+  --glas-licht-terracotta: #c98a63;
+  --glas-licht-olijf: #8d9472;
+  --glas-licht-zand: #e8dccc;
+  --glas-licht-diep: #3b2e24;
+
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 980px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.14), 0 4px 12px rgba(0, 0, 0, 0.06);
+
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --sidebar-width: 260px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --bg-elevated: #1c1c1e;
+    --surface: #1c1c1e;
+    --surface-translucent: rgba(28, 28, 30, 0.72);
+    --border: rgba(255, 255, 255, 0.09);
+    --border-strong: rgba(255, 255, 255, 0.14);
+    --text: #f5f5f7;
+    --text-secondary: #98989d;
+    --text-tertiary: #6e6e73;
+
+    /* Omgekeerd in donkere modus: op zwart is grafiet onzichtbaar, dus wordt het accent licht
+       en de tekst erop donker — dezelfde omkering die het logo zelf maakt (zwarte en witte
+       variant van hetzelfde merk). */
+    --accent: #f5f5f7;
+    --accent-hover: #ffffff;
+    --accent-active: #d1d1d6;
+    --accent-contrast: #1d1d1f;
+    --accent-tint: rgba(245, 245, 247, 0.12);
+    --accent-ring: rgba(245, 245, 247, 0.4);
+
+    --success: #32d74b;
+    --success-tint: rgba(50, 215, 75, 0.16);
+    --warning: #ff9f0a;
+    --warning-tint: rgba(255, 159, 10, 0.18);
+    --danger: #ff453a;
+    --danger-tint: rgba(255, 69, 58, 0.16);
+    --info: #64b5f6;
+    --info-tint: rgba(100, 181, 246, 0.18);
+    --neutral-tint: rgba(255, 255, 255, 0.08);
+    --purple: #bf5af2;
+    --purple-tint: rgba(191, 90, 242, 0.18);
+
+    /* Glas op zwart is een ander materiaal: het licht komt van boven in plaats van overal
+       vandaan, dus veel minder wit en een zachtere vervaging. De lichte waarden werken hier
+       niet — die maken een melkwitte vlek waar niets meer doorheen komt.
+       Gemeten op #000 met een terracotta vlek van 0,22: --text-secondary 4,81:1. */
+    --glas-bg: linear-gradient(142deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.05) 48%, rgba(255, 255, 255, 0.11));
+    --glas-rand: rgba(255, 255, 255, 0.20);
+    --glas-schaduw:
+      inset 0 1px 0 rgba(255, 255, 255, 0.34),
+      0 22px 50px rgba(0, 0, 0, 0.30);
+    --glas-blur: blur(26px) saturate(150%);
+
+    --glas-dun-bg: linear-gradient(142deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.04) 50%, rgba(255, 255, 255, 0.09));
+    --glas-dun-blur: blur(16px) saturate(140%);
+    --glas-dun-schaduw: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 10px 26px rgba(0, 0, 0, 0.34);
+
+    --glas-vast: #1b1b1b;
+    --glas-glans: linear-gradient(112deg, transparent 26%, rgba(255, 255, 255, 0.22) 44%, transparent 62%);
+
+    /* Op zwart telt elke vlek zwaarder door: dezelfde meting geeft hier 0,25 voor
+       terracotta en 0,27 voor olijf als bovengrens. Zand is de gevaarlijkste (0,17),
+       omdat licht op licht het contrast van --text-secondary het snelst opeet. */
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.55);
+  }
+}
+
+/* ---------- Liquid Glass: het materiaal ----------
+   Eén plek waar het glas gemaakt wordt; alles wat glas is, leent hiervan. De klassen
+   staan los van de onderdelen zelf, zodat een paneel glas kan worden door het token te
+   gebruiken en niet door zijn eigen kopie van vijf schaduwregels. */
+
+.glas {
+  position: relative;
+  background: var(--glas-bg);
+  backdrop-filter: var(--glas-blur);
+  -webkit-backdrop-filter: var(--glas-blur);
+  border: 1px solid var(--glas-rand);
+  box-shadow: var(--glas-schaduw);
+}
+
+.glas-dun {
+  position: relative;
+  background: var(--glas-dun-bg);
+  backdrop-filter: var(--glas-dun-blur);
+  -webkit-backdrop-filter: var(--glas-dun-blur);
+  border: 1px solid var(--glas-rand);
+  box-shadow: var(--glas-dun-schaduw);
+}
+
+/* De glans loopt er één keer per negen seconden overheen. Alleen op marketingpagina's:
+   in het ingelogde platform beweegt niets terwijl iemand aan het werk is. */
+.glas-glans::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--glas-glans);
+  background-size: 280% 100%;
+  opacity: 0.55;
+  animation: glas-glans 9s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+
+@keyframes glas-glans {
+  0%, 62% { background-position: 150% 0; }
+  100% { background-position: -60% 0; }
+}
+
+/* Het licht achter het glas. Zonder deze vlekken is glas grijs; met een vlek in de weg
+   van lopende tekst is het onleesbaar. Daarom staan ze achter panelen en langs de randen
+   van de pagina, nooit achter een alinea die zelf geen glas heeft. */
+.glas-licht {
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(80px);
+}
+
+/* Terugval. Zonder deze regel wordt een paneel op oudere Android een grijze mist waar de
+   tekst in verdwijnt: daar bestaat backdrop-filter niet en blijft alleen de halftransparante
+   gradient over. Dekkend vlak in dezelfde kleur, dus dezelfde contrastmeting blijft gelden. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glas,
+  .glas-dun {
+    background: var(--glas-vast);
+  }
+
+  .glas-licht {
+    display: none;
+  }
+}
+
+/* Beweging is een aanbod, geen gegeven. Wie er last van heeft, krijgt hetzelfde beeld stil. */
+@media (prefers-reduced-motion: reduce) {
+  .glas-glans::after,
+  .glas-licht {
+    animation: none !important;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.55;
+  letter-spacing: -0.006em;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+h1, h2, h3 {
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  text-decoration-color: currentColor;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ---------- Het licht achter het glas (zelfde vlekken als de ACCRD-landingspagina) ---------- */
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(80px);
+}
+
+body::before {
+  width: 620px;
+  height: 620px;
+  right: -180px;
+  top: -200px;
+  background: var(--glas-licht-terracotta);
+  opacity: 0.5;
+  animation: zweef-a 17s ease-in-out infinite alternate;
+}
+
+body::after {
+  width: 540px;
+  height: 540px;
+  left: -260px;
+  bottom: -160px;
+  background: var(--glas-licht-olijf);
+  opacity: 0.36;
+  animation: zweef-b 21s ease-in-out infinite alternate;
+}
+
+@keyframes zweef-a {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(90px, -60px, 0) scale(1.14); }
+}
+
+@keyframes zweef-b {
+  0% { transform: translate3d(0, 0, 0) scale(1.08); }
+  100% { transform: translate3d(110px, -70px, 0) scale(0.94); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after {
+    animation: none;
+  }
+}
+
+/* ---------- Merk ---------- */
+
+.brand-logo {
+  display: block;
+  width: 168px;
+  aspect-ratio: 3.582;
+  background-image: url("/assets/luzex-logo-zwart.svg");
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: contain;
+  flex-shrink: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .brand-logo {
+    background-image: url("/assets/luzex-logo-wit.svg");
+  }
+}
+
+.merk {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.merk-product {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  padding-left: 12px;
+  border-left: 1px solid var(--border-strong);
+}
+
+/* ---------- De zwevende balk (zelfde onderdeel als op luzex.nl en ACCRD) ---------- */
+
+.balkhouder {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding: 16px clamp(16px, 3vw, 24px) 0;
+}
+
+.balk {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 2vw, 32px);
+  padding: 8px 8px 8px 22px;
+  border-radius: var(--radius-pill);
+  background: var(--glas-bg);
+  backdrop-filter: var(--glas-blur);
+  -webkit-backdrop-filter: var(--glas-blur);
+  border: 1px solid var(--glas-rand);
+  box-shadow: var(--glas-schaduw);
+}
+
+.balk-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 1.8vw, 28px);
+  flex-grow: 1;
+}
+
+.balk-nav a {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 6px 2px;
+  border-bottom: 2px solid transparent;
+}
+
+.balk-nav a:hover,
+.balk-nav a.actief {
+  border-bottom-color: currentColor;
+}
+
+.balk-acties {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.balk-acties .text-link {
+  font-size: 14px;
+}
+
+@media (max-width: 760px) {
+  .balk {
+    flex-wrap: wrap;
+    border-radius: 26px;
+    padding: 10px 10px 10px 16px;
+    gap: 8px;
+  }
+
+  .balk .brand-logo {
+    width: min(34vw, 120px);
+  }
+
+  .merk-product {
+    display: none;
+  }
+
+  .balk-acties {
+    margin-left: auto;
+  }
+
+  /* Op een telefoon past alleen het merk plus één knop op de eerste rij. "Inloggen" staat
+     ook in de hero en onder "Gratis lid worden", dus die mag hier weg. */
+  .balk-inloggen {
+    display: none;
+  }
+
+  .balk-nav {
+    order: 3;
+    width: 100%;
+    justify-content: space-around;
+    padding: 2px 4px 0;
+  }
+
+  .balk-nav a {
+    font-size: 14px;
+  }
+
+  .balk .pil-knop {
+    padding: 9px 14px;
+    font-size: 13.5px;
+    min-height: 0;
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .balk {
+    background: var(--glas-vast);
+  }
+}
+
+/* ---------- Knoppen ---------- */
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  transition: background 0.15s var(--ease), transform 0.1s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+button:hover {
+  background: var(--accent-hover);
+}
+
+button:active {
+  background: var(--accent-active);
+  transform: scale(0.98);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+button.secondary {
+  background: var(--glas-dun-bg);
+  backdrop-filter: var(--glas-dun-blur);
+  -webkit-backdrop-filter: var(--glas-dun-blur);
+  border: 1px solid var(--glas-rand);
+  box-shadow: var(--glas-dun-schaduw);
+  color: var(--text);
+}
+
+button.secondary:hover {
+  background: var(--border-strong);
+}
+
+button.gevaar {
+  background: var(--danger);
+  color: #fff;
+}
+
+.pil-knop {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 13px 26px;
+  border-radius: var(--radius-pill);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.balk .pil-knop {
+  padding: 11px 22px;
+}
+
+.pil-knop-donker {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  box-shadow: 0 12px 26px rgba(29, 29, 31, 0.26);
+}
+
+.pil-knop-donker:hover {
+  background: var(--accent-hover);
+}
+
+.pil-knop-glas {
+  background: var(--glas-dun-bg);
+  backdrop-filter: var(--glas-dun-blur);
+  -webkit-backdrop-filter: var(--glas-dun-blur);
+  border: 1px solid var(--glas-rand);
+  box-shadow: var(--glas-dun-schaduw);
+  color: var(--text);
+}
+
+.text-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: none;
+  text-decoration: none;
+}
+
+.text-link:hover {
+  background: none;
+  text-decoration: underline;
+}
+
+/* ---------- Formulieren ---------- */
+
+label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 16px 0 6px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glas-rand);
+  background: var(--glas-dun-bg);
+  backdrop-filter: var(--glas-dun-blur);
+  -webkit-backdrop-filter: var(--glas-dun-blur);
+  box-shadow: var(--glas-dun-schaduw);
+  color: var(--text);
+  font-size: 15px;
+  font-family: inherit;
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-ring);
+}
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+
+.vinkje {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin: 16px 0 0;
+  cursor: pointer;
+}
+
+.veld-hint {
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+  margin: 6px 0 0;
+}
+
+.veld-rij {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+
+@media (max-width: 640px) {
+  .veld-rij {
+    grid-template-columns: 1fr;
+  }
+}
+
+.error {
+  color: var(--danger);
+  font-size: 13px;
+  margin: 12px 0 0;
+  min-height: 1em;
+}
+
+.success {
+  color: var(--success);
+  font-size: 13px;
+  margin: 12px 0 0;
+  min-height: 1em;
+}
+
+.melding {
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  font-size: 14px;
+  background: var(--info-tint);
+  color: var(--text);
+}
+
+.formulier-acties {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Pagina-opbouw ---------- */
+
+.kolom {
+  /* width: 100% is nodig: body is een flex-kolom, en daarin krimpt een blok met margin: auto
+     anders tot de breedte van zijn inhoud (een directory met twee kaartjes werd smal). */
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.kolom-smal {
+  max-width: 760px;
+}
+
+.pagina-kop {
+  padding: clamp(40px, 5vw, 72px) 0 32px;
+}
+
+.pagina-kop h1 {
+  font-size: clamp(32px, 4.4vw, 52px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+.kicker {
+  margin: 0 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--glas-licht-diep);
+}
+
+@media (prefers-color-scheme: dark) {
+  .kicker {
+    color: var(--glas-licht-zand);
+  }
+}
+
+.lead {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 56ch;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0;
+}
+
+.panel {
+  position: relative;
+  background: var(--glas-bg);
+  backdrop-filter: var(--glas-blur);
+  -webkit-backdrop-filter: var(--glas-blur);
+  border: 1px solid var(--glas-rand);
+  border-radius: var(--radius-lg);
+  padding: 26px 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--glas-schaduw);
+}
+
+.panel h2 {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.panel > .subtitle {
+  margin-bottom: 18px;
+}
+
+@media (max-width: 640px) {
+  .panel {
+    padding: 22px 18px;
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .panel, .kaart, input, select, textarea, button.secondary, .pil-knop-glas {
+    background: var(--glas-vast);
+  }
+}
+
+.leeg {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 48px 16px;
+}
+
+/* ---------- Badges ---------- */
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 9px;
+  background: var(--accent-tint);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.badge-gratis {
+  background: var(--success-tint);
+  color: var(--success);
+}
+
+.badge-pro {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.badge-concept {
+  background: var(--neutral-tint);
+  color: var(--text-secondary);
+}
+
+.badge-ingepland {
+  background: var(--warning-tint);
+  color: var(--warning);
+}
+
+.badge-gepubliceerd {
+  background: var(--info-tint);
+  color: var(--info);
+}
+
+/* ---------- Filters ---------- */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 28px;
+}
+
+.filters .filter {
+  flex: 1 1 180px;
+  max-width: 280px;
+}
+
+.filters label {
+  margin-top: 0;
+}
+
+.segment {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--glas-dun-bg);
+  border: 1px solid var(--glas-rand);
+  box-shadow: var(--glas-dun-schaduw);
+}
+
+.segment button {
+  background: none;
+  color: var(--text);
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  font-weight: 600;
+}
+
+.segment button:hover {
+  background: var(--neutral-tint);
+}
+
+.segment button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+/* ---------- Artikelkaarten ---------- */
+
+.kaarten {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 22px;
+}
+
+.kaart {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--glas-bg);
+  backdrop-filter: var(--glas-blur);
+  -webkit-backdrop-filter: var(--glas-blur);
+  border: 1px solid var(--glas-rand);
+  box-shadow: var(--glas-schaduw);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  color: var(--text);
+  text-decoration: none;
+  transition: transform 0.2s var(--ease);
+}
+
+a.kaart:hover {
+  transform: translateY(-3px);
+}
+
+.kaart-beeld {
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(135deg, var(--glas-licht-zand), var(--glas-licht-terracotta));
+  background-size: cover;
+  background-position: center;
+}
+
+.kaart-beeld img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.kaart-body {
+  padding: 20px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+a.badge {
+  text-decoration: none;
+}
+
+.kaart-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.kaart h3 {
+  font-size: 19px;
+  line-height: 1.3;
+}
+
+.kaart p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.kaart-meta {
+  margin-top: auto !important;
+  padding-top: 8px;
+  font-size: 13px !important;
+  color: var(--text-tertiary) !important;
+}
+
+.kaart-lees {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.paginering {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin: 36px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* ---------- Artikel ---------- */
+
+.artikel {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: clamp(36px, 5vw, 64px) 24px 32px;
+}
+
+.artikel-kop h1 {
+  font-size: clamp(30px, 4.4vw, 46px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 14px 0 16px;
+}
+
+.artikel-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.artikel-samenvatting {
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 22px 0 0;
+}
+
+.artikel-cover {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  margin: 28px 0 0;
+  display: block;
+  box-shadow: var(--shadow-md);
+}
+
+.artikel-inhoud {
+  margin-top: 32px;
+  font-size: 17.5px;
+  line-height: 1.75;
+}
+
+.artikel-inhoud h2 {
+  font-size: 26px;
+  margin: 40px 0 12px;
+}
+
+.artikel-inhoud h3 {
+  font-size: 20px;
+  margin: 30px 0 10px;
+}
+
+.artikel-inhoud p,
+.artikel-inhoud ul,
+.artikel-inhoud ol {
+  margin: 0 0 20px;
+}
+
+.artikel-inhoud li {
+  margin-bottom: 6px;
+}
+
+.artikel-inhoud blockquote {
+  margin: 0 0 20px;
+  padding: 4px 0 4px 20px;
+  border-left: 3px solid var(--glas-licht-terracotta);
+  color: var(--text-secondary);
+}
+
+.artikel-inhoud img {
+  max-width: 100%;
+  border-radius: var(--radius);
+}
+
+.artikel-inhoud code {
+  background: var(--neutral-tint);
+  border-radius: 5px;
+  padding: 1px 5px;
+  font-size: 0.9em;
+}
+
+.artikel-inhoud pre {
+  background: var(--neutral-tint);
+  border-radius: var(--radius);
+  padding: 16px;
+  overflow-x: auto;
+}
+
+.artikel-inhoud pre code {
+  background: none;
+  padding: 0;
+}
+
+.artikel-inhoud table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 20px;
+  font-size: 15px;
+}
+
+.artikel-inhoud th,
+.artikel-inhoud td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.slot {
+  margin-top: 32px;
+  text-align: center;
+  padding: 40px 28px;
+}
+
+.slot h2 {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.slot p {
+  color: var(--text-secondary);
+  margin: 0 auto 22px;
+  max-width: 44ch;
+}
+
+.slot .formulier-acties {
+  justify-content: center;
+}
+
+/* ---------- Donkere sectie (zelfde #3b2e24 als luzex.nl en ACCRD) ---------- */
+
+.donker-blok {
+  position: relative;
+  background: #3b2e24;
+  color: #f5efe7;
+  border-radius: var(--radius-lg);
+  padding: clamp(40px, 5vw, 64px) clamp(24px, 4vw, 48px);
+  overflow: hidden;
+}
+
+.donker-blok h2 {
+  font-size: clamp(28px, 3.4vw, 40px);
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  margin-bottom: 28px;
+}
+
+.donker-blok .kicker {
+  color: #e3d3c0;
+}
+
+.donker-blok p {
+  color: #e3d3c0;
+}
+
+.stappen-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+.stap-nummer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.stap h3 {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.stap p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+@media (max-width: 760px) {
+  .stappen-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Home ---------- */
+
+.hero {
+  padding: clamp(56px, 7vw, 112px) 0 clamp(56px, 7vw, 96px);
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(28px, 5vw, 64px);
+  align-items: center;
+}
+
+.hero h1 {
+  font-size: clamp(40px, 5.6vw, 66px);
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+  margin-bottom: 20px;
+}
+
+.hero .lead {
+  margin-bottom: 32px;
+}
+
+.cta-rij {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.hero-beeld {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hero-kaartje {
+  padding: 18px 20px;
+  border-radius: var(--radius-lg);
+  background: var(--glas-bg);
+  backdrop-filter: var(--glas-blur);
+  -webkit-backdrop-filter: var(--glas-blur);
+  border: 1px solid var(--glas-rand);
+  box-shadow: var(--glas-schaduw);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hero-kaartje:nth-child(2) {
+  margin-left: 36px;
+}
+
+.hero-kaartje:nth-child(3) {
+  margin-left: 12px;
+}
+
+.hero-kaartje strong {
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.sectie {
+  padding-bottom: clamp(64px, 8vw, 112px);
+}
+
+.sectie-kop {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.sectie-kop h2 {
+  font-size: clamp(28px, 3.4vw, 40px);
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+}
+
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  /* Decoratie: op een smal scherm duwt het de echte artikelen alleen maar naar beneden. */
+  .hero-beeld {
+    display: none;
+  }
+}
+
+/* ---------- Directory ---------- */
+
+.profiel-kaart .kaart-body {
+  gap: 10px;
+}
+
+.profiel-kaart h3 {
+  font-size: 18px;
+}
+
+.profiel-praktijk {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 14px !important;
+  margin-top: -6px !important;
+}
+
+.profiel-contact {
+  list-style: none;
+  margin: auto 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.profiel-contact a {
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Auth-kaart ---------- */
+
+.auth-kolom {
+  display: flex;
+  justify-content: center;
+  padding: clamp(40px, 8vh, 96px) 16px;
+}
+
+.auth-kaart {
+  width: 100%;
+  max-width: 420px;
+  padding: 36px 34px;
+}
+
+.auth-kaart h1 {
+  font-size: 26px;
+  margin-bottom: 6px;
+}
+
+.auth-kaart .subtitle {
+  margin-bottom: 22px;
+}
+
+.auth-kaart button[type="submit"] {
+  width: 100%;
+  margin-top: 24px;
+  padding: 13px;
+  font-size: 15px;
+  border-radius: var(--radius-pill);
+}
+
+.auth-voet {
+  margin: 20px 0 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* ---------- Dashboard & admin ---------- */
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.tabs a {
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.tabs a:hover {
+  background: var(--neutral-tint);
+}
+
+.tabs a.actief {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.tabel-scroll {
+  overflow-x: auto;
+}
+
+table.tabel {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tabel th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  padding: 0 10px 10px;
+  border-bottom: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+
+.tabel td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.tabel tr:last-child td {
+  border-bottom: none;
+}
+
+.tabel .acties {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tabel .acties > * + * {
+  margin-left: 12px;
+}
+
+.stat-rij {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat {
+  margin: 0;
+}
+
+.stat-waarde {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.editor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.editor-grid textarea {
+  min-height: 520px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 14px;
+}
+
+.voorvertoning {
+  min-height: 520px;
+  max-height: 720px;
+  overflow-y: auto;
+  padding: 4px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-strong);
+  margin-top: 0;
+  font-size: 16px;
+}
+
+@media (max-width: 900px) {
+  .editor-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cover-voorbeeld {
+  max-width: 320px;
+  border-radius: var(--radius);
+  display: block;
+  margin-top: 10px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text);
+  margin: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.chip:has(input:checked) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.chip input {
+  width: 14px;
+  height: 14px;
+}
+
+.nieuwsbrief-frame {
+  width: 100%;
+  height: 720px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: #cfc6bc;
+}
+
+/* ---------- Footer ---------- */
+
+.voet {
+  max-width: 1200px;
+  width: 100%;
+  margin: 48px auto 0;
+  padding: 32px 24px 48px;
+}
+
+.voet-boven {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: 32px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+}
+
+.voet-merk {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.voet-tagline {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  max-width: 34ch;
+}
+
+.voet-kolom {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.voet-kop {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.voet-kolom a {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.voet-copyright {
+  margin: 20px 0 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+@media (max-width: 640px) {
+  .voet-boven {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .voet-merk {
+    grid-column: 1 / -1;
+  }
+}

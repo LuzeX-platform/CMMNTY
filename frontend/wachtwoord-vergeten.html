@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wachtwoord vergeten — LuzeX Community</title>
+  <meta name="description" content="Wachtwoord vergeten bij de LuzeX Community." />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/assets/site.webmanifest" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body data-pagina="wachtwoord-vergeten">
+  <header id="balk"></header>
+
+  <main class="auth-kolom">
+    <div class="panel auth-kaart">
+      <h1>Wachtwoord vergeten</h1>
+      <p class="subtitle">Vul je e-mailadres in. Je krijgt een link om een nieuw wachtwoord in te stellen.</p>
+      <form id="formulier" novalidate>
+        <label for="email">E-mailadres</label>
+        <input id="email" name="email" type="email" autocomplete="email" required />
+        <button type="submit">Link versturen</button>
+        <p class="error" id="fout" role="alert"></p>
+        <p class="success" id="succes"></p>
+      </form>
+      <p class="auth-voet"><a href="/inloggen.html">Terug naar inloggen</a></p>
+    </div>
+  </main>
+
+  <footer id="voet"></footer>
+  <script src="/common.js"></script>
+  <script src="/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Account — LuzeX Community</title>
+  <meta name="description" content="Account" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/assets/site.webmanifest" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body data-pagina="account">
+  <header id="balk"></header>
+
+  <main class="kolom kolom-smal">
+    <div class="pagina-kop">
+      <p class="kicker">Mijn Community</p>
+      <h1 id="kop">Account</h1>
+    </div>
+    <nav class="tabs" aria-label="Mijn Community">
+      <a href="/dashboard/">Mijn artikelen</a>
+      <a href="/dashboard/profiel.html">Mijn profiel</a>
+      <a href="/dashboard/account.html" class="actief" aria-current="page">Account</a>
+    </nav>
+    <form class="panel" id="account-form" novalidate>
+      <h2>Gegevens</h2>
+      <p class="subtitle" id="account-email"></p>
+      <label for="naam">Naam</label>
+      <input id="naam" type="text" maxlength="120" required />
+      <label class="vinkje"><input id="nieuwsbrief" type="checkbox" /> Stuur mij de nieuwsbrief met nieuwe artikelen</label>
+      <div class="formulier-acties"><button type="submit">Opslaan</button></div>
+      <p class="error" id="account-fout" role="alert"></p>
+      <p class="success" id="account-succes"></p>
+    </form>
+
+    <form class="panel" id="wachtwoord-form" novalidate>
+      <h2>Wachtwoord wijzigen</h2>
+      <label for="huidig">Huidig wachtwoord</label>
+      <input id="huidig" type="password" autocomplete="current-password" required />
+      <label for="nieuw">Nieuw wachtwoord</label>
+      <input id="nieuw" type="password" autocomplete="new-password" minlength="8" required />
+      <div class="formulier-acties"><button type="submit">Wachtwoord wijzigen</button></div>
+      <p class="error" id="wachtwoord-fout" role="alert"></p>
+      <p class="success" id="wachtwoord-succes"></p>
+    </form>
+
+    <div class="panel">
+      <h2>Uitloggen</h2>
+      <div class="formulier-acties"><button class="secondary" id="uitloggen" type="button">Uitloggen</button></div>
+    </div>
+
+    <form class="panel" id="verwijder-form" novalidate>
+      <h2>Account verwijderen</h2>
+      <p class="subtitle">Je account en directory-profiel worden direct en definitief verwijderd.</p>
+      <label for="verwijder-wachtwoord">Bevestig met je wachtwoord</label>
+      <input id="verwijder-wachtwoord" type="password" autocomplete="current-password" required />
+      <div class="formulier-acties"><button class="gevaar" type="submit">Account definitief verwijderen</button></div>
+      <p class="error" id="verwijder-fout" role="alert"></p>
+    </form>
+  </main>
+
+  <footer id="voet"></footer>
+  <script src="/common.js"></script>
+  <script src="/dashboard/dashboard.js"></script>
+</body>
+</html>

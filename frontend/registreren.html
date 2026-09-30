@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gratis lid worden — LuzeX Community</title>
+  <meta name="description" content="Gratis lid worden bij de LuzeX Community." />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/assets/site.webmanifest" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body data-pagina="registreren">
+  <header id="balk"></header>
+
+  <main class="auth-kolom">
+    <div class="panel auth-kaart">
+      <h1>Gratis lid worden</h1>
+      <p class="subtitle">Lees artikelen, ontvang de nieuwsbrief en zet je praktijk in de directory.</p>
+      <form id="formulier" novalidate>
+        <label for="naam">Naam</label>
+        <input id="naam" name="naam" type="text" autocomplete="name" required />
+        <label for="email">E-mailadres</label>
+        <input id="email" name="email" type="email" autocomplete="email" required />
+        <label for="wachtwoord">Wachtwoord</label>
+        <input id="wachtwoord" name="wachtwoord" type="password" autocomplete="new-password" minlength="8" required />
+        <p class="veld-hint">Minimaal 8 tekens.</p>
+        <label class="vinkje"><input id="nieuwsbrief" name="nieuwsbrief" type="checkbox" checked /> Stuur mij de nieuwsbrief met nieuwe artikelen</label>
+        <button type="submit">Account aanmaken</button>
+        <p class="error" id="fout" role="alert"></p>
+      </form>
+      <div id="klaar" hidden>
+        <p class="melding">Bijna klaar! We hebben je een mail gestuurd. Klik op de link in die mail om je account te bevestigen.</p>
+      </div>
+      <p class="auth-voet">Al lid? <a href="/inloggen.html">Inloggen</a></p>
+    </div>
+  </main>
+
+  <footer id="voet"></footer>
+  <script src="/common.js"></script>
+  <script src="/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nieuwsbrief — Admin — LuzeX Community</title>
+  <meta name="description" content="Nieuwsbrief" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/assets/site.webmanifest" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body data-pagina="nieuwsbrief">
+  <header id="balk"></header>
+
+  <main class="kolom">
+    <div class="pagina-kop">
+      <p class="kicker">Admin</p>
+      <h1 id="kop">Nieuwsbrief</h1>
+    </div>
+    <nav class="tabs" aria-label="Admin">
+      <a href="/admin/">Artikelen</a>
+      <a href="/admin/gebruikers.html">Gebruikers</a>
+      <a href="/admin/nieuwsbrief.html" class="actief" aria-current="page">Nieuwsbrief</a>
+    </nav>
+    <div class="panel">
+      <h2>Frequentie</h2>
+      <p class="subtitle">Wekelijks gaat de nieuwsbrief op maandag uit, maandelijks op de 1e (rond 08:00). Alleen artikelen die sinds de vorige nieuwsbrief zijn verschenen gaan mee; zonder nieuwe artikelen gaat er niets uit.</p>
+      <div class="segment" role="group" aria-label="Frequentie" id="frequentie">
+        <button type="button" data-frequentie="wekelijks">Wekelijks</button>
+        <button type="button" data-frequentie="maandelijks">Maandelijks</button>
+        <button type="button" data-frequentie="uit">Uit</button>
+      </div>
+      <p class="success" id="frequentie-succes"></p>
+    </div>
+
+    <div class="stat-rij" id="segmenten"></div>
+
+    <div class="panel">
+      <div class="sectie-kop" style="margin-bottom:14px">
+        <div>
+          <h2>Voorbeeld</h2>
+          <p class="subtitle" id="voorbeeld-onderwerp"></p>
+        </div>
+        <div class="segment" role="group" aria-label="Segment" id="segment-keuze">
+          <button type="button" data-segment="gratis" aria-pressed="true">Gratis-leden</button>
+          <button type="button" data-segment="pro" aria-pressed="false">Pro-leden</button>
+        </div>
+      </div>
+      <iframe class="nieuwsbrief-frame" id="voorbeeld" title="Voorbeeld van de nieuwsbrief" sandbox=""></iframe>
+      <div class="formulier-acties">
+        <button type="button" class="secondary" id="test">Stuur testmail naar mij</button>
+        <button type="button" id="versturen">Nu versturen naar iedereen</button>
+      </div>
+      <p class="error" id="fout" role="alert"></p>
+      <p class="success" id="succes"></p>
+    </div>
+
+    <div class="panel">
+      <h2>Verzonden</h2>
+      <div class="tabel-scroll">
+        <table class="tabel">
+          <thead><tr><th>Datum</th><th>Segment</th><th>Artikelen</th><th>Ontvangers</th><th>Aanleiding</th></tr></thead>
+          <tbody id="verzendingen"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer id="voet"></footer>
+  <script src="/common.js"></script>
+  <script src="/admin/admin.js"></script>
+</body>
+</html>
