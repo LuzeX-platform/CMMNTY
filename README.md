@@ -42,6 +42,25 @@ deployment, eigen geheimen.
 | `/dashboard/` | Mijn artikelen, mijn profiel, account |
 | `/admin/` | Artikelen, gebruikers, nieuwsbrief |
 
+## Artikelen importeren uit bestanden
+
+Artikelen kunnen ook als Markdown-bestand met frontmatter in `content/artikelen/` staan (zie
+`content/artikelen/zorginnovaties-2026/`). Het importscript zet ze in de database:
+
+```bash
+npm run artikelen:importeren            # lokaal (in backend/)
+node dist/importeerArtikelen.js         # op Render, via de Shell
+```
+
+- Nieuwe slug → aangemaakt als **concept**, zonder afbeelding.
+- Bestaande slug → overgeslagen (aanpassingen in het adminpanel blijven staan). Alleen met
+  `--force` wordt overschreven; afbeelding en publicatiestatus blijven ook dan ongemoeid.
+- Er wordt nooit iets gepubliceerd en nooit een nieuwsbrief verstuurd.
+- Bronnen uit de frontmatter komen als sectie "Bronnen" onderaan de tekst. Tags, reeks,
+  volgorde en `gecontroleerd_op` blijven alleen in het bestand (het datamodel kent ze nog niet).
+
+Concepten zijn voor de admin te bekijken via *Admin → Artikelen → Voorbeeld*; bezoekers zien ze niet.
+
 ## Lokaal draaien
 
 ```bash
