@@ -24,4 +24,7 @@ export const CATEGORIEEN = [
   "Tools & software",
   "Praktijkvoering",
   "Regelgeving",
+  "AI in de praktijk",
+  "Regels en wetgeving",
+  "Behandelen",
 ] as const;

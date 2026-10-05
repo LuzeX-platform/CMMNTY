@@ -112,6 +112,18 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     assert.equal(pro.gerelateerd.length, 1);
   });
 
+  test("concept: onzichtbaar voor bezoekers, als voorbeeld zichtbaar voor de admin", async () => {
+    const bezoeker = await app.inject({ method: "GET", url: "/api/artikelen/concept" });
+    assert.equal(bezoeker.statusCode, 404);
+    const lijst = (await app.inject({ method: "GET", url: "/api/artikelen", headers: { cookie: adminCookie } })).json();
+    assert.ok(!lijst.artikelen.some((a: { slug: string }) => a.slug === "concept"), "concept hoort niet in de lijst");
+    const admin = await app.inject({ method: "GET", url: "/api/artikelen/concept", headers: { cookie: adminCookie } });
+    assert.equal(admin.statusCode, 200);
+    assert.equal(admin.json().voorbeeld, true);
+    const gepubliceerd = (await app.inject({ method: "GET", url: "/api/artikelen/gratis-tip", headers: { cookie: adminCookie } })).json();
+    assert.equal(gepubliceerd.voorbeeld, false);
+  });
+
   test("registreren → niet inloggen vóór bevestigen → bevestigen logt in", async () => {
     const reg = await app.inject({
       method: "POST",

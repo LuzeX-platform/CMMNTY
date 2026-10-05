@@ -40,7 +40,7 @@ async function artikelenPagina() {
         <td>${badgeHtml(a.toegang)}</td>
         <td>${datumTijd(a.gepubliceerdOp)}</td>
         <td class="acties">
-          ${a.status === "gepubliceerd" ? `<a class="text-link" href="/artikelen/${encodeURIComponent(a.slug)}" target="_blank">Bekijk</a>` : ""}
+          <a class="text-link" href="/artikelen/${encodeURIComponent(a.slug)}" target="_blank">${a.status === "gepubliceerd" ? "Bekijk" : "Voorbeeld"}</a>
           <a class="text-link" href="/admin/artikel.html?id=${a.id}">Bewerk</a>
         </td>
       </tr>`,
@@ -77,6 +77,11 @@ async function editorPagina() {
     document.title = `${a.titel} — Admin — LuzeX CMMNTY`;
     $("kop").textContent = "Artikel bewerken";
     for (const sleutel of ["titel", "slug", "auteurNaam", "toegang", "samenvatting", "inhoud"]) $(sleutel).value = a[sleutel] ?? "";
+    // Een categorie die niet (meer) in de keuzelijst staat, toch als optie tonen. Anders blijft de
+    // keuzelijst op "Geen categorie" staan en wist opslaan de categorie zonder dat je het ziet.
+    if (a.categorie && ![...$("categorie").options].some((o) => o.value === a.categorie)) {
+      $("categorie").insertAdjacentHTML("beforeend", `<option value="${escapeHtml(a.categorie)}">${escapeHtml(a.categorie)}</option>`);
+    }
     $("categorie").value = a.categorie ?? "";
     if (a.gepubliceerdOp) {
       publicatie.value = "datum";
@@ -84,10 +89,10 @@ async function editorPagina() {
     }
     toonCover(a.cover);
     $("verwijder").hidden = false;
-    if (a.status === "gepubliceerd") {
-      $("bekijk").hidden = false;
-      $("bekijk").href = `/artikelen/${encodeURIComponent(a.slug)}`;
-    }
+    // Ook bij een concept: de artikelpagina toont het dan als voorbeeld, alleen voor de admin.
+    $("bekijk").hidden = false;
+    $("bekijk").textContent = a.status === "gepubliceerd" ? "Bekijk artikel ↗" : "Bekijk voorbeeld ↗";
+    $("bekijk").href = `/artikelen/${encodeURIComponent(a.slug)}`;
     $("slug-hint").textContent = `/artikelen/${a.slug}`;
   }
   zetDatumVeld();

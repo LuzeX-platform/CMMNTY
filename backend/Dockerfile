@@ -23,6 +23,8 @@ COPY --from=builder /app/backend/dist ./dist
 COPY --from=builder /app/backend/prisma ./prisma
 COPY backend/package.json ./
 COPY frontend /app/frontend
+# De artikelbestanden, zodat het importscript ook op Render draait: node dist/importeerArtikelen.js
+COPY content /app/content
 EXPOSE 4100
 # Migraties + seed (admin-account) zijn idempotent en draaien bij elke start — zelfde patroon als ACCRD.
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/seed.js && node dist/index.js"]

@@ -35,12 +35,13 @@ function slotHtml(reden) {
     document.querySelector('meta[name="description"]').setAttribute("content", a.samenvatting);
 
     houder.innerHTML = `
+      ${a.voorbeeld ? `<p class="melding voorbeeld-melding"><strong>Voorbeeld</strong> — dit artikel is nog niet gepubliceerd. Alleen jij (admin) ziet deze pagina.</p>` : ""}
       <header class="artikel-kop">
         <div class="kaart-badges">${badgeHtml(a.toegang)}${a.categorie ? `<a class="badge" href="/artikelen.html?categorie=${encodeURIComponent(a.categorie)}">${escapeHtml(a.categorie)}</a>` : ""}</div>
         <h1>${escapeHtml(a.titel)}</h1>
         <div class="artikel-meta">
           <span>Door ${escapeHtml(a.auteurNaam)}</span>
-          <span>${formatteerDatum(a.gepubliceerdOp)}</span>
+          <span>${a.gepubliceerdOp ? formatteerDatum(a.gepubliceerdOp) : "Nog niet gepubliceerd"}</span>
           <span>${a.leestijd} min lezen</span>
         </div>
         <p class="artikel-samenvatting">${escapeHtml(a.samenvatting)}</p>

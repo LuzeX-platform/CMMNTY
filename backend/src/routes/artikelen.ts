@@ -90,10 +90,16 @@ export async function artikelRoutes(app: FastifyInstance) {
 
   app.get("/api/artikelen/:slug", async (request, reply) => {
     const { slug } = request.params as { slug: string };
-    const artikel = await prisma.artikel.findFirst({ where: { slug, ...gepubliceerd() }, select: kaartSelect });
-    if (!artikel) return reply.code(404).send({ errorCode: "NIET_GEVONDEN" });
-
     const bezoeker = await bezoekerVan(request);
+    // De admin mag ook concepten en ingeplande artikelen openen, als voorbeeld van hoe het
+    // artikel er straks uitziet. Voor iedereen anders bestaan die niet (404).
+    const artikel = await prisma.artikel.findFirst({
+      where: { slug, ...(bezoeker?.rol === "admin" ? {} : gepubliceerd()) },
+      select: kaartSelect,
+    });
+    if (!artikel) return reply.code(404).send({ errorCode: "NIET_GEVONDEN" });
+    const isVoorbeeld = !artikel.gepubliceerdOp || artikel.gepubliceerdOp > new Date();
+
     const magLezen = magVolledigLezen(artikel.toegang, bezoeker);
 
     // Gerelateerd: eerst dezelfde categorie, aangevuld met de nieuwste andere artikelen.
@@ -121,19 +127,23 @@ export async function artikelRoutes(app: FastifyInstance) {
       inhoudHtml: magLezen ? renderMarkdown(artikel.inhoud) : null,
       vergrendeld: magLezen ? null : vergrendelReden(bezoeker),
       gerelateerd: [...zelfdeCategorie, ...aanvulling].map(naarKaart),
+      voorbeeld: isVoorbeeld,
     };
   });
 
   app.get("/api/artikelen/:slug/cover", async (request, reply) => {
     const { slug } = request.params as { slug: string };
+    const bezoeker = await bezoekerVan(request);
     const artikel = await prisma.artikel.findFirst({
-      where: { slug, ...gepubliceerd() },
-      select: { coverAfbeelding: true, coverMime: true },
+      where: { slug, ...(bezoeker?.rol === "admin" ? {} : gepubliceerd()) },
+      select: { coverAfbeelding: true, coverMime: true, gepubliceerdOp: true },
     });
     if (!artikel?.coverAfbeelding || !artikel.coverMime) return reply.code(404).send({ errorCode: "NIET_GEVONDEN" });
+    const openbaar = artikel.gepubliceerdOp !== null && artikel.gepubliceerdOp <= new Date();
     return reply
       .header("Content-Type", artikel.coverMime)
-      .header("Cache-Control", "public, max-age=3600")
+      // Een concept-afbeelding niet laten bewaren door gedeelde caches.
+      .header("Cache-Control", openbaar ? "public, max-age=3600" : "private, no-store")
       .send(Buffer.from(artikel.coverAfbeelding));
   });
 }
