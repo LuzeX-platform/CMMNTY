@@ -49,6 +49,14 @@ services:
         sync: false
       - key: SMTP_AFZENDER
         sync: false
+      # Stripe (eigen, betaald Pro-abonnement — €5/maand, los van Kruisproduct-Pro hieronder).
+      # Zonder STRIPE_GEHEIME_SLEUTEL geven /api/account/pro-checkout en de webhook 503.
+      - key: STRIPE_GEHEIME_SLEUTEL
+        sync: false
+      - key: STRIPE_PRIJS_ID
+        sync: false
+      - key: STRIPE_WEBHOOK_GEHEIM
+        sync: false
       # Kruisproduct-Pro (hub/CLAUDE.md): een actief ACCRD- of SCRNN-account geeft gratis Pro
       # op CMMNTY. LUZEX_INTERN_SLEUTEL moet letterlijk gelijk zijn aan die van ACCRD en SCRNN.
       # Ontbreken de URL's, dan doet dit product gewoon niet mee — niets gaat stuk.

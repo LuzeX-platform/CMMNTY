@@ -118,6 +118,80 @@ function koppelFormulier(form, foutEl, succesEl, handler) {
       return "Je wachtwoord is gewijzigd.";
     });
 
+    // Eigen, echte Stripe-betaling (los van Kruisproduct-Pro hieronder). Bij Pro via
+    // Kruisproduct is een "upgrade"-knop verwarrend (je betaalt dan niet zelf), dus die
+    // sectie toont in dat geval alleen een melding in plaats van de betaalknop.
+    const proKnop = document.getElementById("pro-afrekenen");
+    const beheerKnop = document.getElementById("pro-beheren");
+    const proStatus = document.getElementById("pro-status");
+    const proFout = document.getElementById("pro-fout");
+    if (gebruiker.abonnement === "pro" && gebruiker.abonnementBron === "accrd") {
+      proStatus.textContent = "Je hebt al Pro via je ACCRD-account (Kruisproduct-Pro).";
+    } else if (gebruiker.abonnement === "pro") {
+      proStatus.textContent = "Je hebt een betaald Pro-abonnement.";
+      beheerKnop.hidden = false;
+    } else {
+      proStatus.textContent = "Lees alle Pro-artikelen voor €5 per maand.";
+      proKnop.hidden = false;
+    }
+    proKnop.addEventListener("click", async () => {
+      proFout.textContent = "";
+      proKnop.disabled = true;
+      try {
+        const { url } = await api("/api/account/pro-checkout", { methode: "POST" });
+        window.location.href = url;
+      } catch (fout) {
+        proFout.textContent = foutTekst(fout);
+        proKnop.disabled = false;
+      }
+    });
+    beheerKnop.addEventListener("click", async () => {
+      proFout.textContent = "";
+      beheerKnop.disabled = true;
+      try {
+        const { url } = await api("/api/account/pro-portaal", { methode: "POST" });
+        window.location.href = url;
+      } catch (fout) {
+        proFout.textContent = foutTekst(fout);
+        beheerKnop.disabled = false;
+      }
+    });
+
+    // Kruisproduct-Pro: een actief ACCRD-account geeft gratis Pro als de klant zelf zijn
+    // kvk-nummer invult. "al_gekozen" (409) betekent dat dit kvk-nummer al voor RSLNT gekozen
+    // is — pas na een expliciete bevestiging sturen we opnieuw met `wisselen: true`, nooit
+    // automatisch, want wisselen is een bewuste actie van de klant.
+    document.getElementById("kruisproduct-status").textContent =
+      gebruiker.abonnement === "pro"
+        ? "Je hebt Pro. Via ACCRD geclaimd? Vul hieronder opnieuw je kvk-nummer in om te bevestigen of te wisselen."
+        : "Heb je een actief, betalend ACCRD-account? Vul je kvk-nummer in voor gratis Pro op CMMNTY.";
+
+    const claimKruisproduct = (kvkNummer, wisselen) =>
+      api("/api/account/kruisproduct-claim", { methode: "POST", body: { kvkNummer, wisselen } });
+
+    koppelFormulier(
+      document.getElementById("kruisproduct-form"),
+      document.getElementById("kruisproduct-fout"),
+      document.getElementById("kruisproduct-succes"),
+      async () => {
+        const kvkNummer = document.getElementById("kvk-nummer").value.trim();
+        try {
+          await claimKruisproduct(kvkNummer);
+        } catch (fout) {
+          if (fout.status === 409) {
+            const wisselenOk = confirm(
+              "Dit kvk-nummer heeft al gratis Pro op RSLNT staan. Wil je wisselen naar CMMNTY? Dan verdwijnt Pro op RSLNT.",
+            );
+            if (!wisselenOk) return;
+            await claimKruisproduct(kvkNummer, true);
+          } else {
+            throw fout;
+          }
+        }
+        return "Pro actief via ACCRD.";
+      },
+    );
+
     document.getElementById("uitloggen").addEventListener("click", uitloggen);
 
     koppelFormulier(document.getElementById("verwijder-form"), document.getElementById("verwijder-fout"), null, async () => {

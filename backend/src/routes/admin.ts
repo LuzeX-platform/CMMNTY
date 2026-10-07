@@ -156,13 +156,17 @@ export async function adminRoutes(app: FastifyInstance) {
   });
 
   // Zonder betaling (MVP) zet Job hier handmatig iemand op Pro. Stripe vervangt dit later.
-  // Zet ook abonnementBron op null: dit is een bewuste, handmatige keuze, en die mag de
-  // kruisproductCron de volgende dag niet stilletjes terugdraaien (zie kruisproductCron.ts).
+  // Zet ook abonnementBron én kruisproductKvkNummer op null: dit is een bewuste, handmatige
+  // keuze, en kruisproductKvkNummer is het veld waarop kruisproductCron.ts filtert wie het mag
+  // aanraken — zonder dit zou een latere cron-run deze handmatige keuze stilletjes terugdraaien.
   app.patch("/api/admin/gebruikers/:id", async (request, reply) => {
     const { id } = request.params as { id: string };
     const parsed = z.object({ abonnement: z.enum(["gratis", "pro"]) }).safeParse(request.body);
     if (!parsed.success) return reply.code(400).send({ errorCode: "ONGELDIGE_INVOER" });
-    const { count } = await prisma.gebruiker.updateMany({ where: { id }, data: { ...parsed.data, abonnementBron: null } });
+    const { count } = await prisma.gebruiker.updateMany({
+      where: { id },
+      data: { ...parsed.data, abonnementBron: null, kruisproductKvkNummer: null },
+    });
     if (count === 0) return reply.code(404).send({ errorCode: "NIET_GEVONDEN" });
     return { ok: true };
   });

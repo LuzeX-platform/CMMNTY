@@ -144,15 +144,19 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     assert.equal(me.abonnement, "gratis");
   });
 
-  test("kruisproduct-Pro: een actief ACCRD-account geeft gratis Pro bij bevestigen", async () => {
-    // Nep-ACCRD: antwoordt "actief" voor femke@test.nl, "niet actief" voor ieder ander adres.
+  test("kruisproduct-Pro v2: een actief ACCRD-kvk-nummer geeft gratis Pro via de claim-route", async () => {
+    // Nep-ACCRD: kent alleen kvk-nummer "11112222" toe, en alleen aan "cmmnty".
     const http = await import("node:http");
     const nepAccrd = http.createServer((req, res) => {
-      const url = new URL(req.url!, "http://nep");
       const juisteSleutel = req.headers["x-luzex-intern-sleutel"] === "test-sleutel";
-      const actief = juisteSleutel && url.searchParams.get("email") === "femke@test.nl";
       res.setHeader("content-type", "application/json");
-      res.end(JSON.stringify({ actief }));
+      let body = "";
+      req.on("data", (d) => (body += d));
+      req.on("end", () => {
+        const { kvkNummer, product } = JSON.parse(body || "{}");
+        const toegekend = juisteSleutel && kvkNummer === "11112222" && product === "cmmnty";
+        res.end(JSON.stringify({ status: toegekend ? "toegekend" : "niet_actief" }));
+      });
     });
     await new Promise<void>((resolve) => nepAccrd.listen(0, resolve));
     const poort = (nepAccrd.address() as import("node:net").AddressInfo).port;
@@ -160,17 +164,34 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     process.env.LUZEX_INTERN_SLEUTEL = "test-sleutel";
 
     try {
-      await app.inject({
+      const afgewezen = await app.inject({
         method: "POST",
-        url: "/api/auth/registreren",
-        payload: { naam: "Femke", email: "femke@test.nl", wachtwoord: "geheim123", nieuwsbrief: false },
+        url: "/api/account/kruisproduct-claim",
+        headers: { cookie: lidCookie },
+        payload: { kvkNummer: "00000000" },
       });
-      const bevestig = await app.inject({ method: "POST", url: "/api/auth/bevestigen", payload: { token: laatsteLink("/bevestigen.html") } });
-      const me = (await app.inject({ method: "GET", url: "/api/auth/me", headers: { cookie: cookieUit(bevestig) } })).json();
+      assert.equal(afgewezen.statusCode, 400);
+
+      const toegekend = await app.inject({
+        method: "POST",
+        url: "/api/account/kruisproduct-claim",
+        headers: { cookie: lidCookie },
+        payload: { kvkNummer: "11112222" },
+      });
+      assert.equal(toegekend.json().status, "toegekend");
+
+      const me = (await app.inject({ method: "GET", url: "/api/auth/me", headers: { cookie: lidCookie } })).json();
       assert.equal(me.abonnement, "pro");
 
-      const rij = await prisma.gebruiker.findUniqueOrThrow({ where: { email: "femke@test.nl" } });
+      const rij = await prisma.gebruiker.findUniqueOrThrow({ where: { email: "sanne@test.nl" } });
       assert.equal(rij.abonnementBron, "accrd");
+      assert.equal(rij.kruisproductKvkNummer, "11112222");
+
+      // Terugzetten: de hierna volgende tests gaan ervan uit dat sanne weer gratis lid is.
+      await prisma.gebruiker.update({
+        where: { id: rij.id },
+        data: { abonnement: "gratis", abonnementBron: null, kruisproductKvkNummer: null },
+      });
     } finally {
       delete process.env.ACCRD_INTERN_URL;
       delete process.env.LUZEX_INTERN_SLEUTEL;
