@@ -160,6 +160,9 @@ export async function authRoutes(app: FastifyInstance) {
       naam: gebruiker.naam,
       rol: gebruiker.rol,
       abonnement: gebruiker.abonnement,
+      // Alleen zodat de account-pagina de upgrade-knop kan verbergen als Pro al via
+      // Kruisproduct-Pro komt (zie account.html) — verder puur informatief, zie schema.prisma.
+      abonnementBron: gebruiker.abonnementBron,
       nieuwsbrief: gebruiker.nieuwsbrief,
       lidSinds: gebruiker.aangemaaktOp,
     };
