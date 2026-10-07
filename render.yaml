@@ -49,6 +49,15 @@ services:
         sync: false
       - key: SMTP_AFZENDER
         sync: false
+      # Kruisproduct-Pro (hub/CLAUDE.md): een actief ACCRD- of SCRNN-account geeft gratis Pro
+      # op CMMNTY. LUZEX_INTERN_SLEUTEL moet letterlijk gelijk zijn aan die van ACCRD en SCRNN.
+      # Ontbreken de URL's, dan doet dit product gewoon niet mee — niets gaat stuk.
+      - key: LUZEX_INTERN_SLEUTEL
+        sync: false
+      - key: ACCRD_INTERN_URL
+        value: https://accrd.luzex.nl
+      - key: SCRNN_INTERN_URL
+        sync: false
 
   # De nieuwsbrief. Draait elke dag om 07:00 UTC (08:00/09:00 NL) en beslist zelf of het een
   # verzenddag is (maandag bij wekelijks, de 1e bij maandelijks) — Job stelt de frequentie in
@@ -89,6 +98,33 @@ services:
       - key: SMTP_WACHTWOORD
         sync: false
       - key: SMTP_AFZENDER
+        sync: false
+
+  # Kruisproduct-Pro opnieuw controleren: wie zijn ACCRD/SCRNN-account kwijtraakt verliest hier
+  # zijn gratis CMMNTY-Pro weer, en wie er pas later een koppeling bij kreeg, krijgt 'm hier
+  # alsnog. Draait dagelijks om 06:00 UTC, ruim vóór de nieuwsbrief. Raakt nooit een handmatige
+  # toekenning door de admin aan (zie kruisproductCron.ts).
+  - name: luzex-community-kruisproduct
+    type: cron
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    schedule: "0 6 * * *"
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    dockerCommand: node dist/kruisproductCron.js
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: luzex-community-db
+          property: connectionString
+      - key: NODE_ENV
+        value: production
+      - key: LUZEX_INTERN_SLEUTEL
+        sync: false
+      - key: ACCRD_INTERN_URL
+        value: https://accrd.luzex.nl
+      - key: SCRNN_INTERN_URL
         sync: false
 
 databases:

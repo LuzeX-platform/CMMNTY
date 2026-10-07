@@ -11,6 +11,7 @@ import {
 } from "../auth.js";
 import { verstuurBevestigingsmail, verstuurWachtwoordResetMail } from "../mailer.js";
 import { appUrl } from "../nieuwsbriefVersturen.js";
+import { controleerKruisproductPro } from "../luzexEntitlement.js";
 import { leesSessie, requireLid, wisSessieCookie, zetSessieCookie } from "../plugins/requireAuth.js";
 
 // Strenge limiet waar een aanvaller iets te winnen heeft (wachtwoorden raden, mailboxen
@@ -79,9 +80,18 @@ export async function authRoutes(app: FastifyInstance) {
     });
     if (!gebruiker) return reply.code(400).send({ errorCode: "TOKEN_ONGELDIG" });
 
+    // Kruisproduct-Pro: een actief ACCRD- of SCRNN-account met hetzelfde e-mailadres geeft
+    // gratis Pro, zie luzexEntitlement.ts. Pas hier gecontroleerd (niet al bij registreren):
+    // dit is het moment waarop het adres bevestigd is, dus ook het moment waarop we zeker
+    // weten dat het van deze persoon is.
+    const bron = await controleerKruisproductPro(gebruiker.email);
     await prisma.gebruiker.update({
       where: { id: gebruiker.id },
-      data: { emailBevestigdOp: new Date(), bevestigTokenHash: null },
+      data: {
+        emailBevestigdOp: new Date(),
+        bevestigTokenHash: null,
+        ...(bron ? { abonnement: "pro", abonnementBron: bron } : {}),
+      },
     });
     // Meteen ingelogd: wie net op de link klikte, hoeft niet nog eens zijn wachtwoord in te typen.
     zetSessieCookie(reply, maakSessieToken({ gebruikerId: gebruiker.id, email: gebruiker.email, rol: gebruiker.rol as "lid" | "admin" }));

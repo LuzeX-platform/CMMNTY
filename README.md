@@ -31,6 +31,12 @@ deployment, eigen geheimen.
 
 **Pro zonder betaling:** zolang Stripe er niet is, zet Job iemand in *Admin → Gebruikers* op Pro.
 
+**Kruisproduct-Pro:** wie bij het bevestigen van zijn e-mailadres een actief, betalend ACCRD- of
+SCRNN-account blijkt te hebben (zelfde adres), krijgt automatisch gratis Pro. Een dagelijkse
+cron controleert dit opnieuw en trekt het in als dat account niet meer actief is — een
+handmatige toekenning door Job raakt die cron nooit aan. Zie `src/luzexEntitlement.ts`,
+`src/kruisproductCron.ts` en hub/CLAUDE.md, "Kruisproduct-Pro".
+
 ## Pagina's
 
 | Pad | Wat |
@@ -116,6 +122,15 @@ Beide via SMTP; kiezen is alleen andere waarden invullen.
 
 Zet SPF/DKIM voor het afzenddomein goed (staat in het Mailgun/SendGrid-dashboard), anders
 belandt de nieuwsbrief in spam. Mailgun EU houdt de data in de EU (AVG).
+
+### Kruisproduct-Pro
+
+`LUZEX_INTERN_SLEUTEL` moet letterlijk gelijk zijn aan die in ACCRD, SCRNN en RSLNT —
+genereer 'm één keer (bijv. `openssl rand -hex 32`) en zet dezelfde waarde in alle vier.
+`ACCRD_INTERN_URL` en `SCRNN_INTERN_URL` zijn de publieke adressen van die twee producten
+(`https://accrd.luzex.nl`, en SCRNN's adres zodra dat een eigen domein heeft). Ontbreekt een
+van de drie waarden, dan doet CMMNTY gewoon niet mee aan de controle — niets gaat stuk, er
+wordt alleen nooit gratis Pro toegekend via die weg.
 
 ### Kosten (Render, indicatief)
 

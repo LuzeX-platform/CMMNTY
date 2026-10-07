@@ -212,7 +212,7 @@ async function gebruikersPagina() {
             : `<select data-id="${g.id}" aria-label="Abonnement van ${escapeHtml(g.naam)}" style="width:auto">
                  <option value="gratis" ${g.abonnement === "gratis" ? "selected" : ""}>Gratis</option>
                  <option value="pro" ${g.abonnement === "pro" ? "selected" : ""}>Pro</option>
-               </select>`
+               </select>${g.abonnementBron ? `<br><span class="subtitle">via ${g.abonnementBron === "accrd" ? "ACCRD" : "SCRNN"}</span>` : ""}`
         }</td>
       </tr>`,
     )

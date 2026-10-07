@@ -144,6 +144,40 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     assert.equal(me.abonnement, "gratis");
   });
 
+  test("kruisproduct-Pro: een actief ACCRD-account geeft gratis Pro bij bevestigen", async () => {
+    // Nep-ACCRD: antwoordt "actief" voor femke@test.nl, "niet actief" voor ieder ander adres.
+    const http = await import("node:http");
+    const nepAccrd = http.createServer((req, res) => {
+      const url = new URL(req.url!, "http://nep");
+      const juisteSleutel = req.headers["x-luzex-intern-sleutel"] === "test-sleutel";
+      const actief = juisteSleutel && url.searchParams.get("email") === "femke@test.nl";
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify({ actief }));
+    });
+    await new Promise<void>((resolve) => nepAccrd.listen(0, resolve));
+    const poort = (nepAccrd.address() as import("node:net").AddressInfo).port;
+    process.env.ACCRD_INTERN_URL = `http://127.0.0.1:${poort}`;
+    process.env.LUZEX_INTERN_SLEUTEL = "test-sleutel";
+
+    try {
+      await app.inject({
+        method: "POST",
+        url: "/api/auth/registreren",
+        payload: { naam: "Femke", email: "femke@test.nl", wachtwoord: "geheim123", nieuwsbrief: false },
+      });
+      const bevestig = await app.inject({ method: "POST", url: "/api/auth/bevestigen", payload: { token: laatsteLink("/bevestigen.html") } });
+      const me = (await app.inject({ method: "GET", url: "/api/auth/me", headers: { cookie: cookieUit(bevestig) } })).json();
+      assert.equal(me.abonnement, "pro");
+
+      const rij = await prisma.gebruiker.findUniqueOrThrow({ where: { email: "femke@test.nl" } });
+      assert.equal(rij.abonnementBron, "accrd");
+    } finally {
+      delete process.env.ACCRD_INTERN_URL;
+      delete process.env.LUZEX_INTERN_SLEUTEL;
+      await new Promise((resolve) => nepAccrd.close(resolve));
+    }
+  });
+
   test("gratis lid ziet Pro nog steeds niet; na upgrade door admin wel", async () => {
     const voor = (await app.inject({ method: "GET", url: "/api/artikelen/pro-verdieping", headers: { cookie: lidCookie } })).json();
     assert.equal(voor.vergrendeld, "pro_nodig");
