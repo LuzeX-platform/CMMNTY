@@ -19,11 +19,15 @@ model Gebruiker {
   rol                 String    @default("lid")
   // "gratis" of "pro". Zonder betaling (MVP) zet de admin dit handmatig; Stripe komt later.
   abonnement          String    @default("gratis")
-  // "accrd" | "scrnn" | null. Alleen gezet als Pro kwam van een actief ACCRD/SCRNN-account
-  // (zie luzexEntitlement.ts + kruisproductCron.ts); null bij een handmatige toekenning door
-  // de admin. Zo kan de cron een vervallen kruisproduct-Pro intrekken zonder ooit een
-  // handmatige toekenning aan te raken.
+  // "accrd" | null. Alleen informatief gezet als Pro kwam van een actief ACCRD-account (zie
+  // luzexKruisproduct.ts + kruisproductCron.ts); null bij een handmatige toekenning door de
+  // admin. De cron gebruikt dit NIET als filter — zie kruisproductKvkNummer hieronder.
   abonnementBron      String?
+  // Het kvk-nummer waarmee deze Pro-status geclaimd is bij ACCRD (Kruisproduct-Pro v2). Null
+  // bij een handmatige toekenning of bij wie nooit geclaimd heeft. Dit veld is het enige
+  // waarop de cron filtert welke rijen hij mag aanraken: zo blijft een handmatige toekenning
+  // altijd buiten bereik, ook als iemand ooit per ongeluk abonnementBron zou zetten.
+  kruisproductKvkNummer String?  @unique @map("kruisproduct_kvk_nummer")
   emailBevestigdOp    DateTime?
   // Alleen de sha256-hash van het token staat hier; het ruwe token staat alleen in de mail.
   bevestigTokenHash   String?   @unique

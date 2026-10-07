@@ -1,28 +1,31 @@
 import "dotenv/config";
 import { prisma } from "./db.js";
-import { controleerKruisproductPro } from "./luzexEntitlement.js";
+import { controleerKruisproductStatus } from "./luzexKruisproduct.js";
 
 // Draait dagelijks als losse Render-cronjob (zie render.yaml), zelfde opzet als
-// nieuwsbriefCron.ts. Alleen leden met abonnementBron gezet komen hier aan bod — een
-// handmatige toekenning door de admin (abonnementBron null) raakt dit script nooit aan. Wie
-// zijn ACCRD- of SCRNN-account inmiddels kwijt is, verliest hier zijn gratis CMMNTY-Pro weer;
-// wie een nieuwe koppeling heeft gekregen sinds de vorige run, krijgt 'm hier alsnog.
+// nieuwsbriefCron.ts. Filter is bewust `kruisproductKvkNummer` en NIET `abonnementBron`: alleen
+// een rij met een opgeslagen kvk-nummer is ooit via de nieuwe claim-route tot stand gekomen, en
+// dus de enige die deze cron mag intrekken. Een handmatige toekenning door de admin (die veld
+// altijd op null laat, zie admin.ts) raakt dit script nooit aan, hoe vaak het ook draait.
 async function main() {
   const leden = await prisma.gebruiker.findMany({
-    where: { abonnementBron: { not: null } },
-    select: { id: true, email: true, abonnement: true, abonnementBron: true },
+    where: { kruisproductKvkNummer: { not: null } },
+    select: { id: true, abonnement: true, kruisproductKvkNummer: true },
   });
   let ingetrokken = 0;
   let bevestigd = 0;
   for (const lid of leden) {
-    const bron = await controleerKruisproductPro(lid.email);
-    if (bron) {
-      if (lid.abonnement !== "pro" || lid.abonnementBron !== bron) {
-        await prisma.gebruiker.update({ where: { id: lid.id }, data: { abonnement: "pro", abonnementBron: bron } });
+    const actief = await controleerKruisproductStatus(lid.kruisproductKvkNummer!);
+    if (actief) {
+      if (lid.abonnement !== "pro") {
+        await prisma.gebruiker.update({ where: { id: lid.id }, data: { abonnement: "pro", abonnementBron: "accrd" } });
       }
       bevestigd++;
     } else {
-      await prisma.gebruiker.update({ where: { id: lid.id }, data: { abonnement: "gratis", abonnementBron: null } });
+      await prisma.gebruiker.update({
+        where: { id: lid.id },
+        data: { abonnement: "gratis", abonnementBron: null, kruisproductKvkNummer: null },
+      });
       ingetrokken++;
     }
   }

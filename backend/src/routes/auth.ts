@@ -11,7 +11,7 @@ import {
 } from "../auth.js";
 import { verstuurBevestigingsmail, verstuurWachtwoordResetMail } from "../mailer.js";
 import { appUrl } from "../nieuwsbriefVersturen.js";
-import { controleerKruisproductPro } from "../luzexEntitlement.js";
+import { claimKruisproductPro } from "../luzexKruisproduct.js";
 import { leesSessie, requireLid, wisSessieCookie, zetSessieCookie } from "../plugins/requireAuth.js";
 
 // Strenge limiet waar een aanvaller iets te winnen heeft (wachtwoorden raden, mailboxen
@@ -80,18 +80,12 @@ export async function authRoutes(app: FastifyInstance) {
     });
     if (!gebruiker) return reply.code(400).send({ errorCode: "TOKEN_ONGELDIG" });
 
-    // Kruisproduct-Pro: een actief ACCRD- of SCRNN-account met hetzelfde e-mailadres geeft
-    // gratis Pro, zie luzexEntitlement.ts. Pas hier gecontroleerd (niet al bij registreren):
-    // dit is het moment waarop het adres bevestigd is, dus ook het moment waarop we zeker
-    // weten dat het van deze persoon is.
-    const bron = await controleerKruisproductPro(gebruiker.email);
+    // Kruisproduct-Pro v2 is hier bewust NIET meer automatisch: dat kende vroeger gratis Pro toe
+    // op basis van een gelijk e-mailadres bij ACCRD/SCRNN. Nu vult de klant zelf een kvk-nummer
+    // in via POST /api/account/kruisproduct-claim — zie luzexKruisproduct.ts.
     await prisma.gebruiker.update({
       where: { id: gebruiker.id },
-      data: {
-        emailBevestigdOp: new Date(),
-        bevestigTokenHash: null,
-        ...(bron ? { abonnement: "pro", abonnementBron: bron } : {}),
-      },
+      data: { emailBevestigdOp: new Date(), bevestigTokenHash: null },
     });
     // Meteen ingelogd: wie net op de link klikte, hoeft niet nog eens zijn wachtwoord in te typen.
     zetSessieCookie(reply, maakSessieToken({ gebruikerId: gebruiker.id, email: gebruiker.email, rol: gebruiker.rol as "lid" | "admin" }));
@@ -264,6 +258,43 @@ export async function authRoutes(app: FastifyInstance) {
     await prisma.gebruiker.delete({ where: { id: gebruiker.id } });
     wisSessieCookie(reply);
     return { ok: true };
+  });
+
+  // Kruisproduct-Pro v2: de klant vult zelf zijn kvk-nummer in om gratis Pro te claimen op basis
+  // van een actief, betalend ACCRD-account. Zie luzexKruisproduct.ts voor het contract met ACCRD.
+  // Zonder `wisselen` wijst ACCRD een al bestaande keuze voor RSLNT af (409 met de huidige
+  // keuze) in plaats van hem stilletjes te overschrijven — de frontend laat de klant dat dan
+  // expliciet bevestigen door opnieuw te posten met `wisselen: true`.
+  app.post("/api/account/kruisproduct-claim", { preHandler: requireLid }, async (request, reply) => {
+    const parsed = z
+      .object({ kvkNummer: z.string().trim().min(1), wisselen: z.boolean().optional() })
+      .safeParse(request.body);
+    if (!parsed.success) return ongeldig(reply, parsed.error);
+    const { kvkNummer, wisselen } = parsed.data;
+
+    const resultaat = await claimKruisproductPro(kvkNummer, wisselen);
+    if (resultaat.status === "toegekend") {
+      await prisma.gebruiker.update({
+        where: { id: request.gebruiker!.gebruikerId },
+        data: { abonnement: "pro", abonnementBron: "accrd", kruisproductKvkNummer: kvkNummer },
+      });
+      return { status: "toegekend" };
+    }
+    if (resultaat.status === "al_gekozen") {
+      // Vanuit CMMNTY's perspectief is de "andere keuze" altijd RSLNT — dit mechanisme kent
+      // maar twee ontvangers, en ACCRD geeft hier nooit "cmmnty" terug (dat zou immers al
+      // "toegekend" zijn geweest).
+      return reply.code(409).send({ errorCode: "AL_GEKOZEN", huidigeKeuze: "rslnt" });
+    }
+    if (resultaat.status === "niet_actief") {
+      return reply.code(400).send({
+        errorCode: "NIET_ACTIEF",
+        bericht: "Dit KvK-nummer is niet gekoppeld aan een actief, betalend ACCRD-account.",
+      });
+    }
+    // "onbereikbaar": ACCRD is niet te bereiken of niet geconfigureerd — geen foutcode die op
+    // het kvk-nummer zelf wijst, want dat is hier niet het probleem.
+    return reply.code(503).send({ errorCode: "NIET_BESCHIKBAAR", bericht: "Even niet te controleren. Probeer het later opnieuw." });
   });
 
   // Afmelden voor de nieuwsbrief via de link in de mail — zonder inloggen.

@@ -118,6 +118,41 @@ function koppelFormulier(form, foutEl, succesEl, handler) {
       return "Je wachtwoord is gewijzigd.";
     });
 
+    // Kruisproduct-Pro: een actief ACCRD-account geeft gratis Pro als de klant zelf zijn
+    // kvk-nummer invult. "al_gekozen" (409) betekent dat dit kvk-nummer al voor RSLNT gekozen
+    // is — pas na een expliciete bevestiging sturen we opnieuw met `wisselen: true`, nooit
+    // automatisch, want wisselen is een bewuste actie van de klant.
+    document.getElementById("kruisproduct-status").textContent =
+      gebruiker.abonnement === "pro"
+        ? "Je hebt Pro. Via ACCRD geclaimd? Vul hieronder opnieuw je kvk-nummer in om te bevestigen of te wisselen."
+        : "Heb je een actief, betalend ACCRD-account? Vul je kvk-nummer in voor gratis Pro op CMMNTY.";
+
+    const claimKruisproduct = (kvkNummer, wisselen) =>
+      api("/api/account/kruisproduct-claim", { methode: "POST", body: { kvkNummer, wisselen } });
+
+    koppelFormulier(
+      document.getElementById("kruisproduct-form"),
+      document.getElementById("kruisproduct-fout"),
+      document.getElementById("kruisproduct-succes"),
+      async () => {
+        const kvkNummer = document.getElementById("kvk-nummer").value.trim();
+        try {
+          await claimKruisproduct(kvkNummer);
+        } catch (fout) {
+          if (fout.status === 409) {
+            const wisselenOk = confirm(
+              "Dit kvk-nummer heeft al gratis Pro op RSLNT staan. Wil je wisselen naar CMMNTY? Dan verdwijnt Pro op RSLNT.",
+            );
+            if (!wisselenOk) return;
+            await claimKruisproduct(kvkNummer, true);
+          } else {
+            throw fout;
+          }
+        }
+        return "Pro actief via ACCRD.";
+      },
+    );
+
     document.getElementById("uitloggen").addEventListener("click", uitloggen);
 
     koppelFormulier(document.getElementById("verwijder-form"), document.getElementById("verwijder-fout"), null, async () => {
