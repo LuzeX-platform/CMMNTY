@@ -29,6 +29,36 @@ export const GENEGEERDE_VELDEN = ["status", "tags", "reeks", "volgorde", "gecont
 
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/;
 
+/** Zelfde grenzen als het uploadveld in het adminpanel (zie routes/admin.ts). */
+export const COVER_MAX_BYTES = 2 * 1024 * 1024;
+export const COVER_MIME: Record<string, string> = {
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".webp": "image/webp",
+};
+
+/**
+ * Optionele coverafbeelding uit de frontmatter (`cover: afbeeldingen/naam.jpg`), als pad
+ * relatief aan het artikelbestand. Geeft null als er geen cover is opgegeven. Het bestand zelf
+ * wordt hier niet gelezen (geen bestandssysteem in deze module); dat doet importeerArtikelen.ts.
+ */
+export function coverVan(tekst: string, bestand: string): string | null {
+  const match = FRONTMATTER.exec(tekst);
+  if (!match) return null;
+  const data = (parseYaml(match[1]) ?? {}) as Record<string, unknown>;
+  if (data.cover === undefined || data.cover === null || data.cover === "") return null;
+  if (typeof data.cover !== "string") throw new Error(`${bestand}: "cover" moet een bestandsnaam zijn`);
+  const pad = data.cover.trim();
+  // Alleen naar beneden vanaf het artikel: geen absolute paden en geen "..".
+  if (pad.startsWith("/") || pad.split(/[\\/]/).includes("..")) {
+    throw new Error(`${bestand}: cover "${pad}" moet een pad naast of onder het artikelbestand zijn`);
+  }
+  const extensie = pad.slice(pad.lastIndexOf(".")).toLowerCase();
+  if (!COVER_MIME[extensie]) throw new Error(`${bestand}: cover moet een .jpg, .png of .webp zijn`);
+  return pad;
+}
+
 function tekstVeld(data: Record<string, unknown>, sleutel: string, bestand: string): string {
   const waarde = data[sleutel];
   if (typeof waarde !== "string" || !waarde.trim()) {

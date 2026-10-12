@@ -58,7 +58,8 @@ npm run artikelen:importeren            # lokaal (in backend/)
 node dist/importeerArtikelen.js         # op Render, via de Shell
 ```
 
-- Nieuwe slug → aangemaakt als **concept**, zonder afbeelding.
+- Nieuwe slug → aangemaakt als **concept**. Met `cover: afbeeldingen/naam.jpg` in de frontmatter
+  (pad naast het artikel, JPG/PNG/WebP, max. 2 MB) krijgt het die afbeelding meteen mee.
 - Bestaande slug → overgeslagen (aanpassingen in het adminpanel blijven staan). Alleen met
   `--force` wordt overschreven; afbeelding en publicatiestatus blijven ook dan ongemoeid.
 - Er wordt nooit iets gepubliceerd en nooit een nieuwsbrief verstuurd.

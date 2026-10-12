@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { bronnenSectie, leesArtikelBestand } from "../src/artikelImport.js";
+import { bronnenSectie, COVER_MAX_BYTES, coverVan, leesArtikelBestand } from "../src/artikelImport.js";
 import { CATEGORIEEN } from "../src/constanten.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -44,6 +44,15 @@ test("bronnenSectie: leeg zonder bronnen", () => {
   assert.equal(bronnenSectie([]), "");
 });
 
+test("coverVan: optioneel pad naast het artikel, alleen jpg/png/webp", () => {
+  assert.equal(coverVan(voorbeeld, "x.md"), null);
+  const met = (cover: string) => voorbeeld.replace("categorie:", `cover: ${cover}\ncategorie:`);
+  assert.equal(coverVan(met("afbeeldingen/een.jpg"), "x.md"), "afbeeldingen/een.jpg");
+  assert.throws(() => coverVan(met("../geheim.jpg"), "x.md"), /naast of onder/);
+  assert.throws(() => coverVan(met("/etc/een.jpg"), "x.md"), /naast of onder/);
+  assert.throws(() => coverVan(met("plaatje.gif"), "x.md"), /jpg, .png of .webp/);
+});
+
 test("alle artikelbestanden in content/ zijn geldig en hebben een bekende categorie", () => {
   const bestanden = fs.readdirSync(CONTENT, { recursive: true }).map(String).filter((f) => f.endsWith(".md"));
   assert.ok(bestanden.length >= 6);
@@ -54,5 +63,12 @@ test("alle artikelbestanden in content/ zijn geldig en hebben een bekende catego
     slugs.add(a.slug);
     assert.ok(a.categorie && (CATEGORIEEN as readonly string[]).includes(a.categorie), `${bestand}: onbekende categorie ${a.categorie}`);
     assert.match(a.inhoud, /## Bronnen\n\n- \[/);
+    const tekst = fs.readFileSync(path.join(CONTENT, bestand), "utf8");
+    const cover = coverVan(tekst, bestand);
+    if (cover) {
+      const pad = path.join(CONTENT, path.dirname(bestand), cover);
+      assert.ok(fs.existsSync(pad), `${bestand}: cover ${cover} bestaat niet`);
+      assert.ok(fs.statSync(pad).size <= COVER_MAX_BYTES, `${bestand}: cover groter dan 2 MB`);
+    }
   }
 });
