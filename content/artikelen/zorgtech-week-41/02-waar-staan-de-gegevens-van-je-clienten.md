@@ -5,6 +5,7 @@ samenvatting: "Amerikaanse bedrijven kunnen gedwongen worden zorgdata af te geve
 toegang: gratis
 status: concept
 categorie: Privacy & AVG
+cover: afbeeldingen/02-waar-staan-de-gegevens.jpg
 tags: [privacy, AVG, cloud, software]
 reeks: Zorgtech deze week
 volgorde: 2

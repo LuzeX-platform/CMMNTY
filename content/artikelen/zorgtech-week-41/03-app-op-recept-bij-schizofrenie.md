@@ -5,6 +5,7 @@ samenvatting: "In de VS mag een app nu worden voorgeschreven bij negatieve sympt
 toegang: gratis
 status: concept
 categorie: Behandelen
+cover: afbeeldingen/03-app-op-recept.jpg
 tags: [apps, schizofrenie, autisme, digitale behandeling]
 reeks: Zorgtech deze week
 volgorde: 3

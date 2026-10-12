@@ -3,7 +3,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { prisma } from "./db.js";
-import { leesArtikelBestand, type GeimporteerdArtikel } from "./artikelImport.js";
+import {
+  COVER_MAX_BYTES,
+  COVER_MIME,
+  coverVan,
+  leesArtikelBestand,
+  type GeimporteerdArtikel,
+} from "./artikelImport.js";
 
 // Zet de Markdown-bestanden uit content/artikelen/ in de database, als CONCEPT.
 //
@@ -11,7 +17,9 @@ import { leesArtikelBestand, type GeimporteerdArtikel } from "./artikelImport.js
 //   Render:  node dist/importeerArtikelen.js            (in de Render Shell)
 //
 // Afspraken:
-// - Bestaat de slug nog niet: het artikel wordt aangemaakt, als concept, zonder afbeelding.
+// - Bestaat de slug nog niet: het artikel wordt aangemaakt, als concept. Staat er in de
+//   frontmatter `cover: afbeeldingen/naam.jpg`, dan krijgt het die afbeelding meteen mee;
+//   anders geen afbeelding (toe te voegen in het adminpanel).
 // - Bestaat de slug al: overgeslagen. Wat Job in het adminpanel heeft aangepast, blijft staan.
 //   Twee keer draaien levert dus nooit dubbele artikelen op.
 // - Met --force worden bestaande artikelen wél overschreven (titel, samenvatting, tekst,
@@ -47,10 +55,22 @@ async function main() {
   if (bestanden.length === 0) throw new Error(`Geen .md-bestanden gevonden in ${map}`);
 
   // Eerst alles lezen en controleren: één fout bestand mag niet halverwege de import opduiken.
-  const artikelen: { bestand: string; artikel: GeimporteerdArtikel }[] = bestanden.map((pad) => ({
-    bestand: path.relative(map, pad),
-    artikel: leesArtikelBestand(fs.readFileSync(pad, "utf8"), path.relative(map, pad)),
-  }));
+  // Ook de coverafbeeldingen worden vooraf gecontroleerd en ingelezen.
+  type Cover = { coverAfbeelding: Buffer; coverMime: string };
+  const artikelen: { bestand: string; artikel: GeimporteerdArtikel; cover: Cover | null }[] = bestanden.map((pad) => {
+    const bestand = path.relative(map, pad);
+    const tekst = fs.readFileSync(pad, "utf8");
+    const coverPad = coverVan(tekst, bestand);
+    let cover: Cover | null = null;
+    if (coverPad) {
+      const volledig = path.join(path.dirname(pad), coverPad);
+      if (!fs.existsSync(volledig)) throw new Error(`${bestand}: coverafbeelding ${coverPad} niet gevonden`);
+      const bytes = fs.readFileSync(volledig);
+      if (bytes.length > COVER_MAX_BYTES) throw new Error(`${bestand}: coverafbeelding ${coverPad} is groter dan 2 MB`);
+      cover = { coverAfbeelding: bytes, coverMime: COVER_MIME[path.extname(volledig).toLowerCase()] };
+    }
+    return { bestand, artikel: leesArtikelBestand(tekst, bestand), cover };
+  });
   const slugs = artikelen.map((a) => a.artikel.slug);
   const dubbel = slugs.find((s, i) => slugs.indexOf(s) !== i);
   if (dubbel) throw new Error(`Slug "${dubbel}" komt in meer dan één bestand voor`);
@@ -58,13 +78,13 @@ async function main() {
   console.log(`${artikelen.length} artikel(en) gevonden in ${map}${force ? " (met --force)" : ""}\n`);
   const telling = { aangemaakt: 0, overgeslagen: 0, overschreven: 0 };
 
-  for (const { bestand, artikel } of artikelen) {
+  for (const { bestand, artikel, cover } of artikelen) {
     const bestaand = await prisma.artikel.findUnique({ where: { slug: artikel.slug }, select: { id: true } });
     if (!bestaand) {
-      // Geen gepubliceerdOp en geen afbeelding: een concept, aan te vullen in het adminpanel.
-      await prisma.artikel.create({ data: { ...artikel, gepubliceerdOp: null } });
+      // Geen gepubliceerdOp: een concept, te publiceren in het adminpanel.
+      await prisma.artikel.create({ data: { ...artikel, ...cover, gepubliceerdOp: null } });
       telling.aangemaakt++;
-      console.log(`  + aangemaakt (concept)  ${artikel.slug}`);
+      console.log(`  + aangemaakt (concept${cover ? ", met afbeelding" : ""})  ${artikel.slug}`);
     } else if (force) {
       await prisma.artikel.update({ where: { id: bestaand.id }, data: artikel });
       telling.overschreven++;

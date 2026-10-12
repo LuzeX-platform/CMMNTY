@@ -5,6 +5,7 @@ samenvatting: "Mental Care Group geeft 1.100 behandelaren één portaal met alle
 toegang: gratis
 status: concept
 categorie: Praktijkvoering
+cover: afbeeldingen/01-een-scherm-in-plaats-van-vijf.jpg
 tags: [administratie, software, ggz]
 reeks: Zorgtech deze week
 volgorde: 1
