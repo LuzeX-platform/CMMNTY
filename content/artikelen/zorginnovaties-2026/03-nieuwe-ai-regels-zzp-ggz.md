@@ -5,6 +5,7 @@ samenvatting: "De Europese AI-wet is in juli 2026 aangepast. Dit betekent het vo
 toegang: gratis
 status: concept
 categorie: Regels en wetgeving
+cover: afbeeldingen/03-nieuwe-ai-regels.jpg
 tags: [AI, wetgeving, AI-verordening]
 reeks: Zorginnovaties 2026
 volgorde: 3

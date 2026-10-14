@@ -5,6 +5,7 @@ samenvatting: "Veel cliënten zoeken steun bij een AI-chatbot. Zo maak je dat be
 toegang: gratis
 status: concept
 categorie: AI in de praktijk
+cover: afbeeldingen/02-client-praat-met-chatbot.jpg
 tags: [AI, chatbots, behandelrelatie]
 reeks: Zorginnovaties 2026
 volgorde: 2

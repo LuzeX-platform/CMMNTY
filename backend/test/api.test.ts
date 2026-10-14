@@ -4,6 +4,10 @@
 //   TEST_DATABASE_URL=postgresql://…/community_test npm test
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 const TEST_DB = process.env.TEST_DATABASE_URL;
 
@@ -309,5 +313,50 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     assert.equal(res.statusCode, 200);
     const directory = (await app.inject({ method: "GET", url: "/api/directory" })).json();
     assert.equal(directory.profielen.length, 0);
+  });
+
+  // Het importscript echt draaien (als los proces, zoals in de Render Shell) tegen de testdatabase.
+  test("importscript --afbeeldingen-aanvullen: alleen een afbeelding waar er nog geen is, verder niets", async () => {
+    const map = fs.mkdtempSync(path.join(os.tmpdir(), "cmmnty-import-"));
+    const md = (slug: string) =>
+      `---\ntitel: "Tekst uit het bestand"\nslug: ${slug}\nsamenvatting: "Uit bestand"\ncategorie: Behandelen\ncover: plaatje.png\n---\n\nNieuwe tekst uit het bestand.\n`;
+    fs.writeFileSync(path.join(map, "zonder.md"), md("import-zonder-afbeelding"));
+    fs.writeFileSync(path.join(map, "met.md"), md("import-met-afbeelding"));
+    fs.writeFileSync(path.join(map, "plaatje.png"), Buffer.from("png-uit-bestand"));
+
+    const gepubliceerd = new Date("2026-10-01T08:00:00Z");
+    const basis = { samenvatting: "Door Job aangepast", inhoud: "Door Job aangepaste tekst", toegang: "gratis", gepubliceerdOp: gepubliceerd };
+    await prisma.artikel.create({ data: { ...basis, titel: "Zonder", slug: "import-zonder-afbeelding" } });
+    await prisma.artikel.create({
+      data: { ...basis, titel: "Met", slug: "import-met-afbeelding", coverAfbeelding: Buffer.from("handmatig"), coverMime: "image/jpeg" },
+    });
+
+    const draai = (...extra: string[]) =>
+      execFileSync(process.execPath, ["--import", "tsx", "src/importeerArtikelen.ts", map, ...extra], {
+        env: { ...process.env, DATABASE_URL: TEST_DB },
+        encoding: "utf8",
+      });
+    const lees = (slug: string) => prisma.artikel.findUniqueOrThrow({ where: { slug } });
+
+    // Zonder de optie: niets aangeraakt.
+    draai();
+    assert.equal((await lees("import-zonder-afbeelding")).coverMime, null);
+
+    const uitvoer = draai("--afbeeldingen-aanvullen");
+    assert.match(uitvoer, /1 afbeelding\(en\) toegevoegd/);
+    const zonder = await lees("import-zonder-afbeelding");
+    assert.equal(zonder.coverMime, "image/png");
+    assert.equal(Buffer.from(zonder.coverAfbeelding!).toString(), "png-uit-bestand");
+    // Tekst, titel en publicatiedatum blijven zoals Job ze had.
+    assert.equal(zonder.inhoud, "Door Job aangepaste tekst");
+    assert.equal(zonder.titel, "Zonder");
+    assert.equal(zonder.gepubliceerdOp?.toISOString(), gepubliceerd.toISOString());
+    // Een afbeelding die er al was, blijft staan.
+    const met = await lees("import-met-afbeelding");
+    assert.equal(Buffer.from(met.coverAfbeelding!).toString(), "handmatig");
+
+    // Nog een keer: niets meer te doen.
+    assert.match(draai("--afbeeldingen-aanvullen"), /0 afbeelding\(en\) toegevoegd/);
+    fs.rmSync(map, { recursive: true, force: true });
   });
 });

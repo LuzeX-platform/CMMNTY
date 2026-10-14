@@ -5,6 +5,7 @@ samenvatting: "AI kan je sessieverslagen voorschrijven en je uren besparen. Maar
 toegang: gratis
 status: concept
 categorie: AI in de praktijk
+cover: afbeeldingen/01-ai-die-meeschrijft.jpg
 tags: [AI, verslaglegging, privacy]
 reeks: Zorginnovaties 2026
 volgorde: 1

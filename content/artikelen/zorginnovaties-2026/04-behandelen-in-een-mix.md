@@ -5,6 +5,7 @@ samenvatting: "Online en fysiek combineren, of behandelen in een groep: zo begin
 toegang: gratis
 status: concept
 categorie: Behandelen
+cover: afbeeldingen/04-behandelen-in-een-mix.jpg
 tags: [hybride zorg, groepsbehandeling, AZWA]
 reeks: Zorginnovaties 2026
 volgorde: 4

@@ -5,6 +5,7 @@ samenvatting: "Met een VR-bril oefent je cliënt met spannende situaties, gewoon
 toegang: gratis
 status: concept
 categorie: Behandelen
+cover: afbeeldingen/06-vr-bril.jpg
 tags: [VR, exposure, technologie]
 reeks: Zorginnovaties 2026
 volgorde: 6
