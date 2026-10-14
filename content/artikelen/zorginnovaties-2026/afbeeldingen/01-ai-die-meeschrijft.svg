@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<defs>
+  <filter id="licht" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="95"/></filter>
+  <linearGradient id="glas" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff" stop-opacity="0.66"/>
+    <stop offset="0.46" stop-color="#fff" stop-opacity="0.32"/>
+    <stop offset="1" stop-color="#fff" stop-opacity="0.48"/>
+  </linearGradient>
+  <linearGradient id="glasdun" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff" stop-opacity="0.55"/>
+    <stop offset="1" stop-color="#fff" stop-opacity="0.28"/>
+  </linearGradient>
+  <filter id="schaduw" x="-40%" y="-40%" width="180%" height="190%"><feDropShadow dx="0" dy="26" stdDeviation="26" flood-color="#1d1d1f" flood-opacity="0.20"/></filter>
+  <filter id="schaduwklein" x="-40%" y="-40%" width="180%" height="190%"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#1d1d1f" flood-opacity="0.14"/></filter>
+  <marker id="pijl" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#3b2e24" fill-opacity="0.45"/></marker>
+</defs>
+<rect width="1600" height="900" fill="#cfc6bc"/>
+<g filter="url(#licht)"><circle cx="1350" cy="110" r="340" fill="#c98a63" opacity="0.55"/><circle cx="170" cy="770" r="300" fill="#8d9472" opacity="0.42"/><circle cx="250" cy="150" r="250" fill="#e8dccc" opacity="0.7"/><circle cx="1460" cy="870" r="330" fill="#3b2e24" opacity="0.26"/></g>
+<path d="M520 450 C 560 450, 580 450, 612 450" fill="none" stroke="#3b2e24" stroke-opacity="0.4" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round" marker-end="url(#pijl)"/>
+<rect x="200" y="330" width="310" height="240" rx="30" fill="url(#glas)" stroke="#fff" stroke-opacity="0.65" stroke-width="2" filter="url(#schaduw)" /><path d="M230 331.5 H480" stroke="#fff" stroke-opacity="0.95" stroke-width="2" stroke-linecap="round"/>
+<rect x="232" y="435.0" width="12" height="30" rx="6" fill="#c98a63" fill-opacity="0.8"/>
+<rect x="254" y="419.0" width="12" height="62" rx="6" fill="#8d9472" fill-opacity="0.8"/>
+<rect x="276" y="402.0" width="12" height="96" rx="6" fill="#8d9472" fill-opacity="0.8"/>
+<rect x="298" y="423.0" width="12" height="54" rx="6" fill="#c98a63" fill-opacity="0.8"/>
+<rect x="320" y="390.0" width="12" height="120" rx="6" fill="#8d9472" fill-opacity="0.8"/>
+<rect x="342" y="410.0" width="12" height="80" rx="6" fill="#8d9472" fill-opacity="0.8"/>
+<rect x="364" y="428.0" width="12" height="44" rx="6" fill="#c98a63" fill-opacity="0.8"/>
+<rect x="386" y="399.0" width="12" height="102" rx="6" fill="#8d9472" fill-opacity="0.8"/>
+<rect x="408" y="417.0" width="12" height="66" rx="6" fill="#8d9472" fill-opacity="0.8"/>
+<rect x="430" y="432.0" width="12" height="36" rx="6" fill="#c98a63" fill-opacity="0.8"/>
+<rect x="452" y="408.0" width="12" height="84" rx="6" fill="#8d9472" fill-opacity="0.8"/>
+<rect x="474" y="425.0" width="12" height="50" rx="6" fill="#8d9472" fill-opacity="0.8"/>
+<rect x="630" y="170" width="420" height="560" rx="34" fill="url(#glas)" stroke="#fff" stroke-opacity="0.65" stroke-width="2" filter="url(#schaduw)" /><path d="M664 171.5 H1016" stroke="#fff" stroke-opacity="0.95" stroke-width="2" stroke-linecap="round"/>
+<rect x="672" y="214" width="190" height="18" rx="9.0" fill="#1d1d1f" fill-opacity="0.9"/><rect x="930" y="210" width="80" height="26" rx="13" fill="#c98a63" fill-opacity="0.2"/><rect x="946" y="219" width="48" height="8" rx="4.0" fill="#c98a63" fill-opacity="0.5"/>
+<rect x="672" y="284" width="330" height="12" rx="6.0" fill="#1d1d1f" fill-opacity="0.15"/>
+<rect x="666" y="326" width="312" height="28" rx="8" fill="#c98a63" fill-opacity="0.16"/>
+<path d="M672 340 H807.0" stroke="#c98a63" stroke-width="3" stroke-linecap="round"/>
+<rect x="672" y="334" width="300" height="12" rx="6.0" fill="#1d1d1f" fill-opacity="0.15"/>
+<rect x="672" y="384" width="340" height="12" rx="6.0" fill="#1d1d1f" fill-opacity="0.15"/>
+<rect x="672" y="434" width="260" height="12" rx="6.0" fill="#1d1d1f" fill-opacity="0.15"/>
+<rect x="666" y="476" width="332" height="28" rx="8" fill="#c98a63" fill-opacity="0.16"/>
+<path d="M672 490 H816.0" stroke="#c98a63" stroke-width="3" stroke-linecap="round"/>
+<rect x="672" y="484" width="320" height="12" rx="6.0" fill="#1d1d1f" fill-opacity="0.15"/>
+<rect x="672" y="534" width="290" height="12" rx="6.0" fill="#1d1d1f" fill-opacity="0.15"/>
+<rect x="672" y="584" width="210" height="12" rx="6.0" fill="#1d1d1f" fill-opacity="0.15"/>
+<g transform="rotate(38 1050 560)" filter="url(#schaduwklein)"><rect x="1000" y="540" width="190" height="34" rx="17" fill="#1d1d1f"/><path d="M1000 540 L960 557 L1000 574 Z" fill="#e8dccc"/><path d="M962 557 L974 552 L974 562 Z" fill="#1d1d1f"/><rect x="1150" y="540" width="40" height="34" rx="12" fill="#c98a63"/></g>
+<circle cx="1230" cy="300" r="62" fill="#248a3d" fill-opacity="0.16" filter="url(#schaduwklein)"/><path d="M1210.8 300 l14.4 14.4 l25.6 -28.8" fill="none" stroke="#248a3d" stroke-width="10.240000000000002" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

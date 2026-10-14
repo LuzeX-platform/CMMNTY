@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<defs>
+  <filter id="licht" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="95"/></filter>
+  <linearGradient id="glas" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff" stop-opacity="0.66"/>
+    <stop offset="0.46" stop-color="#fff" stop-opacity="0.32"/>
+    <stop offset="1" stop-color="#fff" stop-opacity="0.48"/>
+  </linearGradient>
+  <linearGradient id="glasdun" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff" stop-opacity="0.55"/>
+    <stop offset="1" stop-color="#fff" stop-opacity="0.28"/>
+  </linearGradient>
+  <filter id="schaduw" x="-40%" y="-40%" width="180%" height="190%"><feDropShadow dx="0" dy="26" stdDeviation="26" flood-color="#1d1d1f" flood-opacity="0.20"/></filter>
+  <filter id="schaduwklein" x="-40%" y="-40%" width="180%" height="190%"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#1d1d1f" flood-opacity="0.14"/></filter>
+  <marker id="pijl" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#3b2e24" fill-opacity="0.45"/></marker>
+</defs>
+<rect width="1600" height="900" fill="#cfc6bc"/>
+<g filter="url(#licht)"><circle cx="1380" cy="120" r="340" fill="#c98a63" opacity="0.5"/><circle cx="170" cy="760" r="300" fill="#8d9472" opacity="0.42"/><circle cx="230" cy="160" r="250" fill="#e8dccc" opacity="0.7"/><circle cx="1460" cy="860" r="330" fill="#3b2e24" opacity="0.26"/></g>
+<clipPath id="wereld"><rect x="300" y="120" width="1000" height="560" rx="40"/></clipPath>
+<rect x="300" y="120" width="1000" height="560" rx="40" fill="url(#glas)" stroke="#fff" stroke-opacity="0.65" stroke-width="2" filter="url(#schaduw)" /><path d="M340 121.5 H1260" stroke="#fff" stroke-opacity="0.95" stroke-width="2" stroke-linecap="round"/>
+<g clip-path="url(#wereld)"><circle cx="1060" cy="250" r="64" fill="#f5efe7" fill-opacity="0.95"/><path d="M300 520 C 480 400, 640 430, 800 480 C 960 530, 1120 420, 1300 450 V680 H300 Z" fill="#8d9472" fill-opacity="0.55"/><path d="M300 600 C 500 520, 700 560, 900 580 C 1080 600, 1200 540, 1300 560 V680 H300 Z" fill="#c98a63" fill-opacity="0.55"/><path d="M300 650 C 560 610, 900 640, 1300 620 V680 H300 Z" fill="#3b2e24" fill-opacity="0.35"/><path d="M520 680 C 600 600, 720 560, 860 500" fill="none" stroke="#f5efe7" stroke-width="10" stroke-dasharray="2 26" stroke-linecap="round"/></g>
+<circle cx="560" cy="630" r="16" fill="#f5efe7" stroke="#1d1d1f" stroke-opacity="0.5" stroke-width="3"/>
+<circle cx="680" cy="560" r="16" fill="#f5efe7" stroke="#1d1d1f" stroke-opacity="0.5" stroke-width="3"/>
+<circle cx="800" cy="520" r="16" fill="#f5efe7" stroke="#1d1d1f" stroke-opacity="0.5" stroke-width="3"/>
+<circle cx="860" cy="500" r="22" fill="#c98a63" stroke="#f5efe7" stroke-width="5"/>
+<path d="M470 770 C 470 700, 560 700, 600 712 M1130 770 C 1130 700, 1040 700, 1000 712" fill="none" stroke="#3b2e24" stroke-width="22" stroke-linecap="round"/>
+<g filter="url(#schaduw)"><path d="M560 726 C 560 700, 580 690, 610 690 H990 C 1020 690, 1040 700, 1040 726 V800 C 1040 836, 1010 850, 980 850 H880 C 850 850, 830 816, 800 816 C 770 816, 750 850, 720 850 H620 C 590 850, 560 836, 560 800 Z" fill="#1d1d1f"/><path d="M600 712 H1000" stroke="#fff" stroke-opacity="0.25" stroke-width="4" stroke-linecap="round"/><ellipse cx="690" cy="760" rx="70" ry="30" fill="#fff" fill-opacity="0.07"/><ellipse cx="910" cy="760" rx="70" ry="30" fill="#fff" fill-opacity="0.07"/><path d="M620 736 C 650 722, 690 720, 720 724" fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="5" stroke-linecap="round"/></g>
+</svg>

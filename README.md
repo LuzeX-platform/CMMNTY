@@ -60,7 +60,10 @@ node dist/importeerArtikelen.js         # op Render, via de Shell
 
 - Nieuwe slug → aangemaakt als **concept**. Met `cover: afbeeldingen/naam.jpg` in de frontmatter
   (pad naast het artikel, JPG/PNG/WebP, max. 2 MB) krijgt het die afbeelding meteen mee.
-- Bestaande slug → overgeslagen (aanpassingen in het adminpanel blijven staan). Alleen met
+- Bestaande slug → overgeslagen (aanpassingen in het adminpanel blijven staan).
+- `--afbeeldingen-aanvullen` → een bestaand artikel dat nog **geen** afbeelding heeft, krijgt
+  alsnog de cover uit zijn bestand. Verder verandert er niets aan dat artikel; een bestaande
+  afbeelding wordt nooit vervangen. Alleen met
   `--force` wordt overschreven; afbeelding en publicatiestatus blijven ook dan ongemoeid.
 - Er wordt nooit iets gepubliceerd en nooit een nieuwsbrief verstuurd.
 - Bronnen uit de frontmatter komen als sectie "Bronnen" onderaan de tekst. Tags, reeks,

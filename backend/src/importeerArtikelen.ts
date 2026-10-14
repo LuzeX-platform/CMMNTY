@@ -24,6 +24,9 @@ import {
 //   Twee keer draaien levert dus nooit dubbele artikelen op.
 // - Met --force worden bestaande artikelen wél overschreven (titel, samenvatting, tekst,
 //   toegang, categorie, auteur). Afbeelding en publicatiestatus blijven ook dan ongemoeid.
+// - Met --afbeeldingen-aanvullen krijgt een bestaand artikel dat nog GEEN afbeelding heeft alsnog
+//   de cover uit zijn bestand. Verder verandert er niets aan dat artikel (tekst, status,
+//   publicatiedatum blijven staan), en een afbeelding die er al is wordt nooit vervangen.
 // - Er wordt nooit een nieuwsbrief verstuurd en nooit iets gepubliceerd. (De nieuwsbrief gaat
 //   alleen uit via de cron of de knop in het adminpanel, en concepten gaan er nooit in mee.)
 //
@@ -48,6 +51,7 @@ function zoekBestanden(map: string): string[] {
 async function main() {
   const args = process.argv.slice(2);
   const force = args.includes("--force");
+  const aanvullen = args.includes("--afbeeldingen-aanvullen");
   const map = path.resolve(args.find((a) => !a.startsWith("--")) ?? STANDAARD_MAP);
 
   if (!fs.existsSync(map)) throw new Error(`Map niet gevonden: ${map}`);
@@ -75,29 +79,51 @@ async function main() {
   const dubbel = slugs.find((s, i) => slugs.indexOf(s) !== i);
   if (dubbel) throw new Error(`Slug "${dubbel}" komt in meer dan één bestand voor`);
 
-  console.log(`${artikelen.length} artikel(en) gevonden in ${map}${force ? " (met --force)" : ""}\n`);
-  const telling = { aangemaakt: 0, overgeslagen: 0, overschreven: 0 };
+  const opties = [force && "--force", aanvullen && "--afbeeldingen-aanvullen"].filter(Boolean).join(", ");
+  console.log(`${artikelen.length} artikel(en) gevonden in ${map}${opties ? ` (met ${opties})` : ""}\n`);
+  const telling = { aangemaakt: 0, overgeslagen: 0, overschreven: 0, aangevuld: 0 };
 
   for (const { bestand, artikel, cover } of artikelen) {
-    const bestaand = await prisma.artikel.findUnique({ where: { slug: artikel.slug }, select: { id: true } });
+    const bestaand = await prisma.artikel.findUnique({
+      where: { slug: artikel.slug },
+      select: { id: true, coverMime: true },
+    });
     if (!bestaand) {
       // Geen gepubliceerdOp: een concept, te publiceren in het adminpanel.
       await prisma.artikel.create({ data: { ...artikel, ...cover, gepubliceerdOp: null } });
       telling.aangemaakt++;
       console.log(`  + aangemaakt (concept${cover ? ", met afbeelding" : ""})  ${artikel.slug}`);
-    } else if (force) {
+      continue;
+    }
+
+    let aangeraakt = false;
+    if (force) {
       await prisma.artikel.update({ where: { id: bestaand.id }, data: artikel });
       telling.overschreven++;
+      aangeraakt = true;
       console.log(`  ! overschreven          ${artikel.slug}`);
-    } else {
+    }
+    if (aanvullen && cover && !bestaand.coverMime) {
+      // updateMany met coverMime: null in de voorwaarde: heeft iemand intussen zelf een
+      // afbeelding geüpload, dan blijft die staan.
+      const { count } = await prisma.artikel.updateMany({ where: { id: bestaand.id, coverMime: null }, data: cover });
+      if (count > 0) {
+        telling.aangevuld++;
+        aangeraakt = true;
+        console.log(`  + afbeelding toegevoegd  ${artikel.slug}`);
+      }
+    }
+    if (!aangeraakt) {
       telling.overgeslagen++;
-      console.log(`  = bestaat al, overgeslagen  ${artikel.slug}  (${bestand})`);
+      const reden = aanvullen && cover && bestaand.coverMime ? "heeft al een afbeelding" : "bestaat al";
+      console.log(`  = ${reden}, overgeslagen  ${artikel.slug}  (${bestand})`);
     }
   }
 
   console.log(
     `\nKlaar: ${telling.aangemaakt} aangemaakt, ${telling.overgeslagen} overgeslagen` +
       (force ? `, ${telling.overschreven} overschreven` : "") +
+      (aanvullen ? `, ${telling.aangevuld} afbeelding(en) toegevoegd` : "") +
       ". Er is niets gepubliceerd en geen nieuwsbrief verstuurd.",
   );
 }

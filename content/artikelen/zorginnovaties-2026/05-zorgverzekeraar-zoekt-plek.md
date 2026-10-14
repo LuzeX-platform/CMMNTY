@@ -5,6 +5,7 @@ samenvatting: "Sinds april 2026 bemiddelen zorgverzekeraars wachtende cliënten 
 toegang: gratis
 status: concept
 categorie: Praktijkvoering
+cover: afbeeldingen/05-zorgverzekeraar-zoekt-plek.jpg
 tags: [wachttijden, zorgbemiddeling, zorgverzekeraars]
 reeks: Zorginnovaties 2026
 volgorde: 5
