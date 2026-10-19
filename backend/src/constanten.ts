@@ -27,4 +27,6 @@ export const CATEGORIEEN = [
   "AI in de praktijk",
   "Regels en wetgeving",
   "Behandelen",
+  // Nieuws van buiten de zorg dat zo veel impact heeft dat het er toch in hoort.
+  "Tech & trends",
 ] as const;
