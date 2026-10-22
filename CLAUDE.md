@@ -12,8 +12,9 @@ backend/            Fastify 5 + Prisma 5 + PostgreSQL 16, TypeScript (ESM, NodeN
   src/nieuwsbrief.ts  pure logica: verzenddag, periode, segment, mailtekst
   src/nieuwsbriefVersturen.ts  database + mail rond de nieuwsbrief (preview én versturen)
   src/nieuwsbriefCron.ts       dagelijkse Render-cron
-  src/luzexEntitlement.ts  Kruisproduct-Pro: controleert of een e-mailadres een actief ACCRD/SCRNN-account is
+  src/luzexKruisproduct.ts Kruisproduct-Pro v2: claim/controle op kvk-nummer bij ACCRD (niet meer op e-mailadres)
   src/kruisproductCron.ts  dagelijkse Render-cron die Kruisproduct-Pro opnieuw controleert
+  src/stripe.ts, routes/abonnement.ts  echt betaald Pro (checkout + billing portal + webhook)
   test/               node:test via tsx; api.test.ts draait alleen met TEST_DATABASE_URL
 frontend/           losse HTML + één script per pagina(groep), geen build-stap
   styles.css          design tokens 1-op-1 uit ACCRD (platform/frontend/styles.css) + CMMNTY-componenten
@@ -38,6 +39,11 @@ frontend/           losse HTML + één script per pagina(groep), geen build-stap
   als iemand het handmatig overschrijft (de admin-route doet dit al) — anders draait
   `kruisproductCron.ts` een bewuste handmatige keuze de volgende dag terug.
 
+- **Stripe** (`src/stripe.ts`, `routes/abonnement.ts`) is een derde, onafhankelijke bron voor
+  `abonnement`/`abonnementBron`, naast de admin en Kruisproduct-Pro. Een geslaagde checkout zet
+  ook `kruisproductKvkNummer` op `null` — anders pakt `kruisproductCron.ts` een inmiddels
+  betalende klant alsnog terug op, puur omdat er ooit een kvk-nummer geclaimd is.
+
 ## Later (niet in MVP)
 
-Stripe (vervangt handmatig Pro zetten in Admin → Gebruikers), reacties, favorieten, social.
+Reacties, favorieten, social.

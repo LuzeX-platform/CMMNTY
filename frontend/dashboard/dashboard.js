@@ -28,7 +28,7 @@ function koppelFormulier(form, foutEl, succesEl, handler) {
     const pro = gebruiker.abonnement === "pro" || gebruiker.rol === "admin";
     document.getElementById("abonnement-tekst").innerHTML = pro
       ? `${badgeHtml("pro")} Je hebt toegang tot alle artikelen, ook Pro.`
-      : `${badgeHtml("gratis")} Je leest alle gratis artikelen. Pro-abonnementen komen binnenkort — wil je nu al Pro? <a href="mailto:job@luzex.nl?subject=Pro-toegang%20CMMNTY">Mail Job</a>.`;
+      : `${badgeHtml("gratis")} Je leest alle gratis artikelen. <a href="/dashboard/account.html">Ga naar Pro</a> voor alle artikelen.`;
 
     // "Mijn artikelen": de nieuwste artikelen die dit lid volledig kan lezen.
     const houder = document.getElementById("artikelen");

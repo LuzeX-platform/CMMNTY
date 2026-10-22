@@ -17,7 +17,8 @@ model Gebruiker {
   naam                String
   // "lid" of "admin". Admin (Job) wordt alleen via de seed aangemaakt, nooit via registratie.
   rol                 String    @default("lid")
-  // "gratis" of "pro". Zonder betaling (MVP) zet de admin dit handmatig; Stripe komt later.
+  // "gratis" of "pro". Gezet door de admin (handmatig), Stripe (routes/abonnement.ts) of
+  // Kruisproduct-Pro (kruisproductCron.ts) — welke van de drie, zie abonnementBron hieronder.
   abonnement          String    @default("gratis")
   // "accrd" | null. Alleen informatief gezet als Pro kwam van een actief ACCRD-account (zie
   // luzexKruisproduct.ts + kruisproductCron.ts); null bij een handmatige toekenning door de

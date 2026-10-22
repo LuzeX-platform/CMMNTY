@@ -18,10 +18,13 @@ import { requireLid } from "../plugins/requireAuth.js";
 // is; de webhook loopt er vrijwel altijd voor, maar de account-pagina leest de sessie opnieuw
 // in plaats van de betaling zelf te vertrouwen.
 //
-// Dit loopt volledig los van Kruisproduct-Pro (luzexKruisproduct.ts, kruisproductCron.ts): een
-// échte Stripe-betaling zet `abonnementBron` altijd op null en raakt `kruisproductKvkNummer`
-// nooit aan. Zo blijft de cron — die alleen rijen met een gezet kvk-nummer mag aanpassen —
-// gegarandeerd van deze betaalde abonnees weg, ook als iemand ooit beide tegelijk zou gebruiken.
+// Dit loopt volledig los van Kruisproduct-Pro (luzexKruisproduct.ts, kruisproductCron.ts), met
+// één uitzondering: een geslaagde checkout zet ook `kruisproductKvkNummer` expliciet op null.
+// Zonder die reset zou iemand die ooit via een kvk-nummer gratis Pro claimde en daarna echt
+// gaat betalen, dat kvk-nummer laten staan — en dan pakt kruisproductCron.ts (die uitsluitend op
+// een gezet kvk-nummer filtert) die rij toch weer op en zet een betalende klant terug op
+// "gratis" zodra het ACCRD-account ooit afloopt. Stripe wordt zo voor deze gebruiker de enige
+// bron, net als bij de handmatige toekenning in admin.ts.
 
 export async function abonnementRoutes(app: FastifyInstance) {
   app.post("/api/account/pro-checkout", { preHandler: requireLid }, async (request, reply) => {
@@ -111,7 +114,7 @@ export async function abonnementRoutes(app: FastifyInstance) {
             // abonnementBron op null: een echte betaling maakt Stripe leidend, niet
             // kruisproductCron.ts — die filtert toch alleen op kruisproductKvkNummer, maar zo
             // blijft abonnementBron ook informatief correct.
-            data: { abonnement: "pro", abonnementBron: null, stripeAbonnementId: sessie.subscription },
+            data: { abonnement: "pro", abonnementBron: null, kruisproductKvkNummer: null, stripeAbonnementId: sessie.subscription },
           });
         }
         break;
