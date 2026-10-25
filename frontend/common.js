@@ -138,7 +138,7 @@ function tekenVoet() {
   voet.innerHTML = `
     <div class="voet-boven">
       <div class="voet-merk">
-        <a href="https://luzex.nl" class="brand-logo" role="img" aria-label="LuzeX — Imagination Innovation Illumination"></a>
+        <a href="https://luzex.nl" class="brand-logo" role="img" aria-label="LuzeX — Minder. Maar beter."></a>
         <p class="voet-tagline">Zorginnovatie in jip-en-janneke taal. Voor zorgprofessionals die het zelf doen.</p>
       </div>
       <div class="voet-kolom">
