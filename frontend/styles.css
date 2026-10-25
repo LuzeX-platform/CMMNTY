@@ -347,8 +347,8 @@ body::after {
 
 .brand-logo {
   display: block;
-  width: 168px;
-  aspect-ratio: 3.582;
+  width: 225px;
+  aspect-ratio: 4.789;
   background-image: url("/assets/luzex-logo-zwart.svg");
   background-repeat: no-repeat;
   background-position: left center;
@@ -445,7 +445,7 @@ body::after {
   }
 
   .balk .brand-logo {
-    width: min(34vw, 120px);
+    width: min(45vw, 160px);
   }
 
   .merk-product {
