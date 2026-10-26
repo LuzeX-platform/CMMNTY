@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { leestijdMinuten, maakSlug, magVolledigLezen, renderMarkdown, vergrendelReden } from "../src/artikelen.js";
+import { leestijdMinuten, maakSlug, magVolledigLezen, publicatieVolgorde, renderMarkdown, vergrendelReden } from "../src/artikelen.js";
 
 test("maakSlug: leesbaar, zonder accenten en leestekens", () => {
   assert.equal(maakSlug("Hoe AI je administratie 2 uur per week kan besparen"), "hoe-ai-je-administratie-2-uur-per-week-kan-besparen");
@@ -40,4 +40,20 @@ test("magVolledigLezen: gratis voor iedereen, Pro alleen voor Pro-leden en admin
 test("vergrendelReden: bezoeker moet inloggen, gratis lid heeft Pro nodig", () => {
   assert.equal(vergrendelReden(null), "inloggen");
   assert.equal(vergrendelReden({ rol: "lid", abonnement: "gratis" }), "pro_nodig");
+});
+
+test("publicatieVolgorde: nieuwste import bovenaan, binnen een import bestand 01 eerst", () => {
+  const om = (id: string, iso: string) => ({ id, aangemaaktOp: new Date(iso) });
+  const volgorde = publicatieVolgorde([
+    om("week43-02", "2026-10-26T10:00:01Z"),
+    om("week41-01", "2026-10-12T09:00:00Z"),
+    om("week43-01", "2026-10-26T10:00:00Z"),
+    om("week41-02", "2026-10-12T09:00:01Z"),
+    om("los-artikel", "2026-10-20T15:00:00Z"),
+  ]);
+  assert.deepEqual(
+    volgorde.map((a) => a.id),
+    ["week43-01", "week43-02", "los-artikel", "week41-01", "week41-02"],
+  );
+  assert.deepEqual(publicatieVolgorde([]), []);
 });

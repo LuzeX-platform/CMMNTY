@@ -79,3 +79,23 @@ export function vergrendelReden(
 ): "inloggen" | "pro_nodig" {
   return bezoeker ? "pro_nodig" : "inloggen";
 }
+
+// Artikelen die binnen deze tijd na elkaar zijn aangemaakt, horen bij dezelfde import.
+const IMPORT_PAUZE_MS = 10 * 60 * 1000;
+
+/**
+ * Volgorde op de site (bovenaan eerst) voor artikelen die in één keer gepubliceerd worden. Een
+ * import maakt zijn artikelen vlak na elkaar aan, in de volgorde van de bestanden. De nieuwste
+ * import komt bovenaan, en binnen een import het eerste bestand (01, meestal het hoofdartikel).
+ */
+export function publicatieVolgorde<T extends { aangemaaktOp: Date }>(artikelen: T[]): T[] {
+  const opTijd = [...artikelen].sort((a, b) => a.aangemaaktOp.getTime() - b.aangemaaktOp.getTime());
+  const groepen: T[][] = [];
+  for (const artikel of opTijd) {
+    const groep = groepen.at(-1);
+    const vorige = groep?.at(-1);
+    if (groep && vorige && artikel.aangemaaktOp.getTime() - vorige.aangemaaktOp.getTime() <= IMPORT_PAUZE_MS) groep.push(artikel);
+    else groepen.push([artikel]);
+  }
+  return groepen.reverse().flat();
+}

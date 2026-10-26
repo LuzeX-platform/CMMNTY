@@ -70,6 +70,10 @@ node dist/importeerArtikelen.js         # op Render, via de Shell
   volgorde en `gecontroleerd_op` blijven alleen in het bestand (het datamodel kent ze nog niet).
 
 Concepten zijn voor de admin te bekijken via *Admin → Artikelen → Voorbeeld*; bezoekers zien ze niet.
+Publiceren kan per artikel in de editor, of in één keer: *Admin → Artikelen → Alle concepten
+selecteren → Publiceer nu*. De nieuwste import komt dan bovenaan, en binnen een import het eerste
+bestand. Een artikel dat al online stond, houdt zijn datum. *Terug naar concept* haalt een selectie
+weer van de site.
 
 ## Lokaal draaien
 

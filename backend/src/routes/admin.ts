@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../db.js";
-import { leestijdMinuten, maakSlug, renderMarkdown } from "../artikelen.js";
+import { leestijdMinuten, maakSlug, publicatieVolgorde, renderMarkdown } from "../artikelen.js";
 import { requireAdmin } from "../plugins/requireAuth.js";
 import { verstuurMail } from "../mailer.js";
 import {
@@ -126,6 +126,36 @@ export async function adminRoutes(app: FastifyInstance) {
 
   app.post("/api/admin/artikelen", (request, reply) => opslaan(request, reply));
   app.put("/api/admin/artikelen/:id", (request, reply) => opslaan(request, reply, (request.params as { id: string }).id));
+
+  // Meerdere artikelen tegelijk publiceren of terugzetten naar concept, bijvoorbeeld na een import.
+  app.post("/api/admin/artikelen/bulk", async (request, reply) => {
+    const parsed = z
+      .object({ ids: z.array(z.string().min(1).max(64)).min(1).max(200), actie: z.enum(["publiceren", "concept"]) })
+      .safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ errorCode: "ONGELDIGE_INVOER" });
+    const ids = [...new Set(parsed.data.ids)];
+
+    if (parsed.data.actie === "concept") {
+      const { count } = await prisma.artikel.updateMany({ where: { id: { in: ids } }, data: { gepubliceerdOp: null } });
+      return { bijgewerkt: count, overgeslagen: ids.length - count };
+    }
+
+    // Alleen concepten en ingeplande artikelen. Een artikel dat al online staat houdt zijn datum:
+    // een nieuwe datum zou het opnieuw bovenaan zetten en nog een keer in de nieuwsbrief laten meegaan.
+    const nu = new Date();
+    const teDoen = publicatieVolgorde(
+      await prisma.artikel.findMany({
+        where: { id: { in: ids }, OR: [{ gepubliceerdOp: null }, { gepubliceerdOp: { gt: nu } }] },
+        select: { id: true, aangemaaktOp: true },
+      }),
+    );
+    // Eén milliseconde verschil per artikel legt die volgorde op de site vast; met precies
+    // dezelfde tijd zou de database de volgorde per keer anders kunnen kiezen.
+    await prisma.$transaction(
+      teDoen.map((a, i) => prisma.artikel.update({ where: { id: a.id }, data: { gepubliceerdOp: new Date(nu.getTime() - i) } })),
+    );
+    return { bijgewerkt: teDoen.length, overgeslagen: ids.length - teDoen.length };
+  });
 
   app.delete("/api/admin/artikelen/:id", async (request, reply) => {
     const { id } = request.params as { id: string };
