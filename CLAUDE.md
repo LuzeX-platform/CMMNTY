@@ -44,6 +44,12 @@ frontend/           losse HTML + één script per pagina(groep), geen build-stap
   ook `kruisproductKvkNummer` op `null` — anders pakt `kruisproductCron.ts` een inmiddels
   betalende klant alsnog terug op, puur omdat er ooit een kvk-nummer geclaimd is.
 
+## Wekelijkse artikelen ("Zorgtech deze week")
+
+Volg `content/REDACTIE.md`: wat erin komt (de hele zorg, alleen de echt grote innovaties), de
+mix per week (AI 1–2, Pro 1–2), feitencontrole en de techniek. Illustraties maak je met de
+hulpjes in `content/illustraties/` (`stijl.py` voor de SVG, `render.mjs` voor de JPG).
+
 ## Later (niet in MVP)
 
 Reacties, favorieten, social.
