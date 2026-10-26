@@ -61,15 +61,17 @@ export function renderMarkdown(markdown: string): string {
 
 /**
  * Mag deze bezoeker het volledige artikel lezen?
- * - Gratis: iedereen, ook zonder account.
+ * - Gratis: iedereen met een (gratis) account.
  * - Pro: alleen leden met een Pro-abonnement, en de admin.
  */
 export function magVolledigLezen(
   toegang: string,
   bezoeker: { rol: SessionPayload["rol"]; abonnement: string } | null,
 ): boolean {
-  if (toegang !== "pro") return true;
+  // Zonder account niets te lezen, ook geen gratis artikel: een gratis account is de prijs.
+  // Wat een bezoeker wél krijgt is de etalage (titel, samenvatting, afbeelding).
   if (!bezoeker) return false;
+  if (toegang !== "pro") return true;
   return bezoeker.rol === "admin" || bezoeker.abonnement === "pro";
 }
 

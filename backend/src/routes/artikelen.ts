@@ -123,7 +123,8 @@ export async function artikelRoutes(app: FastifyInstance) {
 
     return {
       ...naarKaart(artikel),
-      // Pro zonder toegang: wél titel, samenvatting en metadata (als etalage), nooit de inhoud.
+      // Zonder toegang (geen account, of Pro zonder Pro): wél titel, samenvatting en metadata
+      // als etalage, nooit de inhoud.
       inhoudHtml: magLezen ? renderMarkdown(artikel.inhoud) : null,
       vergrendeld: magLezen ? null : vergrendelReden(bezoeker),
       gerelateerd: [...zelfdeCategorie, ...aanvulling].map(naarKaart),

@@ -19,16 +19,14 @@
   <main class="auth-kolom">
     <div class="panel auth-kaart">
       <h1>Gratis lid worden</h1>
-      <p class="subtitle">Lees artikelen, ontvang de nieuwsbrief en zet je praktijk in het netwerk.</p>
+      <p class="subtitle">Een gratis account is genoeg om alle gratis artikelen te lezen. Alleen je e-mailadres en een wachtwoord.</p>
       <form id="formulier" novalidate>
-        <label for="naam">Naam</label>
-        <input id="naam" name="naam" type="text" autocomplete="name" required />
         <label for="email">E-mailadres</label>
         <input id="email" name="email" type="email" autocomplete="email" required />
         <label for="wachtwoord">Wachtwoord</label>
         <input id="wachtwoord" name="wachtwoord" type="password" autocomplete="new-password" minlength="8" required />
         <p class="veld-hint">Minimaal 8 tekens.</p>
-        <label class="vinkje"><input id="nieuwsbrief" name="nieuwsbrief" type="checkbox" checked /> Stuur mij de nieuwsbrief met nieuwe artikelen</label>
+        <label class="vinkje"><input id="nieuwsbrief" name="nieuwsbrief" type="checkbox" /> Ja, stuur mij de nieuwsbrief met nieuwe artikelen</label>
         <button type="submit">Account aanmaken</button>
         <p class="error" id="fout" role="alert"></p>
       </form>

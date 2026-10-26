@@ -44,12 +44,18 @@ export async function verstuurMail({ naar, onderwerp, tekst, html, headers }: Ma
   await client.sendMail({ from: afzender(), to: naar, subject: onderwerp, text: tekst, html, headers });
 }
 
+/** "Hoi Sanne" als we een naam hebben, anders gewoon "Hoi" — een naam is sinds de
+ *  aanmelding met alleen e-mail en wachtwoord niet meer verplicht. */
+export function aanhef(naam: string | null | undefined): string {
+  return naam?.trim() ? `Hoi ${naam.trim()}` : "Hoi";
+}
+
 export async function verstuurBevestigingsmail(naar: string, naam: string, link: string): Promise<void> {
   await verstuurMail({
     naar,
     onderwerp: "Bevestig je e-mailadres — LuzeX CMMNTY",
     tekst:
-      `Hoi ${naam},\n\nWelkom bij LuzeX CMMNTY. Bevestig je e-mailadres via deze link:\n${link}\n\n` +
+      `${aanhef(naam)},\n\nWelkom bij LuzeX CMMNTY. Bevestig je e-mailadres via deze link:\n${link}\n\n` +
       "Heb je je niet aangemeld? Dan kun je deze e-mail negeren.",
   });
 }

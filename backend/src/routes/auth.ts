@@ -24,11 +24,13 @@ const RESET_TTL_MS = 60 * 60 * 1000;
 const email = z.string().trim().toLowerCase().email("Ongeldig e-mailadres");
 const nieuwWachtwoord = z.string().min(8, "Wachtwoord moet minimaal 8 tekens zijn").max(200);
 
+// Alleen e-mail en wachtwoord: een naam vragen bij de voordeur kost aanmeldingen en is nergens
+// voor nodig — wie in het netwerk wil staan, vult zijn naam in bij zijn profiel. De nieuwsbrief
+// staat standaard uit: de AVG vraagt een actieve keuze, geen vooraf aangevinkt vakje.
 const registreerSchema = z.object({
-  naam: z.string().trim().min(1, "Naam is verplicht").max(120),
   email,
   wachtwoord: nieuwWachtwoord,
-  nieuwsbrief: z.boolean().default(true),
+  nieuwsbrief: z.boolean().default(false),
 });
 
 const inlogSchema = z.object({ email, wachtwoord: z.string().min(1) });
@@ -41,7 +43,7 @@ export async function authRoutes(app: FastifyInstance) {
   app.post("/api/auth/registreren", { config: AUTH_LIMIET }, async (request, reply) => {
     const parsed = registreerSchema.safeParse(request.body);
     if (!parsed.success) return ongeldig(reply, parsed.error);
-    const { naam, email, wachtwoord, nieuwsbrief } = parsed.data;
+    const { email, wachtwoord, nieuwsbrief } = parsed.data;
 
     const { ruweToken, tokenHash } = maakEenmaligToken();
     const bestaand = await prisma.gebruiker.findUnique({ where: { email } });
@@ -58,15 +60,15 @@ export async function authRoutes(app: FastifyInstance) {
 
     await prisma.gebruiker.create({
       data: {
-        naam,
+        naam: "",
         email,
         wachtwoordHash: await hashWachtwoord(wachtwoord),
         nieuwsbrief,
         bevestigTokenHash: tokenHash,
-        profiel: { create: { weergavenaam: naam } },
+        profiel: { create: { weergavenaam: "" } },
       },
     });
-    await verstuurBevestigingsmail(email, naam, `${appUrl()}/bevestigen.html?token=${ruweToken}`);
+    await verstuurBevestigingsmail(email, "", `${appUrl()}/bevestigen.html?token=${ruweToken}`);
     return { ok: true };
   });
 
@@ -227,7 +229,7 @@ export async function authRoutes(app: FastifyInstance) {
 
   app.put("/api/account", { preHandler: requireLid }, async (request, reply) => {
     const parsed = z
-      .object({ naam: z.string().trim().min(1).max(120), nieuwsbrief: z.boolean() })
+      .object({ naam: z.string().trim().max(120), nieuwsbrief: z.boolean() })
       .safeParse(request.body);
     if (!parsed.success) return ongeldig(reply, parsed.error);
     await prisma.gebruiker.update({ where: { id: request.gebruiker!.gebruikerId }, data: parsed.data });
