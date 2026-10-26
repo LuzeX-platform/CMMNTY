@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<defs>
+  <filter id="licht" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="95"/></filter>
+  <linearGradient id="glas" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff" stop-opacity="0.66"/>
+    <stop offset="0.46" stop-color="#fff" stop-opacity="0.32"/>
+    <stop offset="1" stop-color="#fff" stop-opacity="0.48"/>
+  </linearGradient>
+  <linearGradient id="glasdun" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff" stop-opacity="0.55"/>
+    <stop offset="1" stop-color="#fff" stop-opacity="0.28"/>
+  </linearGradient>
+  <filter id="schaduw" x="-40%" y="-40%" width="180%" height="190%"><feDropShadow dx="0" dy="26" stdDeviation="26" flood-color="#1d1d1f" flood-opacity="0.20"/></filter>
+  <filter id="schaduwklein" x="-40%" y="-40%" width="180%" height="190%"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#1d1d1f" flood-opacity="0.14"/></filter>
+  <marker id="pijl" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#3b2e24" fill-opacity="0.45"/></marker>
+</defs>
+<rect width="1600" height="900" fill="#cfc6bc"/>
+<g filter="url(#licht)"><circle cx="1350" cy="110" r="340" fill="#c98a63" opacity="0.55"/><circle cx="170" cy="770" r="300" fill="#8d9472" opacity="0.42"/><circle cx="250" cy="150" r="250" fill="#e8dccc" opacity="0.7"/><circle cx="1460" cy="870" r="330" fill="#3b2e24" opacity="0.26"/></g>
+<rect x="140" y="230" width="400" height="440" rx="34" fill="url(#glas)" stroke="#fff" stroke-opacity="0.65" stroke-width="2" filter="url(#schaduw)" /><path d="M174 231.5 H506" stroke="#fff" stroke-opacity="0.95" stroke-width="2" stroke-linecap="round"/>
+<path d="M488 450 L485 489 L466 523 L441 551 L412 575 L376 584 L340 578 L308 570 L272 568 L231 559 L202 529 L199 488 L208 450 L215 416 L223 383 L243 353 L272 332 L304 314 L340 298 L380 299 L412 325 L429 361 L445 389 L469 415 Z" fill="#e8dccc" stroke="#3b2e24" stroke-opacity="0.25" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="350" cy="456" r="46" fill="#3b2e24" fill-opacity="0.12"/>
+<circle cx="407" cy="471" r="9" fill="#c98a63"/>
+<circle cx="402" cy="523" r="9" fill="#c98a63"/>
+<circle cx="349" cy="519" r="9" fill="#c98a63"/>
+<circle cx="299" cy="537" r="9" fill="#c98a63"/>
+<circle cx="281" cy="487" r="9" fill="#c98a63"/>
+<circle cx="244" cy="449" r="9" fill="#c98a63"/>
+<circle cx="282" cy="411" r="9" fill="#c98a63"/>
+<circle cx="301" cy="362" r="9" fill="#c98a63"/>
+<circle cx="351" cy="381" r="9" fill="#c98a63"/>
+<circle cx="404" cy="378" r="9" fill="#c98a63"/>
+<circle cx="407" cy="431" r="9" fill="#c98a63"/>
+<path d="M560 450 C 600 450, 620 450, 650 450" fill="none" stroke="#3b2e24" stroke-opacity="0.4" stroke-width="4" stroke-dasharray="2 11" stroke-linecap="round" marker-end="url(#pijl)"/>
+<rect x="670" y="300" width="300" height="300" rx="30" fill="url(#glasdun)" stroke="#fff" stroke-opacity="0.65" stroke-width="2" filter="url(#schaduwklein)" /><path d="M700 301.5 H940" stroke="#fff" stroke-opacity="0.95" stroke-width="2" stroke-linecap="round"/>
+<path d="M700 450 L704 443 L708 436 L712 430 L716 425 L720 421 L724 418 L728 416 L732 416 L736 418 L740 421 L744 425 L748 430 L752 436 L756 443 L760 450 L764 457 L768 464 L772 470 L776 475 L780 479 L784 482 L788 484 L792 484 L796 482 L800 479 L804 475 L808 470 L812 464 L816 457 L820 450 L824 443 L828 436 L832 430 L836 425 L840 421 L844 418 L848 416 L852 416 L856 418 L860 421 L864 425 L868 430 L872 436 L876 443 L880 450 L884 457 L888 464 L892 470 L896 475 L900 479 L904 482 L908 484 L912 484 L916 482 L920 479 L924 475 L928 470 L932 464 L936 457 L940 450" fill="none" stroke="#8d9472" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="712" cy="430" r="10" fill="#c98a63" stroke="#fff" stroke-width="2"/>
+<circle cx="739" cy="420" r="10" fill="#f5efe7" stroke="#fff" stroke-width="2"/>
+<circle cx="766" cy="461" r="10" fill="#c98a63" stroke="#fff" stroke-width="2"/>
+<circle cx="793" cy="484" r="10" fill="#f5efe7" stroke="#fff" stroke-width="2"/>
+<circle cx="820" cy="450" r="10" fill="#c98a63" stroke="#fff" stroke-width="2"/>
+<circle cx="847" cy="416" r="10" fill="#f5efe7" stroke="#fff" stroke-width="2"/>
+<circle cx="874" cy="439" r="10" fill="#c98a63" stroke="#fff" stroke-width="2"/>
+<circle cx="901" cy="480" r="10" fill="#f5efe7" stroke="#fff" stroke-width="2"/>
+<circle cx="928" cy="470" r="10" fill="#c98a63" stroke="#fff" stroke-width="2"/>
+<path d="M990 450 C 1020 450, 1040 450, 1070 450" fill="none" stroke="#3b2e24" stroke-opacity="0.4" stroke-width="4" stroke-dasharray="2 11" stroke-linecap="round" marker-end="url(#pijl)"/>
+<g filter="url(#schaduw)"><rect x="1110" y="300" width="150" height="300" rx="34" fill="url(#glas)" stroke="#fff" stroke-opacity="0.75" stroke-width="2"/><rect x="1132" y="250" width="106" height="62" rx="14" fill="#1d1d1f" fill-opacity="0.82"/></g>
+<rect x="1130" y="430" width="110" height="150" rx="22" fill="#8d9472" fill-opacity="0.35"/>
+<circle cx="1185" cy="363.2" r="15.6" fill="#1d1d1f" fill-opacity="0.85"/><path d="M1156.2 411.2 C1156.2 384.8 1213.8 384.8 1213.8 411.2 Z" fill="#1d1d1f" fill-opacity="0.85"/>
+<g filter="url(#schaduw)"><path d="M1400 360 C1440 380 1480 388 1510 388 C1510 480 1480 560 1400 610 C1320 560 1290 480 1290 388 C1320 388 1360 380 1400 360 Z" fill="#8d9472" fill-opacity="0.92"/></g>
+<path d="M1382 480 l13.5 13.5 l24 -27" fill="none" stroke="#f5efe7" stroke-width="9.600000000000001" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

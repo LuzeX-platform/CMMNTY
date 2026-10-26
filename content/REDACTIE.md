@@ -35,6 +35,8 @@ Niet:
 | Waarvan buiten de zorg ("Tech & trends") | hooguit 1, alleen als het echt groot is |
 
 Spreid de onderwerpen over de sectoren: liever ziekenhuis, thuiszorg én ggz dan drie keer ggz.
+Is er in een sector die week niets wat echt de moeite waard is, laat het dan weg: liever vier
+goede artikelen dan vijf met opvulling. Zeg Job welke sector ontbrak.
 
 **Pro** is voor de stukken waar een lezer het meest aan heeft of het meest van opkijkt. Pro-
 artikelen zijn langer en gaan dieper: wat is er precies gebeurd, wat kan het (nog) niet, wat
@@ -58,7 +60,9 @@ jou?" en "Morgen al beginnen?".
 
 ## Techniek
 
-- Map: `content/artikelen/zorgtech-week-NN/` (NN = weeknummer), bestanden `01-…md`, `02-…md`.
+- Map: `content/artikelen/zorgtech-week-NN/`, bestanden `01-…md`, `02-…md`. NN is het
+  weeknummer van het nieuws (meestal de week vóór de ronde). Een extra ronde over dezelfde week
+  krijgt een achtervoegsel, zoals `zorgtech-week-43-zorgbreed`.
 - Frontmatter zoals de vorige weken: `titel`, `slug`, `samenvatting`, `toegang` (gratis/pro),
   `status: concept`, `categorie` (uit `backend/src/constanten.ts`), `cover`, `tags`,
   `reeks: Zorgtech deze week`, `volgorde` (doortellen vanaf de vorige week), `gecontroleerd_op`,
