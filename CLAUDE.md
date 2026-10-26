@@ -7,7 +7,7 @@ Zie README.md voor wat de app doet en hoe je hem draait. Hier de afspraken voor 
 ```
 backend/            Fastify 5 + Prisma 5 + PostgreSQL 16, TypeScript (ESM, NodeNext)
   src/app.ts          bouwApp(): plugins, CSP, CSRF-Origin-check, routes, statische frontend
-  src/routes/         auth (ook account + afmelden), artikelen (publiek), profiel (+ directory), admin
+  src/routes/         auth (ook account + afmelden), artikelen (publiek), profiel (+ netwerk, API-pad /api/directory), admin
   src/artikelen.ts    pure logica: slug, leestijd, Markdown → veilige HTML, toegang Pro
   src/nieuwsbrief.ts  pure logica: verzenddag, periode, segment, mailtekst
   src/nieuwsbriefVersturen.ts  database + mail rond de nieuwsbrief (preview én versturen)

@@ -86,7 +86,7 @@ function koppelFormulier(form, foutEl, succesEl, handler) {
         },
       });
       document.getElementById("website").value = opgeslagen.website ?? "";
-      return opgeslagen.gepubliceerd ? "Opgeslagen — je staat in de directory." : "Opgeslagen. Je profiel is niet zichtbaar in de directory.";
+      return opgeslagen.gepubliceerd ? "Opgeslagen — je staat in het netwerk." : "Opgeslagen. Je profiel is niet zichtbaar in het netwerk.";
     });
   }
 

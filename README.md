@@ -1,7 +1,7 @@
 # LuzeX CMMNTY
 
 Een web app onder het LuzeX-merk voor zorgprofessionals: artikelen over innovatie in de zorg
-(gratis en Pro), een ZZP-directory en een automatische nieuwsbrief.
+(gratis en Pro), een netwerk met praktijkprofielen van leden en een automatische nieuwsbrief.
 
 Dezelfde stack en huisstijl als ACCRD, maar **volledig los** daarvan: eigen database, eigen
 deployment, eigen geheimen.
@@ -21,7 +21,7 @@ deployment, eigen geheimen.
   nu / ingepland). Pro-artikelen tonen aan wie geen toegang heeft alleen titel en samenvatting.
 - **Leden** — registreren met bevestigingsmail, inloggen, wachtwoord vergeten, account
   wijzigen of verwijderen (AVG).
-- **Directory** — leden publiceren zelf een profiel (specialismen, regio, contact, bio van
+- **Netwerk** — leden publiceren zelf een profiel (specialismen, regio, contact, bio van
   max. 250 tekens). Openbaar, filterbaar op specialisme en regio.
 - **Nieuwsbrief** — wekelijks (maandag) of maandelijks (de 1e), in te stellen door Job.
   Gratis-leden krijgen alleen gratis artikelen, Pro-leden alles. Met voorbeeld, testmail,
@@ -43,7 +43,7 @@ handmatige toekenning door Job raakt die cron nooit aan. Zie `src/luzexEntitleme
 |-----|-----|
 | `/` | Homepage |
 | `/artikelen.html`, `/artikelen/<slug>` | Overzicht en artikel |
-| `/directory.html` | ZZP-directory |
+| `/netwerk.html` | Netwerk: praktijkprofielen van leden (oud adres `/directory.html` stuurt door) |
 | `/registreren.html`, `/inloggen.html` | Lid worden, inloggen |
 | `/dashboard/` | Mijn artikelen, mijn profiel, account |
 | `/admin/` | Artikelen, gebruikers, nieuwsbrief |

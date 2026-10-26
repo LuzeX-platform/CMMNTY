@@ -693,7 +693,7 @@ input[type="checkbox"] {
 
 .kolom {
   /* width: 100% is nodig: body is een flex-kolom, en daarin krimpt een blok met margin: auto
-     anders tot de breedte van zijn inhoud (een directory met twee kaartjes werd smal). */
+     anders tot de breedte van zijn inhoud (een netwerkpagina met twee kaartjes werd smal). */
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
@@ -1248,7 +1248,7 @@ a.badge {
   }
 }
 
-/* ---------- Directory ---------- */
+/* ---------- Netwerk (praktijkprofielen van leden) ---------- */
 
 .profiel-kaart .kaart-body {
   gap: 10px;

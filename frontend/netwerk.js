@@ -37,7 +37,7 @@ async function laad() {
       ? profielen.map(profielKaartHtml).join("")
       : '<p class="leeg">Nog niemand gevonden met deze filters.</p>';
   } catch {
-    lijst.innerHTML = '<p class="leeg">De directory kon niet geladen worden.</p>';
+    lijst.innerHTML = '<p class="leeg">Het netwerk kon niet geladen worden.</p>';
   }
 }
 

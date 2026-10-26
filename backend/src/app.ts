@@ -118,6 +118,9 @@ export async function bouwApp(opties: { logger?: boolean } = {}): Promise<Fastif
   // Nette artikel-URL's (/artikelen/mijn-artikel) voor de nieuwsbrief en om te delen.
   app.get("/artikelen/:slug", (_request, reply) => reply.sendFile("artikel.html"));
 
+  // De pagina heette eerst "Directory". Oude links (bladwijzers, eerdere mails) blijven werken.
+  app.get("/directory.html", (_request, reply) => reply.redirect("/netwerk.html", 301));
+
   app.setNotFoundHandler((request, reply) => {
     if (request.url.startsWith("/api/")) return reply.code(404).send({ errorCode: "NIET_GEVONDEN" });
     return reply.code(404).sendFile("404.html");

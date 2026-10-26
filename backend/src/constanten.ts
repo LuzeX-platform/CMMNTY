@@ -1,4 +1,4 @@
-// Keuzelijsten voor de ZZP-directory. Hier op één plek, zodat backend-validatie en de
+// Keuzelijsten voor het netwerk (de praktijkprofielen van leden, voorheen "directory"). Hier op één plek, zodat backend-validatie en de
 // dropdowns in de frontend (via GET /api/keuzelijsten) nooit uit elkaar lopen.
 export const SPECIALISMEN = [
   "GGZ (algemeen)",

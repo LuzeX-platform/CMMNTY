@@ -299,6 +299,15 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     assert.equal(login.statusCode, 200);
   });
 
+  test("oud adres /directory.html stuurt door naar /netwerk.html", async () => {
+    const res = await app.inject({ method: "GET", url: "/directory.html" });
+    assert.equal(res.statusCode, 301);
+    assert.equal(res.headers.location, "/netwerk.html");
+    const pagina = await app.inject({ method: "GET", url: "/netwerk.html" });
+    assert.equal(pagina.statusCode, 200);
+    assert.match(pagina.body, /<p class="kicker">Netwerk<\/p>/);
+  });
+
   test("vreemde Origin wordt geweigerd (CSRF)", async () => {
     const res = await app.inject({
       method: "POST",

@@ -189,7 +189,7 @@ async function gebruikersPagina() {
     [leden.length, "Leden"],
     [leden.filter((g) => g.abonnement === "pro").length, "Pro-leden"],
     [leden.filter((g) => g.nieuwsbrief && g.emailBevestigdOp).length, "Nieuwsbrief-abonnees"],
-    [leden.filter((g) => g.profiel?.gepubliceerd).length, "In de directory"],
+    [leden.filter((g) => g.profiel?.gepubliceerd).length, "In het netwerk"],
   ];
   document.getElementById("stats").innerHTML = stats
     .map(([waarde, label]) => `<div class="panel stat"><div class="stat-waarde">${waarde}</div><div class="stat-label">${label}</div></div>`)

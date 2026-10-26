@@ -72,7 +72,8 @@ export async function profielRoutes(app: FastifyInstance) {
     return prisma.profiel.upsert({ where: { gebruikerId }, update: data, create: { gebruikerId, ...data } });
   });
 
-  // Openbaar: iedereen mag de directory bekijken — het is reclame voor de praktijken.
+  // Openbaar: iedereen mag het netwerk bekijken — het is reclame voor de praktijken. (Het
+  // API-pad heet nog /api/directory, de oude naam; alleen de pagina en de teksten heten "Netwerk".)
   app.get("/api/directory", async (request) => {
     const q = request.query as { specialisme?: string; regio?: string; zoek?: string };
     const where: Prisma.ProfielWhereInput = { gepubliceerd: true };
