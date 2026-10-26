@@ -100,7 +100,7 @@ function artikelKaartHtml(a) {
 
 const NAV = [
   { href: "/artikelen.html", label: "Artikelen", match: ["/artikelen"] },
-  { href: "/directory.html", label: "Directory", match: ["/directory"] },
+  { href: "/netwerk.html", label: "Netwerk", match: ["/netwerk"] },
   { href: "/#over", label: "Over", match: [] },
 ];
 
@@ -143,7 +143,7 @@ function tekenVoet() {
       <div class="voet-kolom">
         <p class="voet-kop">CMMNTY</p>
         <a href="/artikelen.html">Artikelen</a>
-        <a href="/directory.html">Directory</a>
+        <a href="/netwerk.html">Netwerk</a>
         <a href="/registreren.html">Lid worden</a>
       </div>
       <div class="voet-kolom">
