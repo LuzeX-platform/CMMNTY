@@ -222,6 +222,23 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     assert.equal(res.statusCode, 403);
   });
 
+  test("adminpagina's: zonder inloggen naar het inlogscherm, een lid naar zijn dashboard", async () => {
+    const bezoeker = await app.inject({ method: "GET", url: "/admin/" });
+    assert.equal(bezoeker.statusCode, 302);
+    assert.equal(bezoeker.headers.location, "/inloggen.html?terug=%2Fadmin%2F");
+    const script = await app.inject({ method: "GET", url: "/admin/admin.js" });
+    assert.equal(script.statusCode, 302);
+    const lid = await app.inject({ method: "GET", url: "/admin/gebruikers.html", headers: { cookie: lidCookie } });
+    assert.equal(lid.headers.location, "/dashboard/");
+    const admin = await app.inject({ method: "GET", url: "/admin/", headers: { cookie: adminCookie } });
+    assert.equal(admin.statusCode, 200);
+    assert.match(admin.body, /Alle artikelen/);
+
+    // De admin-sessie duurt een werkdag, die van een lid 30 dagen.
+    const login = await app.inject({ method: "POST", url: "/api/auth/inloggen", payload: { email: "job@test.nl", wachtwoord: "admin-wachtwoord" } });
+    assert.match(String(login.headers["set-cookie"]), /Max-Age=28800/);
+  });
+
   test("profiel publiceren → verschijnt in directory, filterbaar", async () => {
     const zonderContact = await app.inject({
       method: "PUT",

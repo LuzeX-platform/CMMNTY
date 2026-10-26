@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { SESSIE_TTL_SECONDEN, verifieerSessieToken, type SessionPayload } from "../auth.js";
+import { maakSessieToken, sessieDuurSeconden, verifieerSessieToken, type SessionPayload } from "../auth.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -9,8 +9,9 @@ declare module "fastify" {
 
 export const COOKIE_NAME = process.env.SESSION_COOKIE_NAME ?? "luzex_community_sessie";
 
-export function zetSessieCookie(reply: FastifyReply, token: string) {
-  reply.setCookie(COOKIE_NAME, token, {
+/** Logt in: token en cookie krijgen dezelfde duur (de admin korter dan een lid, zie auth.ts). */
+export function zetSessieCookie(reply: FastifyReply, payload: SessionPayload) {
+  reply.setCookie(COOKIE_NAME, maakSessieToken(payload), {
     httpOnly: true,
     // "lax" en niet "strict" zoals in ACCRD: wie vanuit de nieuwsbrief op een Pro-artikel
     // klikt, komt binnen via een link uit een andere site (de mail-client). Met "strict" gaat
@@ -19,7 +20,7 @@ export function zetSessieCookie(reply: FastifyReply, token: string) {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: SESSIE_TTL_SECONDEN,
+    maxAge: sessieDuurSeconden(payload.rol),
   });
 }
 

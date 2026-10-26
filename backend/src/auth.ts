@@ -6,6 +6,9 @@ import jwt from "jsonwebtoken";
 // cookie als sessie. Geen 2FA: CMMNTY bevat geen gevoelige (financiële) gegevens, en
 // een drempel bij het lezen van artikelen kost meer lezers dan hij aan veiligheid oplevert.
 const SESSION_TTL_SECONDEN = 30 * 24 * 60 * 60; // 30 dagen: lezers willen niet elke week inloggen
+// De admin kan alles publiceren, wijzigen en verwijderen. Die sessie loopt na een werkdag af, zodat
+// je niet weken later op een laptop die openstaat nog zomaar in het adminpanel komt.
+const ADMIN_SESSIE_TTL_SECONDEN = 8 * 60 * 60;
 
 function jwtSecret(): string {
   const secret = process.env.JWT_SECRET;
@@ -19,7 +22,9 @@ export interface SessionPayload {
   rol: "lid" | "admin";
 }
 
-export const SESSIE_TTL_SECONDEN = SESSION_TTL_SECONDEN;
+export function sessieDuurSeconden(rol: SessionPayload["rol"]): number {
+  return rol === "admin" ? ADMIN_SESSIE_TTL_SECONDEN : SESSION_TTL_SECONDEN;
+}
 
 export async function hashWachtwoord(wachtwoord: string): Promise<string> {
   return argon2.hash(wachtwoord, { type: argon2.argon2id });
@@ -34,11 +39,16 @@ export async function verifieerWachtwoord(hash: string, wachtwoord: string): Pro
 }
 
 export function maakSessieToken(payload: SessionPayload): string {
-  return jwt.sign(payload, jwtSecret(), { expiresIn: SESSION_TTL_SECONDEN });
+  return jwt.sign(payload, jwtSecret(), { expiresIn: sessieDuurSeconden(payload.rol) });
 }
 
 export function verifieerSessieToken(token: string): SessionPayload {
-  return jwt.verify(token, jwtSecret()) as SessionPayload;
+  const payload = jwt.verify(token, jwtSecret()) as SessionPayload & { iat?: number };
+  // Ook een admin-token van vóór de kortere sessie (toen 30 dagen geldig) vervalt na 8 uur.
+  if (payload.rol === "admin" && !(payload.iat && Date.now() / 1000 - payload.iat <= ADMIN_SESSIE_TTL_SECONDEN)) {
+    throw new Error("Admin-sessie verlopen");
+  }
+  return payload;
 }
 
 // Eenmalige tokens (e-mailbevestiging, wachtwoordreset): alleen de hash gaat de database in,

@@ -10,6 +10,7 @@ import { artikelRoutes } from "./routes/artikelen.js";
 import { profielRoutes } from "./routes/profiel.js";
 import { adminRoutes } from "./routes/admin.js";
 import { abonnementRoutes } from "./routes/abonnement.js";
+import { leesSessie } from "./plugins/requireAuth.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -98,6 +99,16 @@ export async function bouwApp(opties: { logger?: boolean } = {}): Promise<Fastif
         }
       }
     }
+  });
+
+  // De adminpagina's zelf alleen voor de admin, niet alleen de API erachter: wie niet (meer)
+  // ingelogd is, krijgt de pagina niet eens te zien en gaat eerst langs het inlogscherm.
+  app.addHook("onRequest", async (request, reply) => {
+    const pad = request.url.split("?")[0];
+    if (pad !== "/admin" && !pad.startsWith("/admin/")) return;
+    const sessie = leesSessie(request);
+    if (!sessie) return reply.redirect(`/inloggen.html?terug=${encodeURIComponent(request.url)}`);
+    if (sessie.rol !== "admin") return reply.redirect("/dashboard/");
   });
 
   // Eén-klik-afmelden (RFC 8058) stuurt "List-Unsubscribe=One-Click" als formulier. De inhoud

@@ -34,6 +34,9 @@ frontend/           losse HTML + één script per pagina(groep), geen build-stap
   niet meegaat. Een segment zonder nieuwe artikelen wordt overgeslagen en telt niet als verzending.
 - Sessiecookie is `SameSite=Lax` (niet Strict zoals ACCRD): anders ziet een Pro-lid dat vanuit
   de nieuwsbrief doorklikt het artikel als uitgelogd. CSRF blijft gedekt door de Origin-check.
+- **Sessieduur**: een lid blijft 30 dagen ingelogd, de admin 8 uur (`sessieDuurSeconden()` in
+  auth.ts; oudere admin-tokens worden op `iat` afgekeurd). De `/admin/`-pagina's zelf zijn ook op
+  de server afgeschermd (hook in app.ts), niet alleen de `/api/admin/`-routes.
 - **Kruisproduct-Pro** (zie hub/CLAUDE.md voor de volledige afspraak): `abonnementBron` is
   alleen "accrd"/"scrnn" als Pro daarvandaan kwam, en moet dan ook altijd expliciet op `null`
   als iemand het handmatig overschrijft (de admin-route doet dit al) — anders draait

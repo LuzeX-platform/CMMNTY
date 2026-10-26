@@ -6,7 +6,6 @@ import {
   hashWachtwoord,
   leesAfmeldToken,
   maakEenmaligToken,
-  maakSessieToken,
   verifieerWachtwoord,
 } from "../auth.js";
 import { verstuurBevestigingsmail, verstuurWachtwoordResetMail } from "../mailer.js";
@@ -88,7 +87,7 @@ export async function authRoutes(app: FastifyInstance) {
       data: { emailBevestigdOp: new Date(), bevestigTokenHash: null },
     });
     // Meteen ingelogd: wie net op de link klikte, hoeft niet nog eens zijn wachtwoord in te typen.
-    zetSessieCookie(reply, maakSessieToken({ gebruikerId: gebruiker.id, email: gebruiker.email, rol: gebruiker.rol as "lid" | "admin" }));
+    zetSessieCookie(reply, { gebruikerId: gebruiker.id, email: gebruiker.email, rol: gebruiker.rol as "lid" | "admin" });
     return { ok: true };
   });
 
@@ -142,7 +141,7 @@ export async function authRoutes(app: FastifyInstance) {
       where: { id: gebruiker.id },
       data: { mislukteInlogpogingen: 0, vergrendeldTot: null },
     });
-    zetSessieCookie(reply, maakSessieToken({ gebruikerId: gebruiker.id, email: gebruiker.email, rol: gebruiker.rol as "lid" | "admin" }));
+    zetSessieCookie(reply, { gebruikerId: gebruiker.id, email: gebruiker.email, rol: gebruiker.rol as "lid" | "admin" });
     return { ok: true, rol: gebruiker.rol };
   });
 
