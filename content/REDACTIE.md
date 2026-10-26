@@ -75,4 +75,4 @@ jou?" en "Morgen al beginnen?".
   desktop en mobiel, Pro-afscherming en nieuwsbriefsegmenten nalopen.
 - Daarna een branch `content/zorgtech-week-NN`, pull request en samenvoegen naar `main`, zodat
   Job alleen nog het importscript op Render hoeft te draaien (`node dist/importeerArtikelen.js`)
-  en kan publiceren in het adminpanel.
+  en in het adminpanel kan publiceren (*Alle concepten selecteren → Publiceer nu*).

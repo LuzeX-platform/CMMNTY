@@ -27,15 +27,76 @@ function naarLokaal(iso) {
 
 // ---------- Artikelen ----------
 
+const aantalArtikelen = (n) => `${n} ${n === 1 ? "artikel" : "artikelen"}`;
+
 async function artikelenPagina() {
   const tbody = document.getElementById("artikelen");
-  const { artikelen } = await api("/api/admin/artikelen");
+  const alles = document.getElementById("alles");
+  const aantalEl = document.getElementById("bulk-aantal");
+  const publiceerKnop = document.getElementById("bulk-publiceren");
+  const conceptKnop = document.getElementById("bulk-concept");
+
+  // Selectie voor de bulkknoppen: na een import alle concepten in één keer publiceren.
+  const vakjes = () => [...tbody.querySelectorAll("input[data-id]")];
+  const gekozen = () => vakjes().filter((v) => v.checked).map((v) => v.dataset.id);
+  const werkBalkBij = () => {
+    const n = gekozen().length;
+    aantalEl.textContent = n ? `${aantalArtikelen(n)} geselecteerd` : "Niets geselecteerd";
+    publiceerKnop.disabled = conceptKnop.disabled = n === 0;
+    alles.checked = n > 0 && n === vakjes().length;
+    alles.indeterminate = n > 0 && n < vakjes().length;
+  };
+  tbody.addEventListener("change", werkBalkBij);
+  alles.addEventListener("change", () => {
+    for (const v of vakjes()) v.checked = alles.checked;
+    werkBalkBij();
+  });
+  document.getElementById("selecteer-concepten").addEventListener("click", () => {
+    for (const v of vakjes()) v.checked = v.dataset.status === "concept";
+    werkBalkBij();
+  });
+
+  const voerUit = async (actie) => {
+    const ids = gekozen();
+    const vraag =
+      actie === "publiceren"
+        ? `${aantalArtikelen(ids.length)} nu publiceren? Ze zijn meteen zichtbaar op de site en gaan mee in de volgende nieuwsbrief.`
+        : `${aantalArtikelen(ids.length)} terugzetten naar concept? Ze verdwijnen dan van de site.`;
+    if (!confirm(vraag)) return;
+    foutEl.textContent = "";
+    succesEl.textContent = "";
+    publiceerKnop.disabled = conceptKnop.disabled = true;
+    try {
+      const { bijgewerkt, overgeslagen } = await api("/api/admin/artikelen/bulk", { methode: "POST", body: { ids, actie } });
+      await laad();
+      succesEl.textContent =
+        actie === "publiceren"
+          ? `${aantalArtikelen(bijgewerkt)} gepubliceerd.${overgeslagen ? ` ${aantalArtikelen(overgeslagen)} ${overgeslagen === 1 ? "stond al online en is" : "stonden al online en zijn"} niet veranderd.` : ""}`
+          : `${aantalArtikelen(bijgewerkt)} teruggezet naar concept.`;
+    } catch (fout) {
+      toonFout(fout);
+      werkBalkBij();
+    }
+  };
+  publiceerKnop.addEventListener("click", () => voerUit("publiceren"));
+  conceptKnop.addEventListener("click", () => voerUit("concept"));
+
+  const laad = async () => {
+    const { artikelen } = await api("/api/admin/artikelen");
+    tekenArtikelen(tbody, artikelen);
+    werkBalkBij();
+  };
+  await laad();
+}
+
+function tekenArtikelen(tbody, artikelen) {
   tbody.innerHTML = artikelen.length
     ? artikelen
         .map(
           (a) => `
       <tr>
-        <td><a href="/admin/artikel.html?id=${a.id}"><strong>${escapeHtml(a.titel)}</strong></a>${a.categorie ? `<br><span class="subtitle">${escapeHtml(a.categorie)}</span>` : ""}</td>
+        <td class="kies"><input type="checkbox" data-id="${a.id}" data-status="${a.status}" aria-labelledby="titel-${a.id}" /></td>
+        <td><a href="/admin/artikel.html?id=${a.id}"><strong id="titel-${a.id}">${escapeHtml(a.titel)}</strong></a>${a.categorie ? `<br><span class="subtitle">${escapeHtml(a.categorie)}</span>` : ""}</td>
         <td>${statusBadge(a.status)}</td>
         <td>${badgeHtml(a.toegang)}</td>
         <td>${datumTijd(a.gepubliceerdOp)}</td>
@@ -46,7 +107,7 @@ async function artikelenPagina() {
       </tr>`,
         )
         .join("")
-    : '<tr><td colspan="5">Nog geen artikelen. Schrijf je eerste!</td></tr>';
+    : '<tr><td colspan="6">Nog geen artikelen. Schrijf je eerste!</td></tr>';
 }
 
 async function editorPagina() {

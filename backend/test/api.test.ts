@@ -368,4 +368,36 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     assert.match(draai("--afbeeldingen-aanvullen"), /0 afbeelding\(en\) toegevoegd/);
     fs.rmSync(map, { recursive: true, force: true });
   });
+
+  test("bulk: concepten in één keer publiceren, wat al online staat houdt zijn datum", async () => {
+    const maak = async (titel: string, gepubliceerdOp: string | null) =>
+      (
+        await app.inject({
+          method: "POST",
+          url: "/api/admin/artikelen",
+          headers: { cookie: adminCookie },
+          payload: { titel, samenvatting: "x", inhoud: "x", toegang: "gratis", categorie: "", gepubliceerdOp },
+        })
+      ).json() as { id: string };
+    const een = await maak("Bulk een", null);
+    const twee = await maak("Bulk twee", null);
+    const al = "2026-09-01T08:00:00.000Z";
+    const online = await maak("Bulk al online", al);
+    const bulk = (payload: unknown, cookie?: string) =>
+      app.inject({ method: "POST", url: "/api/admin/artikelen/bulk", headers: cookie ? { cookie } : {}, payload });
+
+    assert.equal((await bulk({ ids: [een.id], actie: "publiceren" })).statusCode, 401);
+    assert.equal((await bulk({ ids: [], actie: "publiceren" }, adminCookie)).statusCode, 400);
+
+    const res = await bulk({ ids: [twee.id, een.id, online.id, "bestaat-niet"], actie: "publiceren" }, adminCookie);
+    assert.deepEqual(res.json(), { bijgewerkt: 2, overgeslagen: 2 });
+    const slugs = (await app.inject({ method: "GET", url: "/api/artikelen?limiet=50" })).json().artikelen.map((a: { slug: string }) => a.slug);
+    // Wat het eerst is aangemaakt, staat bovenaan; het artikel dat al online stond, is niet verplaatst.
+    assert.ok(slugs.indexOf("bulk-een") < slugs.indexOf("bulk-twee"), slugs.join(","));
+    assert.equal((await prisma.artikel.findUniqueOrThrow({ where: { id: online.id } })).gepubliceerdOp?.toISOString(), al);
+
+    const terug = await bulk({ ids: [een.id, twee.id], actie: "concept" }, adminCookie);
+    assert.deepEqual(terug.json(), { bijgewerkt: 2, overgeslagen: 0 });
+    assert.equal((await app.inject({ method: "GET", url: "/api/artikelen/bulk-een" })).statusCode, 404);
+  });
 });

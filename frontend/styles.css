@@ -1386,6 +1386,33 @@ table.tabel {
   margin-left: 12px;
 }
 
+.tabel .kies {
+  width: 1%;
+  padding-right: 4px;
+}
+
+/* Selectie + knoppen boven de artikeltabel in de admin. */
+.bulk-balk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.bulk-balk .subtitle {
+  margin-right: auto;
+}
+
+.bulk-melding {
+  margin: 0 0 14px;
+}
+
+.bulk-melding:empty {
+  margin: 0;
+  min-height: 0;
+}
+
 .stat-rij {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

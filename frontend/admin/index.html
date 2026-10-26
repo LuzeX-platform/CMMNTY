@@ -34,10 +34,18 @@
         </div>
         <a class="pil-knop pil-knop-donker" href="/admin/artikel.html">+ Nieuw artikel</a>
       </div>
+      <div class="bulk-balk">
+        <span class="subtitle" id="bulk-aantal">Niets geselecteerd</span>
+        <button type="button" class="secondary" id="selecteer-concepten">Alle concepten selecteren</button>
+        <button type="button" id="bulk-publiceren" disabled>Publiceer nu</button>
+        <button type="button" class="secondary" id="bulk-concept" disabled>Terug naar concept</button>
+      </div>
+      <p class="error bulk-melding" id="fout" role="alert"></p>
+      <p class="success bulk-melding" id="succes" role="status"></p>
       <div class="tabel-scroll">
         <table class="tabel">
-          <thead><tr><th>Titel</th><th>Status</th><th>Toegang</th><th>Publicatie</th><th></th></tr></thead>
-          <tbody id="artikelen"><tr><td colspan="5">Laden…</td></tr></tbody>
+          <thead><tr><th class="kies"><input type="checkbox" id="alles" aria-label="Alle artikelen selecteren" /></th><th>Titel</th><th>Status</th><th>Toegang</th><th>Publicatie</th><th></th></tr></thead>
+          <tbody id="artikelen"><tr><td colspan="6">Laden…</td></tr></tbody>
         </table>
       </div>
     </div>
