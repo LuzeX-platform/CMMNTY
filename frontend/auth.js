@@ -50,7 +50,6 @@ if (pagina === "registreren") {
     await api("/api/auth/registreren", {
       methode: "POST",
       body: {
-        naam: veld("naam"),
         email: veld("email"),
         wachtwoord: document.getElementById("wachtwoord").value,
         nieuwsbrief: document.getElementById("nieuwsbrief").checked,

@@ -27,8 +27,13 @@ frontend/           losse HTML + één script per pagina(groep), geen build-stap
 - **Geen inline scripts of event handlers** in HTML: de CSP staat alleen `script-src 'self'` toe.
 - **Huisstijl**: tokens niet herdefiniëren. Wijzig je er één, doe het dan ook in ACCRD.
 - **Pure logica los van database/mail** (artikelen.ts, nieuwsbrief.ts) zodat die testbaar blijft.
-- **Pro-toegang** loopt altijd via `magVolledigLezen()`; de inhoud van een Pro-artikel verlaat de
-  server nooit voor wie geen toegang heeft (ook niet verborgen in de HTML).
+- **Lezen vraagt altijd een account.** Zonder account is niets te lezen, ook geen gratis artikel;
+  een bezoeker ziet alleen de etalage (titel, samenvatting, afbeelding). Een gratis account is
+  gratis en vraagt alleen e-mail en wachtwoord — geen naam. De nieuwsbrief is een vinkje dat
+  standaard uit staat (AVG: actieve keuze); aangevinkt = `nieuwsbrief: true` = op de
+  verzendlijst, zodra het e-mailadres bevestigd is.
+- **Toegang** loopt altijd via `magVolledigLezen()`; de inhoud van een artikel verlaat de server
+  nooit voor wie geen toegang heeft (ook niet verborgen in de HTML).
 - **Markdown-HTML** gaat altijd door `renderMarkdown()` (sanitize-html) — ook al schrijft alleen Job.
 - **Nieuwsbrief-periode** = sinds de vorige verzending van dat segment, zodat niets dubbel of
   niet meegaat. Een segment zonder nieuwe artikelen wordt overgeslagen en telt niet als verzending.

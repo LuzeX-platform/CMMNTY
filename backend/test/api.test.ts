@@ -106,9 +106,11 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     assert.equal(res.statusCode, 401);
   });
 
-  test("bezoeker leest gratis volledig, Pro alleen als etalage", async () => {
-    const gratis = await app.inject({ method: "GET", url: "/api/artikelen/gratis-tip" });
-    assert.match(gratis.json().inhoudHtml, /Geheime inhoud/);
+  test("bezoeker zonder account ziet gratis én Pro alleen als etalage", async () => {
+    const gratis = (await app.inject({ method: "GET", url: "/api/artikelen/gratis-tip" })).json();
+    assert.equal(gratis.inhoudHtml, null);
+    assert.equal(gratis.vergrendeld, "inloggen");
+    assert.equal(gratis.samenvatting, "Kort");
     const pro = (await app.inject({ method: "GET", url: "/api/artikelen/pro-verdieping" })).json();
     assert.equal(pro.inhoudHtml, null);
     assert.equal(pro.vergrendeld, "inloggen");
@@ -132,7 +134,7 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     const reg = await app.inject({
       method: "POST",
       url: "/api/auth/registreren",
-      payload: { naam: "Sanne de Vries", email: "Sanne@Test.nl", wachtwoord: "geheim123", nieuwsbrief: true },
+      payload: { email: "Sanne@Test.nl", wachtwoord: "geheim123", nieuwsbrief: true },
     });
     assert.equal(reg.statusCode, 200);
 
@@ -146,6 +148,23 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     const me = (await app.inject({ method: "GET", url: "/api/auth/me", headers: { cookie: lidCookie } })).json();
     assert.equal(me.email, "sanne@test.nl");
     assert.equal(me.abonnement, "gratis");
+    assert.equal(me.nieuwsbrief, true);
+
+    // Met account wel: het gratis artikel is nu helemaal te lezen.
+    const gratis = (await app.inject({ method: "GET", url: "/api/artikelen/gratis-tip", headers: { cookie: lidCookie } })).json();
+    assert.match(gratis.inhoudHtml, /Geheime inhoud/);
+  });
+
+  test("registreren zonder vinkje: niet op de nieuwsbrief", async () => {
+    const reg = await app.inject({
+      method: "POST",
+      url: "/api/auth/registreren",
+      payload: { email: "geen-nieuwsbrief@test.nl", wachtwoord: "geheim123" },
+    });
+    assert.equal(reg.statusCode, 200);
+    const rij = await prisma.gebruiker.findUniqueOrThrow({ where: { email: "geen-nieuwsbrief@test.nl" } });
+    assert.equal(rij.nieuwsbrief, false);
+    assert.equal(rij.naam, "");
   });
 
   test("kruisproduct-Pro v2: een actief ACCRD-kvk-nummer geeft gratis Pro via de claim-route", async () => {

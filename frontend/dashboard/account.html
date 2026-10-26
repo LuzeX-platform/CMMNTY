@@ -29,8 +29,8 @@
     <form class="panel" id="account-form" novalidate>
       <h2>Gegevens</h2>
       <p class="subtitle" id="account-email"></p>
-      <label for="naam">Naam</label>
-      <input id="naam" type="text" maxlength="120" required />
+      <label for="naam">Naam <span class="veld-hint">(optioneel)</span></label>
+      <input id="naam" type="text" maxlength="120" autocomplete="name" />
       <label class="vinkje"><input id="nieuwsbrief" type="checkbox" /> Stuur mij de nieuwsbrief met nieuwe artikelen</label>
       <div class="formulier-acties"><button type="submit">Opslaan</button></div>
       <p class="error" id="account-fout" role="alert"></p>

@@ -101,7 +101,7 @@ export function bouwHtml({ artikelen, frequentie, appUrl, naam, afmeldLink }: Bo
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;margin:0 auto">
         <tr><td style="padding:0 4px 24px">
           <p style="margin:0 0 6px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#3b2e24">LuzeX CMMNTY</p>
-          <h1 style="margin:0 0 10px;font-size:26px;line-height:1.2">Hoi ${escapeHtml(naam)},</h1>
+          <h1 style="margin:0 0 10px;font-size:26px;line-height:1.2">${naam.trim() ? `Hoi ${escapeHtml(naam.trim())}` : "Hoi"},</h1>
           <p style="margin:0;font-size:16px;line-height:1.55;color:#585249">Dit is er ${periode} nieuw in zorginnovatie. Kort, praktisch en zonder jargon.</p>
         </td></tr>
         ${blokken}
@@ -127,5 +127,5 @@ export function bouwTekst({ artikelen, frequentie, appUrl, naam, afmeldLink }: B
         `${a.toegang === "pro" ? "[Pro] " : ""}${a.titel}\n${a.samenvatting}\nLees meer: ${appUrl}/artikelen/${encodeURIComponent(a.slug)}`,
     )
     .join("\n\n");
-  return `Hoi ${naam},\n\nDit is er ${periode} nieuw in zorginnovatie:\n\n${blokken}\n\nLees meer op CMMNTY: ${appUrl}/artikelen.html\n\n--\nAfmelden voor de nieuwsbrief: ${afmeldLink}`;
+  return `${naam.trim() ? `Hoi ${naam.trim()}` : "Hoi"},\n\nDit is er ${periode} nieuw in zorginnovatie:\n\n${blokken}\n\nLees meer op CMMNTY: ${appUrl}/artikelen.html\n\n--\nAfmelden voor de nieuwsbrief: ${afmeldLink}`;
 }

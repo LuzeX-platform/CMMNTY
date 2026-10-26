@@ -29,8 +29,9 @@ test("renderMarkdown: h1 wordt h2 en javascript:-links verdwijnen", () => {
   assert.doesNotMatch(html, /javascript:/);
 });
 
-test("magVolledigLezen: gratis voor iedereen, Pro alleen voor Pro-leden en admin", () => {
-  assert.equal(magVolledigLezen("gratis", null), true);
+test("magVolledigLezen: gratis voor elk lid, Pro alleen voor Pro-leden en admin, niets zonder account", () => {
+  assert.equal(magVolledigLezen("gratis", null), false);
+  assert.equal(magVolledigLezen("gratis", { rol: "lid", abonnement: "gratis" }), true);
   assert.equal(magVolledigLezen("pro", null), false);
   assert.equal(magVolledigLezen("pro", { rol: "lid", abonnement: "gratis" }), false);
   assert.equal(magVolledigLezen("pro", { rol: "lid", abonnement: "pro" }), true);

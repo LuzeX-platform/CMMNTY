@@ -2,17 +2,22 @@
 const slug = decodeURIComponent(location.pathname.match(/^\/artikelen\/([^/]+)/)?.[1] ?? queryParam("slug") ?? "");
 const houder = document.getElementById("artikel");
 
-function slotHtml(reden) {
-  const terug = encodeURIComponent(location.pathname);
+function slotHtml(reden, toegang) {
+  const terug = encodeURIComponent(location.pathname + location.search);
   if (reden === "inloggen") {
+    // Zonder account is niets te lezen, ook geen gratis artikel. De tekst noemt wat je nodig
+    // hebt: voor een gratis artikel is een gratis account genoeg, voor Pro daarna nog Pro.
+    const pro = toegang === "pro";
     return `
       <div class="panel slot">
-        <span class="badge badge-pro">Pro</span>
+        ${pro ? '<span class="badge badge-pro">Pro</span>' : '<span class="badge badge-gratis">Gratis</span>'}
         <h2 style="margin-top:12px">Log in om verder te lezen</h2>
-        <p>Dit is een Pro-artikel. Log in met je Pro-account om het hele artikel te lezen.</p>
+        <p>${pro
+          ? "Dit is een Pro-artikel. Log in met je Pro-account om het hele artikel te lezen."
+          : "Met een gratis account lees je dit artikel en alle andere gratis artikelen. Je hebt alleen een e-mailadres en een wachtwoord nodig."}</p>
         <div class="formulier-acties">
-          <a class="pil-knop pil-knop-donker" href="/inloggen.html?terug=${terug}">Inloggen</a>
-          <a class="pil-knop pil-knop-glas" href="/registreren.html">Gratis lid worden</a>
+          <a class="pil-knop pil-knop-donker" href="/registreren.html">Gratis account maken</a>
+          <a class="pil-knop pil-knop-glas" href="/inloggen.html?terug=${terug}">Inloggen</a>
         </div>
       </div>`;
   }
@@ -20,9 +25,9 @@ function slotHtml(reden) {
     <div class="panel slot">
       <span class="badge badge-pro">Pro</span>
       <h2 style="margin-top:12px">Dit artikel is voor Pro-leden</h2>
-      <p>Pro-abonnementen komen binnenkort. Wil je nu al toegang? Stuur Job een mailtje.</p>
+      <p>Met Pro lees je alle Pro-artikelen, voor € 5 per maand.</p>
       <div class="formulier-acties">
-        <a class="pil-knop pil-knop-donker" href="mailto:job@luzex.nl?subject=Pro-toegang%20CMMNTY">Mail Job</a>
+        <a class="pil-knop pil-knop-donker" href="/dashboard/account.html">Pro worden</a>
         <a class="pil-knop pil-knop-glas" href="/artikelen.html?toegang=gratis">Gratis artikelen lezen</a>
       </div>
     </div>`;
@@ -49,7 +54,7 @@ function slotHtml(reden) {
       </header>
       ${a.inhoudHtml !== null
         ? `<div class="artikel-inhoud">${a.inhoudHtml /* door de server gesaneerd (sanitize-html) */}</div>`
-        : slotHtml(a.vergrendeld)}`;
+        : slotHtml(a.vergrendeld, a.toegang)}`;
 
     if (a.gerelateerd.length) {
       document.getElementById("gerelateerd").innerHTML = a.gerelateerd.map(artikelKaartHtml).join("");

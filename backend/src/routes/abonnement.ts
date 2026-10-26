@@ -44,7 +44,7 @@ export async function abonnementRoutes(app: FastifyInstance) {
     if (!stripeKlantId) {
       const klant = await stripe.customers.create({
         email: gebruiker.email,
-        name: gebruiker.naam,
+        name: gebruiker.naam || undefined,
         metadata: { gebruikerId: gebruiker.id },
       });
       stripeKlantId = klant.id;
