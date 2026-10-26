@@ -123,8 +123,7 @@ function tekenBalk(gebruiker) {
   houder.innerHTML = `
     <div class="balk">
       <a href="/" class="merk" aria-label="LuzeX CMMNTY — naar de homepage">
-        <span class="brand-logo" role="img" aria-label="LuzeX"></span>
-        <span class="merk-product">CMMNTY</span>
+        <span class="brand-logo" role="img" aria-label="CMMNTY — Samen beter in de zorg."></span>
       </a>
       <nav class="balk-nav" aria-label="Hoofdnavigatie">${links}</nav>
       <div class="balk-acties">${acties}</div>
@@ -138,7 +137,7 @@ function tekenVoet() {
   voet.innerHTML = `
     <div class="voet-boven">
       <div class="voet-merk">
-        <a href="https://luzex.nl" class="brand-logo" role="img" aria-label="LuzeX — Minder. Maar beter."></a>
+        <a href="https://luzex.nl" class="brand-logo" role="img" aria-label="CMMNTY — Samen beter in de zorg."></a>
         <p class="voet-tagline">Zorginnovatie in jip-en-janneke taal. Voor zorgprofessionals die het zelf doen.</p>
       </div>
       <div class="voet-kolom">

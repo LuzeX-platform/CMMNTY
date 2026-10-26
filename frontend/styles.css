@@ -345,11 +345,14 @@ body::after {
 
 /* ---------- Merk ---------- */
 
+/* CMMNTY-lockup: 707,3 × 126 (= 5,613). Het is 126 hoog in plaats van 120 omdat de
+   g van "zorg" een onderstok heeft; daarom 277px breed, zodat de letters even groot staan als
+   in de andere LuzeX-producten (47px voor de bovenste 120). */
 .brand-logo {
   display: block;
-  width: 225px;
-  aspect-ratio: 4.789;
-  background-image: url("/assets/luzex-logo-zwart.svg");
+  width: 277px;
+  aspect-ratio: 5.613;
+  background-image: url("/assets/cmmnty-logo-zwart.svg");
   background-repeat: no-repeat;
   background-position: left center;
   background-size: contain;
@@ -358,7 +361,7 @@ body::after {
 
 @media (prefers-color-scheme: dark) {
   .brand-logo {
-    background-image: url("/assets/luzex-logo-wit.svg");
+    background-image: url("/assets/cmmnty-logo-wit.svg");
   }
 }
 
@@ -371,15 +374,6 @@ body::after {
   flex-shrink: 0;
 }
 
-.merk-product {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  padding-left: 12px;
-  border-left: 1px solid var(--border-strong);
-}
 
 /* ---------- De zwevende balk (zelfde onderdeel als op luzex.nl en ACCRD) ---------- */
 
@@ -445,12 +439,9 @@ body::after {
   }
 
   .balk .brand-logo {
-    width: min(45vw, 160px);
+    width: min(45vw, 197px);
   }
 
-  .merk-product {
-    display: none;
-  }
 
   .balk-acties {
     margin-left: auto;
