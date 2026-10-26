@@ -1175,6 +1175,12 @@ a.badge {
   margin-bottom: 20px;
 }
 
+/* "Innovatie in de zorg." past op desktop niet op één regel; zonder dit breekt de kop als
+   "Innovatie in de / zorg." en hangt het lidwoord los van zijn woord. */
+.hero h1 .geen-afbreking {
+  white-space: nowrap;
+}
+
 .hero .lead {
   margin-bottom: 32px;
 }
