@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<defs>
+  <filter id="licht" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="95"/></filter>
+  <linearGradient id="glas" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff" stop-opacity="0.66"/>
+    <stop offset="0.46" stop-color="#fff" stop-opacity="0.32"/>
+    <stop offset="1" stop-color="#fff" stop-opacity="0.48"/>
+  </linearGradient>
+  <linearGradient id="glasdun" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff" stop-opacity="0.55"/>
+    <stop offset="1" stop-color="#fff" stop-opacity="0.28"/>
+  </linearGradient>
+  <filter id="schaduw" x="-40%" y="-40%" width="180%" height="190%"><feDropShadow dx="0" dy="26" stdDeviation="26" flood-color="#1d1d1f" flood-opacity="0.20"/></filter>
+  <filter id="schaduwklein" x="-40%" y="-40%" width="180%" height="190%"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#1d1d1f" flood-opacity="0.14"/></filter>
+  <marker id="pijl" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#3b2e24" fill-opacity="0.45"/></marker>
+</defs>
+<rect width="1600" height="900" fill="#cfc6bc"/>
+<g filter="url(#licht)"><circle cx="1350" cy="110" r="340" fill="#c98a63" opacity="0.55"/><circle cx="170" cy="770" r="300" fill="#8d9472" opacity="0.42"/><circle cx="250" cy="150" r="250" fill="#e8dccc" opacity="0.7"/><circle cx="1460" cy="870" r="330" fill="#3b2e24" opacity="0.26"/></g>
+<rect x="300" y="120" width="320" height="660" rx="54" fill="#1d1d1f" filter="url(#schaduw)"/>
+<rect x="316" y="136" width="288" height="628" rx="42" fill="#d8b49a"/>
+<rect x="420" y="152" width="80" height="20" rx="10" fill="#1d1d1f"/>
+<path d="M450 410 C 480 380, 520 396, 516 432 C 512 470, 470 480, 446 462 C 424 446, 428 424, 450 410 Z" fill="#3b2e24" fill-opacity="0.75"/>
+<circle cx="474" cy="436" r="86" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="14 12"/>
+<circle cx="460" cy="680" r="34" fill="#fff" stroke="#1d1d1f" stroke-opacity="0.3" stroke-width="6"/>
+<path d="M640 450 C 690 450, 710 450, 760 450" fill="none" stroke="#3b2e24" stroke-opacity="0.4" stroke-width="4" stroke-dasharray="2 11" stroke-linecap="round" marker-end="url(#pijl)"/>
+<rect x="780" y="240" width="330" height="420" rx="32" fill="url(#glas)" stroke="#fff" stroke-opacity="0.65" stroke-width="2" filter="url(#schaduw)" /><path d="M812 241.5 H1078" stroke="#fff" stroke-opacity="0.95" stroke-width="2" stroke-linecap="round"/><rect x="820" y="284" width="140" height="16" rx="8.0" fill="#1d1d1f" fill-opacity="0.85"/>
+<circle cx="860" cy="380" r="30" fill="#248a3d" fill-opacity="0.25"/>
+<circle cx="950" cy="380" r="30" fill="#d99a3a" fill-opacity="0.95"/>
+<circle cx="1040" cy="380" r="30" fill="#c98a63" fill-opacity="0.25"/>
+<rect x="820" y="450" width="250" height="12" rx="6.0" fill="#1d1d1f" fill-opacity="0.14"/><rect x="820" y="476" width="200" height="12" rx="6.0" fill="#1d1d1f" fill-opacity="0.1"/>
+<rect x="820" y="560" width="250" height="56" rx="28" fill="#1d1d1f"/><rect x="880" y="582" width="130" height="12" rx="6" fill="#f5efe7" fill-opacity="0.8"/>
+<path d="M1120 450 C 1160 450, 1180 450, 1220 450" fill="none" stroke="#3b2e24" stroke-opacity="0.4" stroke-width="4" stroke-dasharray="2 11" stroke-linecap="round" marker-end="url(#pijl)"/>
+<g filter="url(#schaduw)"><path d="M1240 430 L1340 350 L1440 430 V600 H1240 Z" fill="url(#glas)" stroke="#fff" stroke-opacity="0.7" stroke-width="2"/></g>
+<rect x="1318" y="420" width="44" height="120" rx="8" fill="#c98a63"/><rect x="1280" y="458" width="120" height="44" rx="8" fill="#c98a63"/>
+</svg>
