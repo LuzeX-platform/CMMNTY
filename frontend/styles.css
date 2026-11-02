@@ -1582,3 +1582,18 @@ table.tabel {
     grid-column: 1 / -1;
   }
 }
+
+/* ---------- Admin: Stripe-status en klaargezette cadeaus ---------- */
+
+/* Het ✓ of ✗ vooraan is al de markering; een bolletje ervoor zou dubbel zijn. */
+.stripe-status {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: grid;
+  gap: 6px;
+}
+
+#uitnodigingen-blok h3 {
+  margin-top: 20px;
+}

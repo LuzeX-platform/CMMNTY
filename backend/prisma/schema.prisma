@@ -104,4 +104,22 @@ model Instellingen {
   id                    String @id @default("standaard")
   // "wekelijks", "maandelijks" of "uit"
   nieuwsbriefFrequentie String @default("wekelijks")
+  // Ondertekeningsgeheim van de Stripe-webhook die de admin met één klik aanmaakt (Admin →
+  // Gebruikers → Stripe). Liever in Render (STRIPE_WEBHOOK_GEHEIM, gaat voor), maar het met de
+  // hand overzetten uit een Render Shell bleek in de praktijk niet te lukken. Het geheim
+  // ondertekent alleen binnenkomende webhooks; wie het kent, kan hooguit nep-gebeurtenissen
+  // sturen, en de database staat al achter dezelfde toegang als de Stripe-sleutel zelf.
+  stripeWebhookGeheim   String?
+  stripeWebhookId       String?
+}
+
+// Pro cadeau voor een e-mailadres dat (nog) geen bevestigd account heeft. Wordt ingewisseld op het
+// moment dat iemand dat adres bevestigt, niet bij het aanmelden: pas dan is bewezen dat het adres
+// van die persoon is. Nooit verwijderd: ingewisseld of ingetrokken wordt een datum.
+model ProUitnodiging {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  aangemaaktOp  DateTime  @default(now())
+  ingewisseldOp DateTime?
+  ingetrokkenOp DateTime?
 }

@@ -273,12 +273,20 @@ async function gebruikersPagina() {
             : `<select data-id="${g.id}" aria-label="Abonnement van ${escapeHtml(g.naam)}" style="width:auto">
                  <option value="gratis" ${g.abonnement === "gratis" ? "selected" : ""}>Gratis</option>
                  <option value="pro" ${g.abonnement === "pro" ? "selected" : ""}>Pro</option>
-               </select>${g.abonnementBron ? `<br><span class="subtitle">via ${g.abonnementBron === "accrd" ? "ACCRD" : "SCRNN"}</span>` : ""}`
+               </select>${g.abonnement === "pro" ? `<br><span class="subtitle">${{ accrd: "via ACCRD", scrnn: "via SCRNN", handmatig: "cadeau" }[g.abonnementBron] ?? "betaald"}</span>` : ""}`
         }</td>
       </tr>`,
     )
     .join("");
 
+  // gebruikersPagina() draait opnieuw na een cadeau; de luisteraar maar één keer koppelen,
+  // anders gaat elke wijziging daarna dubbel naar de server.
+  if (tbody.dataset.gekoppeld) {
+    await laadUitnodigingen();
+    await laadStripe();
+    return;
+  }
+  tbody.dataset.gekoppeld = "1";
   tbody.addEventListener("change", async (e) => {
     const select = e.target.closest("select[data-id]");
     if (!select) return;
@@ -289,6 +297,85 @@ async function gebruikersPagina() {
       alert(foutTekst(fout));
     } finally {
       select.disabled = false;
+    }
+  });
+
+  await laadUitnodigingen();
+  await laadStripe();
+}
+
+async function laadUitnodigingen() {
+  const { uitnodigingen } = await api("/api/admin/pro-uitnodigingen");
+  document.getElementById("uitnodigingen-blok").hidden = uitnodigingen.length === 0;
+  document.getElementById("uitnodigingen").innerHTML = uitnodigingen
+    .map(
+      (u) => `<tr>
+        <td>${escapeHtml(u.email)}</td>
+        <td>${formatteerDatum(u.aangemaaktOp)}</td>
+        <td><button type="button" class="secondary" data-uitnodiging-intrekken="${escapeHtml(u.id)}">Intrekken</button></td>
+      </tr>`,
+    )
+    .join("");
+}
+
+async function laadStripe() {
+  const s = await api("/api/admin/stripe");
+  const regel = (ok, tekst) => `<li>${ok ? "✓" : "✗"} ${tekst}</li>`;
+  document.getElementById("stripe-status").innerHTML = [
+    regel(s.sleutel, s.sleutel ? `Geheime sleutel staat in Render (${s.sleutel === "live" ? "live" : "testmodus"}).` : "Geheime sleutel ontbreekt: zet <code>STRIPE_GEHEIME_SLEUTEL</code> in Render."),
+    regel(s.prijs, s.prijs ? "Prijs staat in Render." : "Prijs ontbreekt: zet <code>STRIPE_PRIJS_ID</code> (de price_…-code) in Render."),
+    regel(s.webhook, s.webhook ? `Webhook is ingesteld${s.webhook === "render" ? " via Render" : ""}.` : "Webhook ontbreekt. Klik op de knop hieronder, dan maakt CMMNTY hem in Stripe aan."),
+  ].join("");
+  document.getElementById("webhook-acties").hidden = Boolean(s.webhook) || !s.sleutel;
+}
+
+if (pagina === "gebruikers") {
+  document.getElementById("cadeau-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const fout = document.getElementById("cadeau-fout");
+    const succes = document.getElementById("cadeau-succes");
+    const veld = document.getElementById("cadeau-email");
+    const adres = veld.value.trim();
+    fout.textContent = "";
+    succes.textContent = "";
+    try {
+      const { status } = await api("/api/admin/pro-uitnodigingen", { methode: "POST", body: { email: adres } });
+      succes.textContent =
+        status === "toegekend" ? `${adres} heeft nu Pro.` : `Klaargezet: ${adres} krijgt Pro zodra dit adres een account heeft en bevestigd is.`;
+      veld.value = "";
+      await gebruikersPagina();
+    } catch (f) {
+      fout.textContent = foutTekst(f);
+    }
+  });
+
+  document.getElementById("uitnodigingen").addEventListener("click", async (event) => {
+    const id = event.target.dataset.uitnodigingIntrekken;
+    if (!id) return;
+    event.target.disabled = true;
+    try {
+      await api(`/api/admin/pro-uitnodigingen/${encodeURIComponent(id)}/intrekken`, { methode: "POST" });
+      await laadUitnodigingen();
+    } catch (f) {
+      document.getElementById("cadeau-fout").textContent = foutTekst(f);
+      event.target.disabled = false;
+    }
+  });
+
+  document.getElementById("webhook-knop").addEventListener("click", async (event) => {
+    const fout = document.getElementById("stripe-fout");
+    const succes = document.getElementById("stripe-succes");
+    fout.textContent = "";
+    succes.textContent = "";
+    event.target.disabled = true;
+    try {
+      await api("/api/admin/stripe/webhook", { methode: "POST" });
+      succes.textContent = "De webhook staat in Stripe en CMMNTY gebruikt hem meteen. Je hoeft niets meer in Render te zetten.";
+      await laadStripe();
+    } catch (f) {
+      fout.textContent = foutTekst(f);
+    } finally {
+      event.target.disabled = false;
     }
   });
 }

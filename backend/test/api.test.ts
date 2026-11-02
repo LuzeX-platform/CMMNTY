@@ -222,6 +222,56 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     }
   });
 
+  test("Pro cadeau op e-mailadres: klaargezet, en pas ingewisseld bij bevestigen", async () => {
+    const admin = { cookie: adminCookie };
+    const klaar = await app.inject({ method: "POST", url: "/api/admin/pro-uitnodigingen", headers: admin, payload: { email: "Fee@Test.nl" } });
+    assert.equal(klaar.json().status, "klaargezet");
+    const lijst = (await app.inject({ method: "GET", url: "/api/admin/pro-uitnodigingen", headers: admin })).json();
+    assert.ok(lijst.uitnodigingen.some((u: { email: string }) => u.email === "fee@test.nl"));
+
+    await app.inject({ method: "POST", url: "/api/auth/registreren", payload: { email: "fee@test.nl", wachtwoord: "geheim123" } });
+    assert.equal((await prisma.gebruiker.findUniqueOrThrow({ where: { email: "fee@test.nl" } })).abonnement, "gratis");
+
+    const bevestig = await app.inject({ method: "POST", url: "/api/auth/bevestigen", payload: { token: laatsteLink("/bevestigen.html") } });
+    assert.equal(bevestig.statusCode, 200);
+    const fee = await prisma.gebruiker.findUniqueOrThrow({ where: { email: "fee@test.nl" } });
+    assert.equal(fee.abonnement, "pro");
+    assert.equal(fee.abonnementBron, "handmatig");
+    assert.ok((await prisma.proUitnodiging.findUniqueOrThrow({ where: { email: "fee@test.nl" } })).ingewisseldOp);
+
+    // Wie een cadeau heeft, kan het niet per ongeluk inruilen voor Kruisproduct-Pro.
+    const claim = await app.inject({ method: "POST", url: "/api/account/kruisproduct-claim", headers: { cookie: cookieUit(bevestig) }, payload: { kvkNummer: "12345678" } });
+    assert.equal(claim.statusCode, 409);
+    assert.equal(claim.json().errorCode, "AL_PRO");
+
+    // Een bevestigd account met Pro weigert een tweede cadeau; zonder Pro krijgt het meteen Pro.
+    assert.equal((await app.inject({ method: "POST", url: "/api/admin/pro-uitnodigingen", headers: admin, payload: { email: "fee@test.nl" } })).statusCode, 409);
+    await prisma.gebruiker.update({ where: { id: fee.id }, data: { abonnement: "gratis", abonnementBron: null } });
+    assert.equal((await app.inject({ method: "POST", url: "/api/admin/pro-uitnodigingen", headers: admin, payload: { email: "fee@test.nl" } })).json().status, "toegekend");
+
+    // Ingetrokken: bevestigen wisselt dan niets meer in.
+    await app.inject({ method: "POST", url: "/api/admin/pro-uitnodigingen", headers: admin, payload: { email: "gijs@test.nl" } });
+    const gijs = await prisma.proUitnodiging.findUniqueOrThrow({ where: { email: "gijs@test.nl" } });
+    assert.equal((await app.inject({ method: "POST", url: `/api/admin/pro-uitnodigingen/${gijs.id}/intrekken`, headers: admin })).statusCode, 200);
+    await app.inject({ method: "POST", url: "/api/auth/registreren", payload: { email: "gijs@test.nl", wachtwoord: "geheim123" } });
+    await app.inject({ method: "POST", url: "/api/auth/bevestigen", payload: { token: laatsteLink("/bevestigen.html") } });
+    assert.equal((await prisma.gebruiker.findUniqueOrThrow({ where: { email: "gijs@test.nl" } })).abonnement, "gratis");
+
+    // Een lid mag geen cadeaus uitdelen.
+    assert.equal((await app.inject({ method: "POST", url: "/api/admin/pro-uitnodigingen", headers: { cookie: lidCookie }, payload: { email: "x@test.nl" } })).statusCode, 403);
+
+    await prisma.gebruiker.deleteMany({ where: { email: { in: ["fee@test.nl", "gijs@test.nl"] } } });
+  });
+
+  test("Stripe-status in het beheer: zonder sleutel geen webhook-knop, en nooit een geheim terug", async () => {
+    const res = (await app.inject({ method: "GET", url: "/api/admin/stripe", headers: { cookie: adminCookie } })).json();
+    assert.equal(res.sleutel, null);
+    assert.equal(res.webhook, null);
+    assert.match(res.webhookUrl, /\/api\/stripe\/webhook$/);
+    const knop = await app.inject({ method: "POST", url: "/api/admin/stripe/webhook", headers: { cookie: adminCookie } });
+    assert.equal(knop.statusCode, 503);
+  });
+
   test("gratis lid ziet Pro nog steeds niet; na upgrade door admin wel", async () => {
     const voor = (await app.inject({ method: "GET", url: "/api/artikelen/pro-verdieping", headers: { cookie: lidCookie } })).json();
     assert.equal(voor.vergrendeld, "pro_nodig");

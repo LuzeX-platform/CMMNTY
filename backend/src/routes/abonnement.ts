@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import type Stripe from "stripe";
 import { prisma } from "../db.js";
 import { appUrl } from "../nieuwsbriefVersturen.js";
-import { proPrijsId, stripeClient } from "../stripe.js";
+import { proPrijsId, stripeClient, webhookGeheim } from "../stripe.js";
 import { requireLid } from "../plugins/requireAuth.js";
 
 // Checkout en Billing Portal zijn allebei door Stripe gehost: we sturen de gebruiker naar een
@@ -88,7 +88,7 @@ export async function abonnementRoutes(app: FastifyInstance) {
   // Origin-header, en Stripe's server-naar-server-request stuurt er geen mee.
   app.post("/api/stripe/webhook", async (request, reply) => {
     const stripe = stripeClient();
-    const geheim = process.env.STRIPE_WEBHOOK_GEHEIM;
+    const geheim = await webhookGeheim();
     if (!stripe || !geheim) return reply.code(503).send({ errorCode: "ABONNEMENT_NIET_BESCHIKBAAR" });
 
     const handtekening = request.headers["stripe-signature"];

@@ -4,6 +4,7 @@ import { prisma } from "../db.js";
 import { leestijdMinuten, maakSlug, publicatieVolgorde, renderMarkdown } from "../artikelen.js";
 import { requireAdmin } from "../plugins/requireAuth.js";
 import { verstuurMail } from "../mailer.js";
+import { stripeClient } from "../stripe.js";
 import {
   appUrl,
   artikelenVoorNieuwsbrief,
@@ -185,20 +186,120 @@ export async function adminRoutes(app: FastifyInstance) {
     return { gebruikers };
   });
 
-  // Zonder betaling (MVP) zet Job hier handmatig iemand op Pro. Stripe vervangt dit later.
-  // Zet ook abonnementBron én kruisproductKvkNummer op null: dit is een bewuste, handmatige
-  // keuze, en kruisproductKvkNummer is het veld waarop kruisproductCron.ts filtert wie het mag
-  // aanraken — zonder dit zou een latere cron-run deze handmatige keuze stilletjes terugdraaien.
+  // Job zet hier handmatig iemand op Pro (een cadeau) of terug op gratis. abonnementBron wordt
+  // "handmatig" bij Pro, zodat het lid op zijn account ziet dat hij niets betaalt, en null bij
+  // gratis. kruisproductKvkNummer gaat altijd op null: dat is het veld waarop kruisproductCron.ts
+  // filtert wie het mag aanraken — zonder dit zou een latere cron-run deze handmatige keuze
+  // stilletjes terugdraaien.
   app.patch("/api/admin/gebruikers/:id", async (request, reply) => {
     const { id } = request.params as { id: string };
     const parsed = z.object({ abonnement: z.enum(["gratis", "pro"]) }).safeParse(request.body);
     if (!parsed.success) return reply.code(400).send({ errorCode: "ONGELDIGE_INVOER" });
     const { count } = await prisma.gebruiker.updateMany({
       where: { id },
-      data: { ...parsed.data, abonnementBron: null, kruisproductKvkNummer: null },
+      data: {
+        abonnement: parsed.data.abonnement,
+        abonnementBron: parsed.data.abonnement === "pro" ? "handmatig" : null,
+        kruisproductKvkNummer: null,
+      },
     });
     if (count === 0) return reply.code(404).send({ errorCode: "NIET_GEVONDEN" });
     return { ok: true };
+  });
+
+  // ---------- Pro cadeau op e-mailadres ----------
+
+  app.get("/api/admin/pro-uitnodigingen", async () => ({
+    uitnodigingen: await prisma.proUitnodiging.findMany({
+      where: { ingewisseldOp: null, ingetrokkenOp: null },
+      orderBy: { aangemaaktOp: "desc" },
+      select: { id: true, email: true, aangemaaktOp: true },
+    }),
+  }));
+
+  // Heeft het adres al een bevestigd account, dan krijgt dat meteen Pro; anders blijft het cadeau
+  // klaarstaan tot iemand dat adres bevestigt (zie proUitnodiging.ts).
+  app.post("/api/admin/pro-uitnodigingen", async (request, reply) => {
+    const parsed = z.object({ email: z.string().trim().toLowerCase().email().max(200) }).safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ errorCode: "ONGELDIGE_INVOER", bericht: "Vul een geldig e-mailadres in." });
+    const { email } = parsed.data;
+
+    const gebruiker = await prisma.gebruiker.findUnique({ where: { email } });
+    if (gebruiker?.rol === "admin") return reply.code(409).send({ errorCode: "AL_PRO", bericht: "Dit is het admin-account: dat leest altijd alles." });
+    if (gebruiker?.abonnement === "pro") return reply.code(409).send({ errorCode: "AL_PRO", bericht: "Dit account heeft al Pro." });
+    if (gebruiker?.emailBevestigdOp) {
+      await prisma.gebruiker.update({
+        where: { id: gebruiker.id },
+        data: { abonnement: "pro", abonnementBron: "handmatig", kruisproductKvkNummer: null },
+      });
+      return { status: "toegekend" };
+    }
+
+    // Opnieuw uitnodigen na intrekken zet dezelfde rij weer open (email is uniek).
+    await prisma.proUitnodiging.upsert({
+      where: { email },
+      create: { email },
+      update: { aangemaaktOp: new Date(), ingewisseldOp: null, ingetrokkenOp: null },
+    });
+    return { status: "klaargezet" };
+  });
+
+  app.post("/api/admin/pro-uitnodigingen/:id/intrekken", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const uitnodiging = await prisma.proUitnodiging.findUnique({ where: { id } });
+    if (!uitnodiging) return reply.code(404).send({ errorCode: "NIET_GEVONDEN" });
+    if (!uitnodiging.ingewisseldOp && !uitnodiging.ingetrokkenOp) {
+      await prisma.proUitnodiging.update({ where: { id }, data: { ingetrokkenOp: new Date() } });
+    }
+    return { ok: true };
+  });
+
+  // ---------- Stripe ----------
+
+  // Wat er van de Stripe-koppeling klaarstaat, zonder ooit een sleutel of geheim terug te geven.
+  app.get("/api/admin/stripe", async () => {
+    const sleutel = process.env.STRIPE_GEHEIME_SLEUTEL ?? "";
+    const instellingen = await prisma.instellingen.findUnique({ where: { id: "standaard" } });
+    return {
+      sleutel: sleutel ? (sleutel.startsWith("sk_live_") || sleutel.startsWith("rk_live_") ? "live" : "test") : null,
+      prijs: Boolean(process.env.STRIPE_PRIJS_ID),
+      webhook: process.env.STRIPE_WEBHOOK_GEHEIM ? "render" : instellingen?.stripeWebhookGeheim ? "knop" : null,
+      webhookUrl: `${appUrl()}/api/stripe/webhook`,
+    };
+  });
+
+  // Maakt de webhook in Stripe aan en bewaart het geheim zelf, zodat niemand het uit een Render
+  // Shell hoeft over te zetten. Bestaat er al een endpoint naar dit adres, dan is het geheim
+  // daarvan niet meer op te vragen (Stripe toont het alleen bij aanmaken): dat endpoint wordt
+  // vervangen. Het wijst naar ons eigen adres, dus er hangt niets anders aan.
+  app.post("/api/admin/stripe/webhook", async (_request, reply) => {
+    const stripe = stripeClient();
+    if (!stripe) {
+      return reply.code(503).send({ errorCode: "STRIPE_NIET_INGESTELD", bericht: "Zet eerst STRIPE_GEHEIME_SLEUTEL in Render en deploy opnieuw." });
+    }
+    // Staat het geheim al in Render, dan hoort daar een bestaand endpoint bij; dat vervangen zou
+    // de werkende koppeling breken, want Render's geheim gaat voor (zie webhookGeheim()).
+    if (process.env.STRIPE_WEBHOOK_GEHEIM) {
+      return reply.code(409).send({ errorCode: "WEBHOOK_AL_INGESTELD", bericht: "De webhook is al ingesteld via Render. Er hoeft niets te gebeuren." });
+    }
+    const url = `${appUrl()}/api/stripe/webhook`;
+    try {
+      const bestaand = await stripe.webhookEndpoints.list({ limit: 100 });
+      for (const oud of bestaand.data.filter((w) => w.url === url)) await stripe.webhookEndpoints.del(oud.id);
+      const nieuw = await stripe.webhookEndpoints.create({
+        url,
+        enabled_events: ["checkout.session.completed", "customer.subscription.updated", "customer.subscription.deleted"],
+        description: "CMMNTY Pro",
+      });
+      await prisma.instellingen.upsert({
+        where: { id: "standaard" },
+        create: { id: "standaard", stripeWebhookGeheim: nieuw.secret ?? null, stripeWebhookId: nieuw.id },
+        update: { stripeWebhookGeheim: nieuw.secret ?? null, stripeWebhookId: nieuw.id },
+      });
+      return { ok: true, vervangen: bestaand.data.some((w) => w.url === url) };
+    } catch (fout) {
+      return reply.code(502).send({ errorCode: "STRIPE_FOUT", bericht: `Stripe gaf een fout: ${(fout as Error).message}` });
+    }
   });
 
   // ---------- Nieuwsbrief ----------

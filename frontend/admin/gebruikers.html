@@ -28,8 +28,36 @@
     </nav>
     <div class="stat-rij" id="stats"></div>
     <div class="panel">
+      <h2>Pro cadeau geven</h2>
+      <p class="subtitle">Vul een e-mailadres in. Heeft dat adres al een account, dan krijgt het meteen Pro. Zo niet, dan krijgt het Pro zodra iemand zich met dit adres aanmeldt en het bevestigt.</p>
+      <form id="cadeau-form" novalidate>
+        <label for="cadeau-email">E-mailadres</label>
+        <input id="cadeau-email" type="email" autocomplete="off" required />
+        <div class="formulier-acties"><button type="submit">Pro geven</button></div>
+        <p class="error" id="cadeau-fout" role="alert"></p>
+        <p class="success" id="cadeau-succes" role="status"></p>
+      </form>
+      <div id="uitnodigingen-blok" hidden>
+        <h3>Klaargezet, nog geen account</h3>
+        <div class="tabel-scroll">
+          <table class="tabel">
+            <thead><tr><th>E-mailadres</th><th>Klaargezet</th><th></th></tr></thead>
+            <tbody id="uitnodigingen"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Stripe</h2>
+      <p class="subtitle">Betaald Pro (€ 5 per maand) loopt via Stripe. Hier zie je wat er klaarstaat.</p>
+      <ul class="stripe-status" id="stripe-status"><li>Laden…</li></ul>
+      <div class="formulier-acties" id="webhook-acties" hidden><button type="button" id="webhook-knop">Webhook aanmaken</button></div>
+      <p class="error" id="stripe-fout" role="alert"></p>
+      <p class="success" id="stripe-succes" role="status"></p>
+    </div>
+    <div class="panel">
       <h2>Alle gebruikers</h2>
-      <p class="subtitle">Zolang er geen betaling is, zet je hier handmatig iemand op Pro.</p>
+      <p class="subtitle">Zet iemand hier handmatig op Pro (een cadeau) of terug op gratis.</p>
       <div class="tabel-scroll">
         <table class="tabel">
           <thead><tr><th>Naam</th><th>E-mail</th><th>Status</th><th>Nieuwsbrief</th><th>Netwerk</th><th>Lid sinds</th><th>Abonnement</th></tr></thead>
