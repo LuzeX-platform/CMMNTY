@@ -3,7 +3,8 @@ import { z } from "zod";
 import { prisma } from "../db.js";
 import { leestijdMinuten, maakSlug, publicatieVolgorde, renderMarkdown } from "../artikelen.js";
 import { requireAdmin } from "../plugins/requireAuth.js";
-import { verstuurMail } from "../mailer.js";
+import { mailStatus, verstuurMail } from "../mailer.js";
+import { wisselProUitnodigingIn } from "../proUitnodiging.js";
 import { stripeClient } from "../stripe.js";
 import {
   appUrl,
@@ -205,6 +206,44 @@ export async function adminRoutes(app: FastifyInstance) {
     });
     if (count === 0) return reply.code(404).send({ errorCode: "NIET_GEVONDEN" });
     return { ok: true };
+  });
+
+  // Voor wie de bevestigingsmail niet krijgt (mail nog niet ingesteld, of in de spam): de admin
+  // bevestigt het adres dan zelf. Wisselt ook een klaargezet Pro-cadeau in, net als de link.
+  app.post("/api/admin/gebruikers/:id/bevestigen", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const gebruiker = await prisma.gebruiker.findUnique({ where: { id } });
+    if (!gebruiker) return reply.code(404).send({ errorCode: "NIET_GEVONDEN" });
+    if (gebruiker.emailBevestigdOp) return { ok: true };
+    const bevestigd = await prisma.gebruiker.update({
+      where: { id },
+      data: { emailBevestigdOp: new Date(), bevestigTokenHash: null },
+    });
+    await wisselProUitnodigingIn(bevestigd);
+    return { ok: true };
+  });
+
+  // ---------- E-mail ----------
+
+  app.get("/api/admin/mail", async () => mailStatus());
+
+  // Echte testmail naar de admin, met de echte foutmelding van de mailserver als het misgaat.
+  // De nieuwsbrief-testmail hierboven zegt "verstuurd" ook als er geen mailserver is.
+  app.post("/api/admin/mail/test", async (request, reply) => {
+    if (!mailStatus().ingesteld) {
+      return reply.code(503).send({ errorCode: "MAIL_NIET_INGESTELD", bericht: "Er is geen mailserver ingesteld: zet SMTP_HOST en de andere SMTP-waarden in Render." });
+    }
+    const admin = await prisma.gebruiker.findUniqueOrThrow({ where: { id: request.gebruiker!.gebruikerId } });
+    try {
+      await verstuurMail({
+        naar: admin.email,
+        onderwerp: "Testmail — LuzeX CMMNTY",
+        tekst: "Deze mail komt van CMMNTY. Komt hij aan, dan werken bevestigingsmails en de nieuwsbrief ook.",
+      });
+      return { ok: true, naar: admin.email };
+    } catch (fout) {
+      return reply.code(502).send({ errorCode: "MAIL_MISLUKT", bericht: `De mailserver weigerde: ${(fout as Error).message}` });
+    }
   });
 
   // ---------- Pro cadeau op e-mailadres ----------

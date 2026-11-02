@@ -263,7 +263,7 @@ async function gebruikersPagina() {
       <tr>
         <td><strong>${escapeHtml(g.naam)}</strong>${g.profiel?.praktijknaam ? `<br><span class="subtitle">${escapeHtml(g.profiel.praktijknaam)}</span>` : ""}</td>
         <td>${escapeHtml(g.email)}</td>
-        <td>${g.rol === "admin" ? '<span class="badge badge-pro">Admin</span>' : g.emailBevestigdOp ? '<span class="badge badge-gratis">Bevestigd</span>' : '<span class="badge badge-ingepland">Onbevestigd</span>'}</td>
+        <td>${g.rol === "admin" ? '<span class="badge badge-pro">Admin</span>' : g.emailBevestigdOp ? '<span class="badge badge-gratis">Bevestigd</span>' : `<span class="badge badge-ingepland">Onbevestigd</span><br><button type="button" class="secondary" data-bevestigen="${g.id}">Bevestigen</button>`}</td>
         <td>${g.nieuwsbrief ? "Ja" : "Nee"}</td>
         <td>${g.profiel?.gepubliceerd ? "Zichtbaar" : "—"}</td>
         <td>${formatteerDatum(g.aangemaaktOp)}</td>
@@ -284,6 +284,7 @@ async function gebruikersPagina() {
   if (tbody.dataset.gekoppeld) {
     await laadUitnodigingen();
     await laadStripe();
+    await laadMail();
     return;
   }
   tbody.dataset.gekoppeld = "1";
@@ -300,8 +301,22 @@ async function gebruikersPagina() {
     }
   });
 
+  tbody.addEventListener("click", async (e) => {
+    const knop = e.target.closest("button[data-bevestigen]");
+    if (!knop) return;
+    knop.disabled = true;
+    try {
+      await api(`/api/admin/gebruikers/${knop.dataset.bevestigen}/bevestigen`, { methode: "POST" });
+      await gebruikersPagina();
+    } catch (fout) {
+      alert(foutTekst(fout));
+      knop.disabled = false;
+    }
+  });
+
   await laadUitnodigingen();
   await laadStripe();
+  await laadMail();
 }
 
 async function laadUitnodigingen() {
@@ -316,6 +331,13 @@ async function laadUitnodigingen() {
       </tr>`,
     )
     .join("");
+}
+
+async function laadMail() {
+  const m = await api("/api/admin/mail");
+  document.getElementById("mail-status").innerHTML = m.ingesteld
+    ? `<li>✓ Mailserver ingesteld: ${escapeHtml(m.server)}</li><li>✓ Afzender: ${escapeHtml(m.afzender)}</li>`
+    : "<li>✗ Geen mailserver ingesteld. Er gaat nu géén mail de deur uit: zet <code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_WACHTWOORD</code> en <code>SMTP_AFZENDER</code> in Render.</li>";
 }
 
 async function laadStripe() {
@@ -358,6 +380,22 @@ if (pagina === "gebruikers") {
       await laadUitnodigingen();
     } catch (f) {
       document.getElementById("cadeau-fout").textContent = foutTekst(f);
+      event.target.disabled = false;
+    }
+  });
+
+  document.getElementById("testmail-knop").addEventListener("click", async (event) => {
+    const fout = document.getElementById("mail-fout");
+    const succes = document.getElementById("mail-succes");
+    fout.textContent = "";
+    succes.textContent = "";
+    event.target.disabled = true;
+    try {
+      const { naar } = await api("/api/admin/mail/test", { methode: "POST" });
+      succes.textContent = `Verstuurd naar ${naar}. Kijk ook in je spam.`;
+    } catch (f) {
+      fout.textContent = foutTekst(f);
+    } finally {
       event.target.disabled = false;
     }
   });

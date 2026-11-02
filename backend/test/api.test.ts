@@ -263,6 +263,25 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     await prisma.gebruiker.deleteMany({ where: { email: { in: ["fee@test.nl", "gijs@test.nl"] } } });
   });
 
+  test("Mail in het beheer: zonder SMTP_HOST zichtbaar 'niet ingesteld', en de admin kan zelf bevestigen", async () => {
+    const admin = { cookie: adminCookie };
+    const status = (await app.inject({ method: "GET", url: "/api/admin/mail", headers: admin })).json();
+    assert.equal(status.ingesteld, false);
+    assert.equal((await app.inject({ method: "POST", url: "/api/admin/mail/test", headers: admin })).statusCode, 503);
+
+    await app.inject({ method: "POST", url: "/api/admin/pro-uitnodigingen", headers: admin, payload: { email: "hans@test.nl" } });
+    await app.inject({ method: "POST", url: "/api/auth/registreren", payload: { email: "hans@test.nl", wachtwoord: "geheim123" } });
+    const hans = await prisma.gebruiker.findUniqueOrThrow({ where: { email: "hans@test.nl" } });
+    assert.equal((await app.inject({ method: "POST", url: `/api/admin/gebruikers/${hans.id}/bevestigen`, headers: { cookie: lidCookie } })).statusCode, 403);
+    assert.equal((await app.inject({ method: "POST", url: `/api/admin/gebruikers/${hans.id}/bevestigen`, headers: admin })).statusCode, 200);
+    const na = await prisma.gebruiker.findUniqueOrThrow({ where: { id: hans.id } });
+    assert.ok(na.emailBevestigdOp);
+    assert.equal(na.abonnement, "pro");
+    const inloggen = await app.inject({ method: "POST", url: "/api/auth/inloggen", payload: { email: "hans@test.nl", wachtwoord: "geheim123" } });
+    assert.equal(inloggen.statusCode, 200);
+    await prisma.gebruiker.delete({ where: { id: hans.id } });
+  });
+
   test("Stripe-status in het beheer: zonder sleutel geen webhook-knop, en nooit een geheim terug", async () => {
     const res = (await app.inject({ method: "GET", url: "/api/admin/stripe", headers: { cookie: adminCookie } })).json();
     assert.equal(res.sleutel, null);
