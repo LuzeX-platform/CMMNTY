@@ -27,6 +27,13 @@ function afzender(): string {
   return process.env.SMTP_AFZENDER ?? "LuzeX CMMNTY <cmmnty@mail.luzex.nl>";
 }
 
+/** Voor het beheer: staat de mail ingesteld, en vanaf welk adres? Nooit de gebruikersnaam of
+ *  het wachtwoord. Zonder SMTP_HOST "werkt" alles zonder fout maar komt er niets aan — dat moet
+ *  ergens zichtbaar zijn zonder in de Render-logs te hoeven zoeken. */
+export function mailStatus(): { ingesteld: boolean; server: string | null; afzender: string } {
+  return { ingesteld: Boolean(process.env.SMTP_HOST), server: process.env.SMTP_HOST ?? null, afzender: afzender() };
+}
+
 interface Mail {
   naar: string;
   onderwerp: string;
