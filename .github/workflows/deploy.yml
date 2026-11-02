@@ -1,0 +1,54 @@
+# Zet een deploy naar Render in gang zodra main verandert.
+#
+# Deze service draait op Docker: een build duurt minuten in plaats van seconden.
+# Daardoor is "is het al live?" hier een terugkerende vraag. Elke poging krijgt
+# een regel in het tabblad Actions, met commit en het antwoord van Render, zodat
+# die vraag in GitHub te beantwoorden is in plaats van in het Render-dashboard.
+#
+# EENMALIG INSTELLEN
+#   1. Render -> de service luzex-community -> Settings -> Deploy Hook.
+#      Kopieer die URL (vorm: https://api.render.com/deploy/srv-XXXX?key=YYYY).
+#   2. GitHub -> deze repo -> Settings -> Secrets and variables -> Actions ->
+#      New repository secret, naam RENDER_DEPLOY_HOOK, plak de URL.
+#
+# De URL bevat een sleutel en hoort daarom in een secret, niet in dit bestand.
+
+name: Deploy naar Render
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:        # handmatig te starten via de knop "Run workflow"
+
+concurrency:
+  # Bij meerdere pushes kort na elkaar telt alleen de laatste; oudere deploys
+  # worden afgebroken zodat Render niet een verouderde commit uitrolt.
+  group: render-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Controleer of de deploy hook is ingesteld
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::error::Secret RENDER_DEPLOY_HOOK ontbreekt. Zie de instructies boven in .github/workflows/deploy.yml."
+            exit 1
+          fi
+
+      - name: Vraag Render om een nieuwe deploy
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          set -euo pipefail
+          # --fail-with-body laat de foutmelding van Render zien in plaats van
+          # alleen een exitcode; zonder --fail slikt curl een 4xx stilzwijgend in.
+          antwoord=$(curl --silent --show-error --fail-with-body \
+                          --retry 3 --retry-delay 5 --retry-all-errors \
+                          --max-time 30 -X POST "$HOOK")
+          echo "Render antwoordde: $antwoord"
+          echo "Deploy aangevraagd voor commit ${GITHUB_SHA}." >> "$GITHUB_STEP_SUMMARY"
+          echo "Docker-build: reken op enkele minuten. Volg de voortgang in Render onder Events." >> "$GITHUB_STEP_SUMMARY"
