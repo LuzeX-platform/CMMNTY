@@ -127,6 +127,8 @@ function koppelFormulier(form, foutEl, succesEl, handler) {
     const proFout = document.getElementById("pro-fout");
     if (gebruiker.abonnement === "pro" && gebruiker.abonnementBron === "accrd") {
       proStatus.textContent = "Je hebt al Pro via je ACCRD-account (Kruisproduct-Pro).";
+    } else if (gebruiker.abonnement === "pro" && gebruiker.abonnementBron === "handmatig") {
+      proStatus.textContent = "Je hebt Pro gekregen van CMMNTY. Je betaalt er niets voor.";
     } else if (gebruiker.abonnement === "pro") {
       proStatus.textContent = "Je hebt een betaald Pro-abonnement.";
       beheerKnop.hidden = false;

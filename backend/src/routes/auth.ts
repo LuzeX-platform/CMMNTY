@@ -11,6 +11,7 @@ import {
 import { verstuurBevestigingsmail, verstuurWachtwoordResetMail } from "../mailer.js";
 import { appUrl } from "../nieuwsbriefVersturen.js";
 import { claimKruisproductPro } from "../luzexKruisproduct.js";
+import { wisselProUitnodigingIn } from "../proUitnodiging.js";
 import { leesSessie, requireLid, wisSessieCookie, zetSessieCookie } from "../plugins/requireAuth.js";
 
 // Strenge limiet waar een aanvaller iets te winnen heeft (wachtwoorden raden, mailboxen
@@ -84,10 +85,11 @@ export async function authRoutes(app: FastifyInstance) {
     // Kruisproduct-Pro v2 is hier bewust NIET meer automatisch: dat kende vroeger gratis Pro toe
     // op basis van een gelijk e-mailadres bij ACCRD/SCRNN. Nu vult de klant zelf een kvk-nummer
     // in via POST /api/account/kruisproduct-claim — zie luzexKruisproduct.ts.
-    await prisma.gebruiker.update({
+    const bevestigd = await prisma.gebruiker.update({
       where: { id: gebruiker.id },
       data: { emailBevestigdOp: new Date(), bevestigTokenHash: null },
     });
+    await wisselProUitnodigingIn(bevestigd);
     // Meteen ingelogd: wie net op de link klikte, hoeft niet nog eens zijn wachtwoord in te typen.
     zetSessieCookie(reply, { gebruikerId: gebruiker.id, email: gebruiker.email, rol: gebruiker.rol as "lid" | "admin" });
     return { ok: true };
@@ -209,7 +211,7 @@ export async function authRoutes(app: FastifyInstance) {
     if (!gebruiker || !gebruiker.resetTokenVerlooptOp || gebruiker.resetTokenVerlooptOp < new Date()) {
       return reply.code(400).send({ errorCode: "TOKEN_ONGELDIG" });
     }
-    await prisma.gebruiker.update({
+    const bijgewerkt = await prisma.gebruiker.update({
       where: { id: gebruiker.id },
       data: {
         wachtwoordHash: await hashWachtwoord(parsed.data.nieuwWachtwoord),
@@ -222,6 +224,7 @@ export async function authRoutes(app: FastifyInstance) {
         bevestigTokenHash: null,
       },
     });
+    await wisselProUitnodigingIn(bijgewerkt);
     return { ok: true };
   });
 
@@ -275,6 +278,14 @@ export async function authRoutes(app: FastifyInstance) {
       .safeParse(request.body);
     if (!parsed.success) return ongeldig(reply, parsed.error);
     const { kvkNummer, wisselen } = parsed.data;
+
+    // Wie al Pro heeft uit een andere bron (betaald, of een cadeau van de admin), houdt die bron:
+    // de claim mag hem nooit overschrijven, anders trekt kruisproductCron.ts een betalende of
+    // bewust begunstigde klant later in zodra zijn ACCRD-account stopt (zie hub/CLAUDE.md).
+    const huidig = await prisma.gebruiker.findUniqueOrThrow({ where: { id: request.gebruiker!.gebruikerId } });
+    if (huidig.abonnement === "pro" && huidig.abonnementBron !== "accrd") {
+      return reply.code(409).send({ errorCode: "AL_PRO", bericht: "Je hebt al Pro." });
+    }
 
     const resultaat = await claimKruisproductPro(kvkNummer, wisselen);
     if (resultaat.status === "toegekend") {
