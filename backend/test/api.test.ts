@@ -176,8 +176,8 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
       let body = "";
       req.on("data", (d) => (body += d));
       req.on("end", () => {
-        const { kvkNummer, product } = JSON.parse(body || "{}");
-        const toegekend = juisteSleutel && kvkNummer === "11112222" && product === "cmmnty";
+        const { kvkNummer, code, product } = JSON.parse(body || "{}");
+        const toegekend = juisteSleutel && kvkNummer === "11112222" && code === "K7QM-3XHP" && product === "cmmnty";
         res.end(JSON.stringify({ status: toegekend ? "toegekend" : "niet_actief" }));
       });
     });
@@ -191,15 +191,25 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
         method: "POST",
         url: "/api/account/kruisproduct-claim",
         headers: { cookie: lidCookie },
-        payload: { kvkNummer: "00000000" },
+        payload: { kvkNummer: "00000000", code: "K7QM-3XHP" },
       });
       assert.equal(afgewezen.statusCode, 400);
+
+      // Het juiste (openbare) KvK-nummer met een verkeerde koppelcode: ook afgewezen.
+      const verkeerdeCode = await app.inject({
+        method: "POST",
+        url: "/api/account/kruisproduct-claim",
+        headers: { cookie: lidCookie },
+        payload: { kvkNummer: "11112222", code: "AAAA-BBBB" },
+      });
+      assert.equal(verkeerdeCode.statusCode, 400);
+      assert.equal((await prisma.gebruiker.findFirstOrThrow({ where: { email: "sanne@test.nl" } })).abonnement, "gratis");
 
       const toegekend = await app.inject({
         method: "POST",
         url: "/api/account/kruisproduct-claim",
         headers: { cookie: lidCookie },
-        payload: { kvkNummer: "11112222" },
+        payload: { kvkNummer: "11112222", code: "K7QM-3XHP" },
       });
       assert.equal(toegekend.json().status, "toegekend");
 
@@ -240,7 +250,7 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     assert.ok((await prisma.proUitnodiging.findUniqueOrThrow({ where: { email: "fee@test.nl" } })).ingewisseldOp);
 
     // Wie een cadeau heeft, kan het niet per ongeluk inruilen voor Kruisproduct-Pro.
-    const claim = await app.inject({ method: "POST", url: "/api/account/kruisproduct-claim", headers: { cookie: cookieUit(bevestig) }, payload: { kvkNummer: "12345678" } });
+    const claim = await app.inject({ method: "POST", url: "/api/account/kruisproduct-claim", headers: { cookie: cookieUit(bevestig) }, payload: { kvkNummer: "12345678", code: "K7QM-3XHP" } });
     assert.equal(claim.statusCode, 409);
     assert.equal(claim.json().errorCode, "AL_PRO");
 

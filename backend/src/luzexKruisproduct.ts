@@ -51,14 +51,15 @@ export async function controleerKruisproductStatus(kvkNummer: string): Promise<b
 /** Schrijvend: aangeroepen op het moment dat de klant zelf zijn kvk-nummer invult. `wisselen`
  * bevestigt expliciet dat een al bestaande keuze voor RSLNT mag omzetten naar CMMNTY — zonder
  * die vlag wijst ACCRD dat af ("al_gekozen") in plaats van het stilletjes te overschrijven. */
-export async function claimKruisproductPro(kvkNummer: string, wisselen?: boolean): Promise<ClaimStatus> {
+export async function claimKruisproductPro(kvkNummer: string, code: string, wisselen?: boolean): Promise<ClaimStatus> {
   const config = basisUrlEnSleutel();
   if (!config) return { status: "onbereikbaar" };
   try {
     const response = await fetch(`${config.basisUrl}/api/intern/luzex-kruisproduct-claim`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Luzex-Intern-Sleutel": config.sleutel },
-      body: JSON.stringify({ kvkNummer, product: PRODUCT, wisselen }),
+      // De koppelcode uit ACCRD: het KvK-nummer alleen is openbaar (zie kruisproductCode.ts in ACCRD).
+      body: JSON.stringify({ kvkNummer, code, product: PRODUCT, wisselen }),
       signal: AbortSignal.timeout(5000),
     });
     if (!response.ok) return { status: "onbereikbaar" };
