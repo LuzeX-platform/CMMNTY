@@ -180,7 +180,8 @@ function koppelFormulier(form, foutEl, succesEl, handler) {
         try {
           await claimKruisproduct(kvkNummer);
         } catch (fout) {
-          if (fout.status === 409) {
+          // Alleen "al gekozen voor RSLNT" vraagt om wisselen; een 409 "je hebt al Pro" niet.
+          if (fout.status === 409 && fout.data?.errorCode !== "AL_PRO") {
             const wisselenOk = confirm(
               "Dit kvk-nummer heeft al gratis Pro op RSLNT staan. Wil je wisselen naar CMMNTY? Dan verdwijnt Pro op RSLNT.",
             );
