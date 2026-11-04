@@ -169,7 +169,10 @@ function koppelFormulier(form, foutEl, succesEl, handler) {
         : "Heb je een actief, betalend ACCRD-account? Vul je kvk-nummer in voor gratis Pro op CMMNTY.";
 
     const claimKruisproduct = (kvkNummer, wisselen) =>
-      api("/api/account/kruisproduct-claim", { methode: "POST", body: { kvkNummer, wisselen } });
+      api("/api/account/kruisproduct-claim", {
+        methode: "POST",
+        body: { kvkNummer, code: document.getElementById("kruisproduct-code").value.trim(), wisselen },
+      });
 
     koppelFormulier(
       document.getElementById("kruisproduct-form"),

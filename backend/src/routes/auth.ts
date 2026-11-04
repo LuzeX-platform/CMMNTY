@@ -272,9 +272,10 @@ export async function authRoutes(app: FastifyInstance) {
   // Zonder `wisselen` wijst ACCRD een al bestaande keuze voor RSLNT af (409 met de huidige
   // keuze) in plaats van hem stilletjes te overschrijven — de frontend laat de klant dat dan
   // expliciet bevestigen door opnieuw te posten met `wisselen: true`.
-  app.post("/api/account/kruisproduct-claim", { preHandler: requireLid }, async (request, reply) => {
+  // Strenge limiet: met deze route zou je anders koppelcodes kunnen raden.
+  app.post("/api/account/kruisproduct-claim", { preHandler: requireLid, config: AUTH_LIMIET }, async (request, reply) => {
     const parsed = z
-      .object({ kvkNummer: z.string().trim().min(1), wisselen: z.boolean().optional() })
+      .object({ kvkNummer: z.string().trim().min(1), code: z.string().trim().min(1, "Vul de koppelcode uit ACCRD in").max(40), wisselen: z.boolean().optional() })
       .safeParse(request.body);
     if (!parsed.success) return ongeldig(reply, parsed.error);
     const kvkNummer = schoonKvkNummer(parsed.data.kvkNummer);
@@ -288,7 +289,7 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.code(409).send({ errorCode: "AL_PRO", bericht: "Je hebt al Pro." });
     }
 
-    const resultaat = await claimKruisproductPro(kvkNummer, wisselen);
+    const resultaat = await claimKruisproductPro(kvkNummer, parsed.data.code, wisselen);
     if (resultaat.status === "toegekend") {
       await prisma.gebruiker.update({
         where: { id: request.gebruiker!.gebruikerId },
@@ -305,7 +306,7 @@ export async function authRoutes(app: FastifyInstance) {
     if (resultaat.status === "niet_actief") {
       return reply.code(400).send({
         errorCode: "NIET_ACTIEF",
-        bericht: "Dit KvK-nummer is niet gekoppeld aan een actief, betalend ACCRD-account.",
+        bericht: "Dit KvK-nummer en deze koppelcode horen niet bij een actief, betalend ACCRD-account. Kijk in ACCRD onder Mijn abonnement.",
       });
     }
     // "onbereikbaar": ACCRD is niet te bereiken of niet geconfigureerd — geen foutcode die op
