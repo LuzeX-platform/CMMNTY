@@ -227,20 +227,26 @@ export async function adminRoutes(app: FastifyInstance) {
 
   app.get("/api/admin/mail", async () => mailStatus());
 
-  // Echte testmail naar de admin, met de echte foutmelding van de mailserver als het misgaat.
-  // De nieuwsbrief-testmail hierboven zegt "verstuurd" ook als er geen mailserver is.
+  // Echte testmail, met de echte foutmelding van de mailserver als het misgaat. De
+  // nieuwsbrief-testmail hierboven zegt "verstuurd" ook als er geen mailserver is. Met een adres
+  // van mail-tester.com krijg je een cijfer en zie je wat er aan SPF, DKIM, DMARC of de inhoud
+  // mankeert; zonder adres gaat hij naar de admin zelf.
   app.post("/api/admin/mail/test", async (request, reply) => {
+    const parsed = z.object({ naar: z.string().trim().email().max(200).optional() }).safeParse(request.body ?? {});
+    if (!parsed.success) return reply.code(400).send({ errorCode: "ONGELDIGE_INVOER", bericht: "Vul een geldig e-mailadres in." });
     if (!mailStatus().ingesteld) {
       return reply.code(503).send({ errorCode: "MAIL_NIET_INGESTELD", bericht: "Er is geen mailserver ingesteld: zet SMTP_HOST en de andere SMTP-waarden in Render." });
     }
     const admin = await prisma.gebruiker.findUniqueOrThrow({ where: { id: request.gebruiker!.gebruikerId } });
+    const naar = parsed.data.naar ?? admin.email;
     try {
       await verstuurMail({
-        naar: admin.email,
-        onderwerp: "Testmail — LuzeX CMMNTY",
-        tekst: "Deze mail komt van CMMNTY. Komt hij aan, dan werken bevestigingsmails en de nieuwsbrief ook.",
+        naar,
+        onderwerp: "Bevestig je e-mailadres — LuzeX CMMNTY (test)",
+        // Zo dicht mogelijk bij een echte bevestigingsmail, anders meet mail-tester iets anders.
+        tekst: `Hoi,\n\nDit is een testmail van CMMNTY, opgebouwd zoals een bevestigingsmail. Komt hij aan, dan komen bevestigingsmails en de nieuwsbrief ook aan.\n\n${appUrl()}/bevestigen.html?token=test`,
       });
-      return { ok: true, naar: admin.email };
+      return { ok: true, naar };
     } catch (fout) {
       return reply.code(502).send({ errorCode: "MAIL_MISLUKT", bericht: `De mailserver weigerde: ${(fout as Error).message}` });
     }

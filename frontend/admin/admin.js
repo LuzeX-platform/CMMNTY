@@ -391,8 +391,9 @@ if (pagina === "gebruikers") {
     succes.textContent = "";
     event.target.disabled = true;
     try {
-      const { naar } = await api("/api/admin/mail/test", { methode: "POST" });
-      succes.textContent = `Verstuurd naar ${naar}. Kijk ook in je spam.`;
+      const adres = document.getElementById("testmail-naar").value.trim();
+      const { naar } = await api("/api/admin/mail/test", { methode: "POST", body: adres ? { naar: adres } : {} });
+      succes.textContent = `Verstuurd naar ${naar}. Kijk ook in de spam.`;
     } catch (f) {
       fout.textContent = foutTekst(f);
     } finally {
