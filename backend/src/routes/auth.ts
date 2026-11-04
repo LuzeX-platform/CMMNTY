@@ -10,7 +10,8 @@ import {
 } from "../auth.js";
 import { verstuurBevestigingsmail, verstuurWachtwoordResetMail } from "../mailer.js";
 import { appUrl } from "../nieuwsbriefVersturen.js";
-import { claimKruisproductPro, schoonKvkNummer } from "../luzexKruisproduct.js";
+import { randomBytes, timingSafeEqual } from "node:crypto";
+import { accrdKoppelUrl, claimKruisproductPro, schoonKvkNummer, wisselKoppeltokenIn } from "../luzexKruisproduct.js";
 import { wisselProUitnodigingIn } from "../proUitnodiging.js";
 import { leesSessie, requireLid, wisSessieCookie, zetSessieCookie } from "../plugins/requireAuth.js";
 
@@ -291,6 +292,12 @@ export async function authRoutes(app: FastifyInstance) {
 
     const resultaat = await claimKruisproductPro(kvkNummer, parsed.data.code, wisselen);
     if (resultaat.status === "toegekend") {
+      // kruisproductKvkNummer is uniek; zonder deze controle gaf een tweede account met hetzelfde
+      // KvK-nummer een onverwerkte databasefout (500) in plaats van een uitleg.
+      const ander = await prisma.gebruiker.findFirst({ where: { kruisproductKvkNummer: kvkNummer, NOT: { id: huidig.id } }, select: { id: true } });
+      if (ander) {
+        return reply.code(409).send({ errorCode: "KVK_AL_GEKOPPELD", bericht: "Dit ACCRD-account is al gekoppeld aan een ander CMMNTY-account." });
+      }
       await prisma.gebruiker.update({
         where: { id: request.gebruiker!.gebruikerId },
         data: { abonnement: "pro", abonnementBron: "accrd", kruisproductKvkNummer: kvkNummer },
@@ -311,6 +318,78 @@ export async function authRoutes(app: FastifyInstance) {
     }
     // "onbereikbaar": ACCRD is niet te bereiken of niet geconfigureerd — geen foutcode die op
     // het kvk-nummer zelf wijst, want dat is hier niet het probleem.
+    return reply.code(503).send({ errorCode: "NIET_BESCHIKBAAR", bericht: "Even niet te controleren. Probeer het later opnieuw." });
+  });
+
+  // "Koppel met ACCRD" (zie luzexKruisproduct.ts). Start: een willekeurige state in een
+  // httpOnly-cookie, en de URL van de toestemmingspagina in ACCRD. Afronden: ACCRD stuurde de
+  // klant terug met ?accrd_token=…&state=…; alleen als die state gelijk is aan de cookie van
+  // deze browser wisselen we het token in.
+  const STATE_COOKIE = "kruisproduct_state";
+
+  app.get("/api/account/kruisproduct-koppelen", { preHandler: requireLid }, async () => {
+    return { beschikbaar: accrdKoppelUrl("x".repeat(32)) !== null };
+  });
+
+  app.post("/api/account/kruisproduct-koppelen/start", { preHandler: requireLid }, async (request, reply) => {
+    const huidig = await prisma.gebruiker.findUniqueOrThrow({ where: { id: request.gebruiker!.gebruikerId } });
+    if (huidig.abonnement === "pro" && huidig.abonnementBron !== "accrd") {
+      return reply.code(409).send({ errorCode: "AL_PRO", bericht: "Je hebt al Pro." });
+    }
+    const state = randomBytes(24).toString("base64url");
+    const url = accrdKoppelUrl(state);
+    if (!url) return reply.code(503).send({ errorCode: "NIET_BESCHIKBAAR", bericht: "Koppelen met ACCRD kan nu niet. Vul je KvK-nummer en koppelcode hieronder in." });
+    reply.setCookie(STATE_COOKIE, state, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/api/account/kruisproduct-koppelen",
+      maxAge: 15 * 60,
+    });
+    return { url };
+  });
+
+  app.post("/api/account/kruisproduct-koppelen/afronden", { preHandler: requireLid, config: AUTH_LIMIET }, async (request, reply) => {
+    const parsed = z.object({ token: z.string().min(20).max(200), state: z.string().min(16).max(128) }).safeParse(request.body);
+    if (!parsed.success) return ongeldig(reply, parsed.error);
+    const cookieState = request.cookies[STATE_COOKIE] ?? "";
+    reply.clearCookie(STATE_COOKIE, { path: "/api/account/kruisproduct-koppelen" });
+    const a = Buffer.from(cookieState);
+    const b = Buffer.from(parsed.data.state);
+    if (a.length !== b.length || !timingSafeEqual(a, b)) {
+      return reply.code(400).send({ errorCode: "KOPPELING_VERLOPEN", bericht: "Deze koppeling is verlopen of in een andere browser begonnen. Klik opnieuw op Koppel met ACCRD." });
+    }
+
+    // Zelfde regel als bij de claim met KvK-nummer: een andere Pro-bron wordt nooit overschreven.
+    const huidig = await prisma.gebruiker.findUniqueOrThrow({ where: { id: request.gebruiker!.gebruikerId } });
+    if (huidig.abonnement === "pro" && huidig.abonnementBron !== "accrd") {
+      return reply.code(409).send({ errorCode: "AL_PRO", bericht: "Je hebt al Pro." });
+    }
+
+    const resultaat = await wisselKoppeltokenIn(parsed.data.token, parsed.data.state);
+    if (resultaat.status === "toegekend") {
+      const kvkNummer = schoonKvkNummer(resultaat.kvkNummer);
+      // kruisproductKvkNummer is uniek: één CMMNTY-account per ACCRD-organisatie. Zit het al aan
+      // een ánder account, dan zeggen we dat in plaats van een databasefout te tonen.
+      const ander = await prisma.gebruiker.findFirst({ where: { kruisproductKvkNummer: kvkNummer, NOT: { id: huidig.id } }, select: { id: true } });
+      if (ander) {
+        return reply.code(409).send({ errorCode: "KVK_AL_GEKOPPELD", bericht: "Dit ACCRD-account is al gekoppeld aan een ander CMMNTY-account." });
+      }
+      await prisma.gebruiker.update({
+        where: { id: huidig.id },
+        data: { abonnement: "pro", abonnementBron: "accrd", kruisproductKvkNummer: kvkNummer },
+      });
+      return { status: "toegekend" };
+    }
+    if (resultaat.status === "al_gekozen") {
+      return reply.code(409).send({ errorCode: "AL_GEKOZEN", huidigeKeuze: resultaat.huidigeKeuze, bericht: "Je ACCRD-account heeft gratis Pro al op RSLNT. Klik opnieuw op Koppel met ACCRD en kies daar voor wisselen." });
+    }
+    if (resultaat.status === "niet_actief") {
+      return reply.code(400).send({ errorCode: "NIET_ACTIEF", bericht: "Je ACCRD-account heeft op dit moment geen actief, betalend abonnement." });
+    }
+    if (resultaat.status === "ongeldig") {
+      return reply.code(400).send({ errorCode: "KOPPELING_VERLOPEN", bericht: "Deze koppeling is verlopen of al gebruikt. Klik opnieuw op Koppel met ACCRD." });
+    }
     return reply.code(503).send({ errorCode: "NIET_BESCHIKBAAR", bericht: "Even niet te controleren. Probeer het later opnieuw." });
   });
 

@@ -232,6 +232,64 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     }
   });
 
+  test("Koppel met ACCRD: start zet een state-cookie, afronden wisselt het token alleen met die state in", async () => {
+    // Nep-ACCRD: wisselt alleen token "goed-token-0123456789abcdef" in, en alleen met de state
+    // die erbij hoort — precies wat het echte ACCRD controleert.
+    const http = await import("node:http");
+    let verwachteState = "";
+    const nepAccrd = http.createServer((req, res) => {
+      res.setHeader("content-type", "application/json");
+      let body = "";
+      req.on("data", (d) => (body += d));
+      req.on("end", () => {
+        const { token, state, product } = JSON.parse(body || "{}");
+        const goed = req.headers["x-luzex-intern-sleutel"] === "test-sleutel" && token === "goed-token-0123456789abcdef" && state === verwachteState && product === "cmmnty";
+        res.end(JSON.stringify(goed ? { status: "toegekend", kvkNummer: "55556666" } : { status: "ongeldig" }));
+      });
+    });
+    await new Promise<void>((resolve) => nepAccrd.listen(0, resolve));
+    const poort = (nepAccrd.address() as import("node:net").AddressInfo).port;
+    process.env.ACCRD_INTERN_URL = `http://127.0.0.1:${poort}`;
+    process.env.LUZEX_INTERN_SLEUTEL = "test-sleutel";
+
+    try {
+      assert.equal((await app.inject({ method: "GET", url: "/api/account/kruisproduct-koppelen", headers: { cookie: lidCookie } })).json().beschikbaar, true);
+
+      const start = await app.inject({ method: "POST", url: "/api/account/kruisproduct-koppelen/start", headers: { cookie: lidCookie } });
+      assert.equal(start.statusCode, 200);
+      const url = new URL(start.json().url);
+      assert.equal(url.pathname, "/kruisproduct-koppelen.html");
+      assert.equal(url.searchParams.get("product"), "cmmnty");
+      verwachteState = url.searchParams.get("state")!;
+      const stateCookie = start.cookies.find((c) => c.name === "kruisproduct_state")!;
+      assert.equal(stateCookie.value, verwachteState);
+      const cookies = `${lidCookie}; kruisproduct_state=${stateCookie.value}`;
+
+      // Zonder de state-cookie van deze browser: geweigerd, ook met een geldig token.
+      const zonderCookie = await app.inject({
+        method: "POST", url: "/api/account/kruisproduct-koppelen/afronden", headers: { cookie: lidCookie },
+        payload: { token: "goed-token-0123456789abcdef", state: verwachteState },
+      });
+      assert.equal(zonderCookie.json().errorCode, "KOPPELING_VERLOPEN");
+
+      const goed = await app.inject({
+        method: "POST", url: "/api/account/kruisproduct-koppelen/afronden", headers: { cookie: cookies },
+        payload: { token: "goed-token-0123456789abcdef", state: verwachteState },
+      });
+      assert.equal(goed.statusCode, 200);
+      const rij = await prisma.gebruiker.findUniqueOrThrow({ where: { email: "sanne@test.nl" } });
+      assert.equal(rij.abonnement, "pro");
+      assert.equal(rij.abonnementBron, "accrd");
+      assert.equal(rij.kruisproductKvkNummer, "55556666");
+
+      await prisma.gebruiker.update({ where: { id: rij.id }, data: { abonnement: "gratis", abonnementBron: null, kruisproductKvkNummer: null } });
+    } finally {
+      delete process.env.ACCRD_INTERN_URL;
+      delete process.env.LUZEX_INTERN_SLEUTEL;
+      await new Promise((resolve) => nepAccrd.close(resolve));
+    }
+  });
+
   test("Pro cadeau op e-mailadres: klaargezet, en pas ingewisseld bij bevestigen", async () => {
     const admin = { cookie: adminCookie };
     const klaar = await app.inject({ method: "POST", url: "/api/admin/pro-uitnodigingen", headers: admin, payload: { email: "Fee@Test.nl" } });

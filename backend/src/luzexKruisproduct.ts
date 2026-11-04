@@ -80,3 +80,44 @@ export function schoonKvkNummer(invoer: string): string {
   const alleenCijfers = zonderSpatiesEnPunten.replace(/\D/g, "");
   return /^\d{8}$/.test(alleenCijfers) && /^[\d-]+$/.test(zonderSpatiesEnPunten) ? alleenCijfers : zonderSpatiesEnPunten;
 }
+
+// --- "Koppel met ACCRD" ---------------------------------------------------------------------
+// De knop in plaats van KvK-nummer en koppelcode overtypen (zie ACCRD's
+// routes/kruisproductKoppelen.ts). De klant geeft in ACCRD toestemming; ACCRD stuurt hem met een
+// eenmalig token terug, en dat token wisselen we hier server-naar-server in. De state bindt het
+// token aan de browsersessie waarin de koppeling begon: zonder die controle kan iemand een eigen
+// token in andermans sessie laten inwisselen.
+
+type InwisselStatus =
+  | { status: "toegekend"; kvkNummer: string }
+  | { status: "niet_actief" }
+  | { status: "ongeldig" }
+  | { status: "al_gekozen"; huidigeKeuze: "cmmnty" | "rslnt" }
+  | { status: "onbereikbaar" };
+
+/** Waar de knop naartoe gaat, of null als ACCRD hier niet ingesteld is (dan geen knop). Zelfde
+ *  ACCRD_INTERN_URL als de server-naar-server-aanroepen: in productie is dat het publieke
+ *  adres van ACCRD, dus een tweede variabele zou alleen een kans op verschil toevoegen. */
+export function accrdKoppelUrl(state: string): string | null {
+  const config = basisUrlEnSleutel();
+  if (!config) return null;
+  return `${config.basisUrl}/kruisproduct-koppelen.html?product=${PRODUCT}&state=${encodeURIComponent(state)}`;
+}
+
+export async function wisselKoppeltokenIn(token: string, state: string): Promise<InwisselStatus> {
+  const config = basisUrlEnSleutel();
+  if (!config) return { status: "onbereikbaar" };
+  try {
+    const response = await fetch(`${config.basisUrl}/api/intern/luzex-kruisproduct-inwisselen`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Luzex-Intern-Sleutel": config.sleutel },
+      body: JSON.stringify({ token, state, product: PRODUCT }),
+      signal: AbortSignal.timeout(5000),
+    });
+    if (response.status === 400) return { status: "ongeldig" };
+    if (!response.ok) return { status: "onbereikbaar" };
+    return (await response.json()) as InwisselStatus;
+  } catch {
+    return { status: "onbereikbaar" };
+  }
+}
