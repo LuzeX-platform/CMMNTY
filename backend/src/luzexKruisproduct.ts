@@ -31,20 +31,25 @@ function basisUrlEnSleutel(): { basisUrl: string; sleutel: string } | null {
 
 /** Alleen lezen: is dit kvk-nummer nog steeds actief gekoppeld aan CMMNTY bij ACCRD? Gebruikt
  * door de dagelijkse cron om een eerder toegekende Pro-status opnieuw te bevestigen of in te
- * trekken, zonder zelf iets te veranderen bij ACCRD. */
-export async function controleerKruisproductStatus(kvkNummer: string): Promise<boolean> {
+ * trekken, zonder zelf iets te veranderen bij ACCRD.
+ *
+ * `null` betekent "kon niet gecontroleerd worden" (geen config, netwerkfout, ACCRD plat) en is
+ * iets anders dan een bevestigd "nee". Dit gaf eerst `false` terug, en dan trok de cron bij elke
+ * storing bij ACCRD (of een vergeten env-var) in één klap ieders gratis Pro in én wiste hij hun
+ * kvk-nummer, zodat ze opnieuw moesten claimen. RSLNT had dit al zo; nu ook CMMNTY. */
+export async function controleerKruisproductStatus(kvkNummer: string): Promise<boolean | null> {
   const config = basisUrlEnSleutel();
-  if (!config) return false;
+  if (!config) return null;
   try {
     const response = await fetch(
       `${config.basisUrl}/api/intern/luzex-kruisproduct-status?kvkNummer=${encodeURIComponent(kvkNummer)}&product=${PRODUCT}`,
       { headers: { "X-Luzex-Intern-Sleutel": config.sleutel }, signal: AbortSignal.timeout(5000) },
     );
-    if (!response.ok) return false;
-    const data = (await response.json()) as { actief?: boolean };
-    return data.actief === true;
+    if (!response.ok) return null;
+    const data = (await response.json()) as { actief?: unknown };
+    return typeof data.actief === "boolean" ? data.actief : null;
   } catch {
-    return false;
+    return null;
   }
 }
 
