@@ -10,7 +10,7 @@ import {
 } from "../auth.js";
 import { verstuurBevestigingsmail, verstuurWachtwoordResetMail } from "../mailer.js";
 import { appUrl } from "../nieuwsbriefVersturen.js";
-import { claimKruisproductPro } from "../luzexKruisproduct.js";
+import { claimKruisproductPro, schoonKvkNummer } from "../luzexKruisproduct.js";
 import { wisselProUitnodigingIn } from "../proUitnodiging.js";
 import { leesSessie, requireLid, wisSessieCookie, zetSessieCookie } from "../plugins/requireAuth.js";
 
@@ -277,7 +277,8 @@ export async function authRoutes(app: FastifyInstance) {
       .object({ kvkNummer: z.string().trim().min(1), wisselen: z.boolean().optional() })
       .safeParse(request.body);
     if (!parsed.success) return ongeldig(reply, parsed.error);
-    const { kvkNummer, wisselen } = parsed.data;
+    const kvkNummer = schoonKvkNummer(parsed.data.kvkNummer);
+    const { wisselen } = parsed.data;
 
     // Wie al Pro heeft uit een andere bron (betaald, of een cadeau van de admin), houdt die bron:
     // de claim mag hem nooit overschrijven, anders trekt kruisproductCron.ts een betalende of

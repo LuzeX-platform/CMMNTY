@@ -67,3 +67,15 @@ export async function claimKruisproductPro(kvkNummer: string, wisselen?: boolean
     return { status: "onbereikbaar" };
   }
 }
+
+/**
+ * Een KvK-nummer zoals de klant het typt ("1234 5678", "12.34.56.78") terug naar de vorm waarin
+ * ACCRD het bewaart: acht cijfers, of bij een buitenlands Tax-ID letters, cijfers en streepjes.
+ * ACCRD herkent de varianten zelf ook (kvkVarianten() in luzexIntern.ts), maar hier opgeschoond
+ * bewaren houdt kruisproductKvkNummer uniek per bedrijf, wat de klant er ook van maakte.
+ */
+export function schoonKvkNummer(invoer: string): string {
+  const zonderSpatiesEnPunten = invoer.trim().replace(/[\s.]/g, "");
+  const alleenCijfers = zonderSpatiesEnPunten.replace(/\D/g, "");
+  return /^\d{8}$/.test(alleenCijfers) && /^[\d-]+$/.test(zonderSpatiesEnPunten) ? alleenCijfers : zonderSpatiesEnPunten;
+}
