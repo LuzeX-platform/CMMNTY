@@ -268,6 +268,7 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     const status = (await app.inject({ method: "GET", url: "/api/admin/mail", headers: admin })).json();
     assert.equal(status.ingesteld, false);
     assert.equal((await app.inject({ method: "POST", url: "/api/admin/mail/test", headers: admin })).statusCode, 503);
+    assert.equal((await app.inject({ method: "POST", url: "/api/admin/mail/test", headers: admin, payload: { naar: "geen-adres" } })).statusCode, 400);
 
     await app.inject({ method: "POST", url: "/api/admin/pro-uitnodigingen", headers: admin, payload: { email: "hans@test.nl" } });
     await app.inject({ method: "POST", url: "/api/auth/registreren", payload: { email: "hans@test.nl", wachtwoord: "geheim123" } });

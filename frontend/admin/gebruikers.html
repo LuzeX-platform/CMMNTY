@@ -51,7 +51,10 @@
       <h2>E-mail</h2>
       <p class="subtitle">Bevestigingsmails, wachtwoord-resets en de nieuwsbrief gaan via deze mailserver.</p>
       <ul class="stripe-status" id="mail-status"><li>Laden…</li></ul>
-      <div class="formulier-acties"><button type="button" id="testmail-knop">Testmail naar mij</button></div>
+      <label for="testmail-naar">Testmail sturen naar</label>
+      <input id="testmail-naar" type="email" autocomplete="off" placeholder="Leeg = naar jezelf" />
+      <p class="subtitle">Tip: open mail-tester.com, kopieer het adres dat je daar krijgt, plak het hier en klik daarna op mail-tester op “Check your score”.</p>
+      <div class="formulier-acties"><button type="button" id="testmail-knop">Testmail sturen</button></div>
       <p class="error" id="mail-fout" role="alert"></p>
       <p class="success" id="mail-succes" role="status"></p>
     </div>
