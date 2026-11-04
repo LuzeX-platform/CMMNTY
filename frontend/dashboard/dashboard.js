@@ -168,6 +168,45 @@ function koppelFormulier(form, foutEl, succesEl, handler) {
         ? "Je hebt Pro. Via ACCRD geclaimd? Vul hieronder opnieuw je kvk-nummer in om te bevestigen of te wisselen."
         : "Heb je een actief, betalend ACCRD-account? Vul je kvk-nummer in voor gratis Pro op CMMNTY.";
 
+    // "Koppel met ACCRD": de knop alleen als ACCRD hier ingesteld is. Terug uit ACCRD staan
+    // accrd_token en state in de URL; die ronden we af en halen we meteen uit de adresbalk, zodat
+    // een herlaadactie of een gedeelde link het token niet nog eens probeert.
+    const koppelBlok = document.getElementById("koppel-accrd-blok");
+    const koppelKnop = document.getElementById("koppel-accrd");
+    const kruisFout = document.getElementById("kruisproduct-fout");
+    const kruisSucces = document.getElementById("kruisproduct-succes");
+    api("/api/account/kruisproduct-koppelen")
+      .then(({ beschikbaar }) => { koppelBlok.hidden = !beschikbaar; })
+      .catch(() => {});
+    koppelKnop.addEventListener("click", async () => {
+      kruisFout.textContent = "";
+      koppelKnop.disabled = true;
+      try {
+        const { url } = await api("/api/account/kruisproduct-koppelen/start", { methode: "POST" });
+        window.location.href = url;
+      } catch (fout) {
+        kruisFout.textContent = foutTekst(fout);
+        koppelKnop.disabled = false;
+      }
+    });
+    const terug = new URLSearchParams(window.location.search);
+    if (terug.get("accrd_token") || terug.get("accrd")) {
+      const token = terug.get("accrd_token");
+      const state = terug.get("state");
+      history.replaceState(null, "", window.location.pathname);
+      if (token && state) (async () => {
+        try {
+          await api("/api/account/kruisproduct-koppelen/afronden", { methode: "POST", body: { token, state } });
+          kruisSucces.textContent = "Gekoppeld: je hebt nu Pro via ACCRD.";
+          document.getElementById("pro-status").textContent = "Je hebt al Pro via je ACCRD-account (Kruisproduct-Pro).";
+          document.getElementById("pro-afrekenen").hidden = true;
+        } catch (fout) {
+          kruisFout.textContent = foutTekst(fout);
+        }
+        document.getElementById("kruisproduct-form").scrollIntoView({ block: "center" });
+      })();
+    }
+
     const claimKruisproduct = (kvkNummer, wisselen) =>
       api("/api/account/kruisproduct-claim", {
         methode: "POST",
