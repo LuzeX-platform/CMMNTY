@@ -1175,8 +1175,8 @@ a.badge {
   margin-bottom: 20px;
 }
 
-/* "Innovatie in de zorg." past op desktop niet op één regel; zonder dit breekt de kop als
-   "Innovatie in de / zorg." en hangt het lidwoord los van zijn woord. */
+/* "Samen beter in de zorg." past op desktop niet op één regel; zonder dit breekt de kop als
+   "Samen beter in de / zorg." en hangt het lidwoord los van zijn woord. */
 .hero h1 .geen-afbreking {
   white-space: nowrap;
 }
@@ -1192,36 +1192,21 @@ a.badge {
   flex-wrap: wrap;
 }
 
-.hero-beeld {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+/* Zoekvak van het netwerk rechts in de hero. Geen decoratie maar iets om te gebruiken, dus het
+   blijft ook op een smal scherm staan (onder de knoppen). */
+.hero-zoek {
+  margin-bottom: 0;
 }
 
-.hero-kaartje {
-  padding: 18px 20px;
-  border-radius: var(--radius-lg);
-  background: var(--glas-bg);
-  backdrop-filter: var(--glas-blur);
-  -webkit-backdrop-filter: var(--glas-blur);
-  border: 1px solid var(--glas-rand);
-  box-shadow: var(--glas-schaduw);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.hero-zoek h2 {
+  font-size: 22px;
 }
 
-.hero-kaartje:nth-child(2) {
-  margin-left: 36px;
-}
-
-.hero-kaartje:nth-child(3) {
-  margin-left: 12px;
-}
-
-.hero-kaartje strong {
-  font-size: 16px;
-  line-height: 1.35;
+.hero-zoek button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px 16px;
+  font-size: 15px;
 }
 
 .sectie {
@@ -1247,14 +1232,49 @@ a.badge {
   .hero {
     grid-template-columns: 1fr;
   }
-
-  /* Decoratie: op een smal scherm duwt het de echte artikelen alleen maar naar beneden. */
-  .hero-beeld {
-    display: none;
-  }
 }
 
 /* ---------- Netwerk (praktijkprofielen van leden) ---------- */
+
+.netwerk-acties:not(:empty) {
+  margin-top: 24px;
+}
+
+.netwerk-aantal {
+  margin: -12px 0 16px;
+  font-weight: 600;
+}
+
+/* Uitnodiging om de volgende stap in het netwerk te zetten: onder artikelen en op het dashboard. */
+.netwerk-blok h2 {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.netwerk-blok p:not(.kicker) {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.artikel .netwerk-blok {
+  margin: 48px 0 0;
+}
+
+.netwerk-uitnodiging {
+  background: var(--accent-tint);
+  border-style: dashed;
+  border-color: var(--border-strong);
+}
+
+.netwerk-uitnodiging .kaart-body {
+  gap: 10px;
+}
+
+.netwerk-uitnodiging .cta-rij {
+  margin-top: auto;
+  padding-top: 8px;
+}
 
 .profiel-kaart .kaart-body {
   gap: 10px;

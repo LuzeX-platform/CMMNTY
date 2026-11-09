@@ -22,7 +22,10 @@ deployment, eigen geheimen.
 - **Leden** — registreren met bevestigingsmail, inloggen, wachtwoord vergeten, account
   wijzigen of verwijderen (AVG).
 - **Netwerk** — leden publiceren zelf een profiel (specialismen, regio, contact, bio van
-  max. 250 tekens). Openbaar, filterbaar op specialisme en regio.
+  max. 250 tekens). Openbaar, filterbaar op specialisme en regio (filters staan in de URL, dus
+  een zoekopdracht is te delen). Staat voorop: eerste item in de balk, zoekvak en drie
+  willekeurige profielen op de homepage, en een uitnodiging op het dashboard en onder elk
+  artikel voor wie er nog niet in staat.
 - **Nieuwsbrief** — wekelijks (maandag) of maandelijks (de 1e), in te stellen door Job.
   Gratis-leden krijgen alleen gratis artikelen, Pro-leden alles. Met voorbeeld, testmail,
   handmatig versturen en afmeldlink (ook één-klik in Gmail/Apple Mail).
@@ -41,11 +44,11 @@ handmatige toekenning door Job raakt die cron nooit aan. Zie `src/luzexEntitleme
 
 | Pad | Wat |
 |-----|-----|
-| `/` | Homepage |
+| `/` | Homepage: netwerk (zoekvak, uitgelichte profielen) en de nieuwste artikelen |
 | `/artikelen.html`, `/artikelen/<slug>` | Overzicht en artikel |
 | `/netwerk.html` | Netwerk: praktijkprofielen van leden (oud adres `/directory.html` stuurt door) |
 | `/registreren.html`, `/inloggen.html` | Lid worden, inloggen |
-| `/dashboard/` | Mijn artikelen, mijn profiel, account |
+| `/dashboard/` | Mijn artikelen, netwerkprofiel, account |
 | `/admin/` | Artikelen, gebruikers, nieuwsbrief |
 
 ## Artikelen importeren uit bestanden
