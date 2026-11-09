@@ -96,11 +96,80 @@ function artikelKaartHtml(a) {
     </a>`;
 }
 
+// ---------- Netwerk ----------
+
+function profielKaartHtml(p) {
+  const contact = [];
+  if (p.telefoon) contact.push(`<li>📞 <a href="tel:${escapeHtml(p.telefoon.replace(/[^0-9+]/g, ""))}">${escapeHtml(p.telefoon)}</a></li>`);
+  if (p.contactEmail) contact.push(`<li>✉️ <a href="mailto:${escapeHtml(p.contactEmail)}">${escapeHtml(p.contactEmail)}</a></li>`);
+  if (p.website) {
+    const zichtbaar = p.website.replace(/^https?:\/\//, "").replace(/\/$/, "");
+    contact.push(`<li>🌐 <a href="${escapeHtml(p.website)}" target="_blank" rel="noopener nofollow">${escapeHtml(zichtbaar)}</a></li>`);
+  }
+  return `
+    <div class="kaart profiel-kaart">
+      <div class="kaart-body">
+        <div class="kaart-badges">
+          ${p.regio ? `<span class="badge">${escapeHtml(p.regio)}</span>` : ""}
+          ${p.specialismen.map((s) => `<span class="badge badge-gratis">${escapeHtml(s)}</span>`).join("")}
+        </div>
+        <h3>${escapeHtml(p.weergavenaam)}</h3>
+        ${p.praktijknaam ? `<p class="profiel-praktijk">${escapeHtml(p.praktijknaam)}</p>` : ""}
+        ${p.bio ? `<p>${escapeHtml(p.bio)}</p>` : ""}
+        <ul class="profiel-contact">${contact.join("")}</ul>
+      </div>
+    </div>`;
+}
+
+/**
+ * De volgende stap richting het netwerk, passend bij wie er kijkt: een bezoeker wordt lid, een
+ * lid zonder zichtbaar profiel zet zijn praktijk erin, wie er al in staat zoekt collega's.
+ */
+function netwerkStap(gebruiker) {
+  if (!gebruiker) {
+    return {
+      kop: "Zelfstandig in de zorg?",
+      tekst: "In het CMMNTY-netwerk vinden collega's en verwijzers je op specialisme en regio. Gratis voor leden.",
+      knoppen: [["Gratis lid worden", "/registreren.html"], ["Bekijk het netwerk", "/netwerk.html"]],
+    };
+  }
+  if (!gebruiker.inNetwerk) {
+    return {
+      kop: "Sta jij al in het netwerk?",
+      tekst: "Zet je praktijk erin, dan vinden collega's en verwijzers je op specialisme en regio. Gratis, en in twee minuten geregeld.",
+      knoppen: [["Zet je praktijk erin", "/dashboard/profiel.html"], ["Bekijk het netwerk", "/netwerk.html"]],
+    };
+  }
+  return {
+    kop: "Vind een collega",
+    tekst: "Zoek in het netwerk op specialisme en regio. Voor een verwijzing, overleg of vervanging.",
+    knoppen: [["Bekijk het netwerk", "/netwerk.html"], ["Mijn netwerkprofiel", "/dashboard/profiel.html"]],
+  };
+}
+
+function netwerkKnoppenHtml(knoppen) {
+  return knoppen
+    .map(([label, href], i) => `<a class="pil-knop ${i === 0 ? "pil-knop-donker" : "pil-knop-glas"}" href="${href}">${label}</a>`)
+    .join("");
+}
+
+/** Blok dat uitnodigt tot de volgende stap in het netwerk (onder artikelen). */
+function netwerkBlokHtml(gebruiker) {
+  const stap = netwerkStap(gebruiker);
+  return `
+    <aside class="panel netwerk-blok" aria-label="Netwerk">
+      <p class="kicker">Netwerk</p>
+      <h2>${stap.kop}</h2>
+      <p>${stap.tekst}</p>
+      <div class="formulier-acties">${netwerkKnoppenHtml(stap.knoppen)}</div>
+    </aside>`;
+}
+
 // ---------- Balk en voettekst ----------
 
 const NAV = [
-  { href: "/artikelen.html", label: "Artikelen", match: ["/artikelen"] },
   { href: "/netwerk.html", label: "Netwerk", match: ["/netwerk"] },
+  { href: "/artikelen.html", label: "Artikelen", match: ["/artikelen"] },
   { href: "/#over", label: "Over", match: [] },
 ];
 
@@ -142,8 +211,8 @@ function tekenVoet() {
       </div>
       <div class="voet-kolom">
         <p class="voet-kop">CMMNTY</p>
-        <a href="/artikelen.html">Artikelen</a>
         <a href="/netwerk.html">Netwerk</a>
+        <a href="/artikelen.html">Artikelen</a>
         <a href="/registreren.html">Lid worden</a>
       </div>
       <div class="voet-kolom">

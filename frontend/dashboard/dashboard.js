@@ -30,6 +30,15 @@ function koppelFormulier(form, foutEl, succesEl, handler) {
       ? `${badgeHtml("pro")} Je hebt toegang tot alle artikelen, ook Pro.`
       : `${badgeHtml("gratis")} Je leest alle gratis artikelen. <a href="/dashboard/account.html">Ga naar Pro</a> voor alle artikelen.`;
 
+    // Netwerk bovenaan: wie er nog niet in staat, krijgt hier de uitnodiging (ook meteen na het
+    // bevestigen van het e-mailadres, want daarna komt een nieuw lid op deze pagina).
+    const stap = netwerkStap(gebruiker);
+    document.getElementById("netwerk-kop").textContent = gebruiker.inNetwerk ? "Je staat in het netwerk" : stap.kop;
+    document.getElementById("netwerk-tekst").textContent = gebruiker.inNetwerk
+      ? "Collega's en verwijzers kunnen je vinden op specialisme en regio. Houd je gegevens actueel, dan blijft dat zo."
+      : stap.tekst;
+    document.getElementById("netwerk-knoppen").innerHTML = netwerkKnoppenHtml(stap.knoppen);
+
     // "Mijn artikelen": de nieuwste artikelen die dit lid volledig kan lezen.
     const houder = document.getElementById("artikelen");
     try {

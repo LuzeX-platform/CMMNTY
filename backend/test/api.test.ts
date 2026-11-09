@@ -424,8 +424,19 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
 
     const treffer = (await app.inject({ method: "GET", url: "/api/directory?specialisme=Seksuologie&regio=Oost" })).json();
     assert.equal(treffer.profielen.length, 1);
+    assert.equal(treffer.totaal, 1);
     const mis = (await app.inject({ method: "GET", url: "/api/directory?regio=Noord" })).json();
     assert.equal(mis.profielen.length, 0);
+    assert.equal(mis.totaal, 0);
+
+    // Homepage: teller en uitgelichte profielen, openbaar.
+    const uitgelicht = (await app.inject({ method: "GET", url: "/api/netwerk/uitgelicht" })).json();
+    assert.equal(uitgelicht.totaal, 1);
+    assert.equal(uitgelicht.profielen[0].weergavenaam, "Sanne");
+
+    // De sessie zegt of dit lid in het netwerk staat (voor de uitnodigingen op de site).
+    const sessie = (await app.inject({ method: "GET", url: "/api/auth/sessie", headers: { cookie: lidCookie } })).json();
+    assert.equal(sessie.gebruiker.inNetwerk, true);
   });
 
   test("nieuwsbrief: gratis-segment krijgt alleen gratis artikelen, daarna niets dubbel", async () => {
@@ -496,6 +507,8 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     assert.equal(res.statusCode, 200);
     const directory = (await app.inject({ method: "GET", url: "/api/directory" })).json();
     assert.equal(directory.profielen.length, 0);
+    const uitgelicht = (await app.inject({ method: "GET", url: "/api/netwerk/uitgelicht" })).json();
+    assert.deepEqual(uitgelicht, { totaal: 0, profielen: [] });
   });
 
   // Het importscript echt draaien (als los proces, zoals in de Render Shell) tegen de testdatabase.

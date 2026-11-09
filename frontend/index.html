@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LuzeX CMMNTY — Innovatie in de zorg. Uitgelegd.</title>
-  <meta name="description" content="Praktische artikelen over innovatie in de zorg, voor zelfstandige zorgprofessionals. Zonder jargon, zonder hype." />
+  <title>LuzeX CMMNTY — Het netwerk voor zelfstandige zorgprofessionals</title>
+  <meta name="description" content="Het netwerk voor zelfstandige zorgprofessionals: vind collega's en verwijzers op specialisme en regio, en word zelf gevonden. Plus elke week de belangrijkste zorginnovaties, zonder jargon." />
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
@@ -20,25 +20,41 @@
     <section class="hero">
       <div>
         <p class="kicker">LuzeX CMMNTY</p>
-        <h1>Innovatie in <span class="geen-afbreking">de zorg.</span><br />Uitgelegd.</h1>
-        <p class="lead">Wat kun je als zelfstandige zorgprofessional nú met AI, slimme tools en nieuwe regels? Elke week een kort, praktisch artikel. Geen jargon. Geen hype.</p>
+        <h1>Samen beter <span class="geen-afbreking">in de zorg.</span></h1>
+        <p class="lead">Het netwerk voor zelfstandige zorgprofessionals. Vind collega's en verwijzers op specialisme en regio, en word zelf gevonden. Plus elke week de belangrijkste zorginnovaties, zonder jargon.</p>
         <div class="cta-rij">
-          <a class="pil-knop pil-knop-donker" id="hero-eerste" href="/registreren.html">Gratis account maken</a>
-          <a class="pil-knop pil-knop-glas" id="hero-tweede" href="/inloggen.html">Inloggen</a>
+          <a class="pil-knop pil-knop-donker" id="hero-eerste" href="/registreren.html">Gratis lid worden</a>
+          <a class="pil-knop pil-knop-glas" id="hero-tweede" href="/netwerk.html">Bekijk het netwerk</a>
         </div>
       </div>
-      <div class="hero-beeld" aria-hidden="true">
-        <div class="hero-kaartje"><span><span class="badge badge-gratis">Gratis</span></span><strong>Hoe AI je administratie 2 uur per week kan besparen</strong></div>
-        <div class="hero-kaartje"><span><span class="badge badge-pro">Pro</span></span><strong>Beeldbellen dat wél voldoet aan de AVG</strong></div>
-        <div class="hero-kaartje"><span><span class="badge badge-gratis">Gratis</span></span><strong>Vijf tools die je praktijk vandaag al lichter maken</strong></div>
+      <form class="panel hero-zoek" action="/netwerk.html" method="get" role="search" aria-labelledby="hero-zoek-kop">
+        <p class="kicker">Netwerk</p>
+        <h2 id="hero-zoek-kop">Vind een collega</h2>
+        <p class="subtitle" id="netwerk-teller">Zoek op specialisme en regio.</p>
+        <label for="hero-specialisme">Specialisme</label>
+        <select id="hero-specialisme" name="specialisme"><option value="">Alle specialismen</option></select>
+        <label for="hero-regio">Regio</label>
+        <select id="hero-regio" name="regio"><option value="">Alle regio's</option></select>
+        <button type="submit">Zoek collega's</button>
+      </form>
+    </section>
+
+    <section class="sectie" id="netwerk">
+      <div class="sectie-kop">
+        <div>
+          <p class="kicker">Uit het netwerk</p>
+          <h2>Collega's in CMMNTY</h2>
+        </div>
+        <a class="text-link" href="/netwerk.html">Hele netwerk →</a>
       </div>
+      <div class="kaarten" id="uit-netwerk"><p class="leeg">Netwerk laden…</p></div>
     </section>
 
     <section class="sectie">
       <div class="sectie-kop">
         <div>
-          <p class="kicker">Nieuw</p>
-          <h2>Uitgelichte artikelen</h2>
+          <p class="kicker">Zorgtech deze week</p>
+          <h2>Nieuwe artikelen</h2>
         </div>
         <a class="text-link" href="/artikelen.html">Alle artikelen →</a>
       </div>
@@ -48,22 +64,22 @@
     <section class="sectie" id="over">
       <div class="donker-blok">
         <p class="kicker">Wat is CMMNTY?</p>
-        <h2>Minder. Maar beter.</h2>
+        <h2>Samen sta je sterker.</h2>
         <div class="stappen-grid">
           <div class="stap">
             <span class="stap-nummer">1</span>
-            <h3>Lezen</h3>
-            <p>Korte artikelen over wat er verandert in de zorg, en wat jij er morgen mee kunt. Geschreven door Job, voor ZZP'ers in de GGZ en daarbuiten.</p>
+            <h3>Gevonden worden</h3>
+            <p>Zet je praktijk in het netwerk. Collega's en verwijzers vinden je op specialisme en regio. Gratis voor leden.</p>
           </div>
           <div class="stap">
             <span class="stap-nummer">2</span>
-            <h3>Bijblijven</h3>
-            <p>Word gratis lid en krijg de nieuwste artikelen in je mailbox. Eén mail per week of maand, nooit meer.</p>
+            <h3>Collega's vinden</h3>
+            <p>Zoek iemand voor een verwijzing, overleg of vervanging. Zelfstandig werken hoeft niet alleen.</p>
           </div>
           <div class="stap">
             <span class="stap-nummer">3</span>
-            <h3>Gevonden worden</h3>
-            <p>Zet je praktijk in het netwerk. Collega's en verwijzers vinden je op specialisme en regio. Gratis voor leden.</p>
+            <h3>Bijblijven</h3>
+            <p>Korte artikelen over wat er verandert in de zorg, en wat jij er morgen mee kunt. Geschreven door Job, ook als nieuwsbrief in je mailbox.</p>
           </div>
         </div>
       </div>

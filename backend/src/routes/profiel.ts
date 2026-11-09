@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "../db.js";
 import { REGIOS, SPECIALISMEN } from "../constanten.js";
 import { requireLid } from "../plugins/requireAuth.js";
+import { kiesUitgelicht } from "../netwerk.js";
 
 const leegNaarNull = (v: unknown) => (typeof v === "string" && v.trim() === "" ? null : v);
 
@@ -87,12 +88,28 @@ export async function profielRoutes(app: FastifyInstance) {
         { bio: { contains: zoek, mode: "insensitive" } },
       ];
     }
-    const profielen = await prisma.profiel.findMany({
-      where,
-      orderBy: [{ praktijknaam: "asc" }, { weergavenaam: "asc" }],
+    const [profielen, totaal] = await Promise.all([
+      prisma.profiel.findMany({
+        where,
+        orderBy: [{ praktijknaam: "asc" }, { weergavenaam: "asc" }],
+        select: directorySelect,
+        take: 200,
+      }),
+      prisma.profiel.count({ where }),
+    ]);
+    return { profielen, totaal };
+  });
+
+  // Openbaar, voor de homepage: hoeveel mensen er in het netwerk staan en een paar willekeurige
+  // profielen om uit te lichten (zie kiesUitgelicht).
+  app.get("/api/netwerk/uitgelicht", async () => {
+    const alle = await prisma.profiel.findMany({
+      where: { gepubliceerd: true },
       select: directorySelect,
-      take: 200,
+      orderBy: { bijgewerktOp: "desc" },
+      take: 500,
     });
-    return { profielen };
+    const totaal = alle.length < 500 ? alle.length : await prisma.profiel.count({ where: { gepubliceerd: true } });
+    return { totaal, profielen: kiesUitgelicht(alle, 3) };
   });
 }

@@ -56,6 +56,12 @@ function slotHtml(reden, toegang) {
         ? `<div class="artikel-inhoud">${a.inhoudHtml /* door de server gesaneerd (sanitize-html) */}</div>`
         : slotHtml(a.vergrendeld, a.toegang)}`;
 
+    // Wie het artikel kon lezen, krijgt daarna de volgende stap in het netwerk. Bij een slot niet:
+    // daar staat de knop om in te loggen of Pro te worden al, en twee oproepen is er één te veel.
+    if (a.inhoudHtml !== null && !a.voorbeeld) {
+      houder.insertAdjacentHTML("beforeend", netwerkBlokHtml(await haalSessie()));
+    }
+
     if (a.gerelateerd.length) {
       document.getElementById("gerelateerd").innerHTML = a.gerelateerd.map(artikelKaartHtml).join("");
       document.getElementById("gerelateerd-sectie").hidden = false;

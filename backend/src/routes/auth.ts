@@ -156,7 +156,10 @@ export async function authRoutes(app: FastifyInstance) {
   });
 
   const gebruikerJson = async (gebruikerId: string) => {
-    const gebruiker = await prisma.gebruiker.findUnique({ where: { id: gebruikerId } });
+    const gebruiker = await prisma.gebruiker.findUnique({
+      where: { id: gebruikerId },
+      include: { profiel: { select: { gepubliceerd: true } } },
+    });
     if (!gebruiker) return null;
     return {
       id: gebruiker.id,
@@ -169,6 +172,9 @@ export async function authRoutes(app: FastifyInstance) {
       abonnementBron: gebruiker.abonnementBron,
       nieuwsbrief: gebruiker.nieuwsbrief,
       lidSinds: gebruiker.aangemaaktOp,
+      // Of dit lid met een zichtbaar profiel in het netwerk staat: de site nodigt wie er nog
+      // niet in staat uit om dat te doen (dashboard, netwerk, onder artikelen).
+      inNetwerk: gebruiker.profiel?.gepubliceerd ?? false,
     };
   };
 
