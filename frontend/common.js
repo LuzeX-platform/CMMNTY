@@ -137,7 +137,7 @@ function netwerkStap(gebruiker) {
     return {
       kop: "Sta jij al in het netwerk?",
       tekst: "Zet je praktijk erin, dan vinden collega's en verwijzers je op specialisme en regio. Gratis, en in twee minuten geregeld.",
-      knoppen: [["Zet je praktijk erin", "/dashboard/profiel.html"], ["Bekijk het netwerk", "/netwerk.html"]],
+      knoppen: [["Deel jouw expertise", "/dashboard/profiel.html"], ["Bekijk het netwerk", "/netwerk.html"]],
     };
   }
   return {
