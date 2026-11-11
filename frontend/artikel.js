@@ -39,6 +39,24 @@ function slotHtml(reden, toegang) {
     document.title = `${a.titel} — LuzeX CMMNTY`;
     document.querySelector('meta[name="description"]').setAttribute("content", a.samenvatting);
 
+    // Titel en omschrijving stonden al per artikel, de deel-gegevens niet: elk artikel
+    // kreeg dus dezelfde kaart in WhatsApp en LinkedIn, met de algemene tekst van
+    // artikel.html. Het adres hoort ook per artikel: /artikel.html?slug=... en
+    // /artikelen/<slug> wijzen naar dezelfde tekst, en zonder canonical ziet een
+    // zoekmachine dat als twee pagina's met dezelfde inhoud.
+    const netAdres = `${location.origin}/artikelen/${encodeURIComponent(slug)}`;
+    const zet = (kiezer, waarde, attr = "content") => {
+      const el = document.querySelector(kiezer);
+      if (el && waarde) el.setAttribute(attr, waarde);
+    };
+    zet('link[rel="canonical"]', netAdres, "href");
+    zet('meta[property="og:title"]', a.titel);
+    zet('meta[property="og:description"]', a.samenvatting);
+    zet('meta[property="og:url"]', netAdres);
+    zet('meta[name="twitter:title"]', a.titel);
+    zet('meta[name="twitter:description"]', a.samenvatting);
+    zet('meta[property="og:type"]', "article");
+
     houder.innerHTML = `
       ${a.voorbeeld ? `<p class="melding voorbeeld-melding"><strong>Voorbeeld</strong> — dit artikel is nog niet gepubliceerd. Alleen jij (admin) ziet deze pagina.</p>` : ""}
       <header class="artikel-kop">

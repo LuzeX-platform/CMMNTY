@@ -1,0 +1,30 @@
+# De publieke kant mag in een zoekmachine, de rest niet.
+#
+# Artikelen en het netwerk zijn de inhoud waarvoor mensen hier komen, dus die
+# staan open. Het dashboard, de admin en alles rond inloggen horen er niet in:
+# dat zijn persoonlijke schermen, en de HTML-schillen ervan worden door Fastify
+# als statische bestanden geserveerd (backend/src/app.ts), dus ze zijn zonder
+# account op te vragen. De gegevens erachter zitten wél achter authenticatie.
+#
+# Let op bij /artikel.html: die pagina bestaat in twee adressen, met ?slug=
+# en als /artikelen/<slug>. artikel.js zet per artikel een canonical naar de
+# tweede vorm, zodat een zoekmachine ze niet als twee pagina's telt.
+
+User-agent: *
+Allow: /$
+Allow: /artikelen.html
+Allow: /artikelen/
+Allow: /artikel.html
+Allow: /netwerk.html
+Allow: /assets/
+
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /inloggen.html
+Disallow: /registreren.html
+Disallow: /bevestigen.html
+Disallow: /afmelden.html
+Disallow: /wachtwoord-vergeten.html
+Disallow: /wachtwoord-resetten.html
+
+Sitemap: https://cmmnty.luzex.nl/sitemap.xml
