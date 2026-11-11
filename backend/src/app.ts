@@ -1,12 +1,14 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import Fastify, { type FastifyInstance } from "fastify";
+import Fastify, { type FastifyInstance, type FastifyReply } from "fastify";
 import fastifyCookie from "@fastify/cookie";
 import fastifyStatic from "@fastify/static";
 import fastifyRateLimit from "@fastify/rate-limit";
 import fastifyHelmet from "@fastify/helmet";
 import { authRoutes } from "./routes/auth.js";
 import { artikelRoutes } from "./routes/artikelen.js";
+import { prisma } from "./db.js";
+import { artikelPagina, artikelenPagina, sitemapXml } from "./seo.js";
 import { profielRoutes } from "./routes/profiel.js";
 import { adminRoutes } from "./routes/admin.js";
 import { abonnementRoutes } from "./routes/abonnement.js";
@@ -127,7 +129,47 @@ export async function bouwApp(opties: { logger?: boolean } = {}): Promise<Fastif
   await app.register(fastifyStatic, { root: FRONTEND, prefix: "/", index: "index.html", redirect: true });
 
   // Nette artikel-URL's (/artikelen/mijn-artikel) voor de nieuwsbrief en om te delen.
-  app.get("/artikelen/:slug", (_request, reply) => reply.sendFile("artikel.html"));
+  //
+  // De pagina gaat niet meer als lege schil de deur uit: seo.ts zet de etalage
+  // (titel, samenvatting, metadata — nooit de tekst) er server-side in, zodat
+  // zoekmachines en linkvoorbeelden iets te lezen hebben. artikel.js vervangt
+  // die inhoud zodra hij draait, dus wie JavaScript heeft merkt er niets van.
+  // Valt het renderen om, dan gaat de kale schil alsnog mee: een artikel moet
+  // leesbaar blijven, ook als de database even niet meewerkt.
+  const metSeo = async (
+    reply: FastifyReply,
+    maak: () => Promise<string | null>,
+    terugval: string,
+  ) => {
+    try {
+      const html = await maak();
+      if (html === null) return reply.code(404).type("text/html; charset=utf-8").sendFile("404.html");
+      return reply.type("text/html; charset=utf-8").send(html);
+    } catch (fout) {
+      app.log.error({ fout }, "server-side renderen mislukt, kale schil gestuurd");
+      return reply.sendFile(terugval);
+    }
+  };
+
+  app.get("/artikelen/:slug", (request, reply) =>
+    metSeo(reply, () => artikelPagina(prisma, FRONTEND, (request.params as { slug: string }).slug), "artikel.html"));
+
+  // Hetzelfde artikel is ook bereikbaar met ?slug=; artikel.js zet daar een
+  // canonical naar de nette vorm, en hier krijgt het dezelfde inhoud.
+  app.get("/artikel.html", (request, reply) => {
+    const slug = (request.query as { slug?: string }).slug;
+    if (!slug) return reply.sendFile("artikel.html");
+    return metSeo(reply, () => artikelPagina(prisma, FRONTEND, slug), "artikel.html");
+  });
+
+  app.get("/artikelen.html", (_request, reply) =>
+    metSeo(reply, () => artikelenPagina(prisma, FRONTEND), "artikelen.html"));
+
+  // De sitemap komt uit de database, zodat een nieuw artikel vanzelf vindbaar
+  // wordt in plaats van bij elke publicatie met de hand te moeten worden
+  // bijgeschreven.
+  app.get("/sitemap.xml", async (_request, reply) =>
+    reply.type("application/xml; charset=utf-8").send(await sitemapXml(prisma)));
 
   // De pagina heette eerst "Directory". Oude links (bladwijzers, eerdere mails) blijven werken.
   app.get("/directory.html", (_request, reply) => reply.redirect("/netwerk.html", 301));
