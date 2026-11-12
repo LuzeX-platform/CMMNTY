@@ -42,13 +42,25 @@ interface Mail {
   headers?: Record<string, string>;
 }
 
+// Mailgun en SendGrid vervangen links standaard door een eigen "kliktel"-adres. Is dat adres
+// niet in de DNS gezet, of blokkeert de mailfilter van de ontvanger het, dan laadt de link niet:
+// precies de bevestigings- en resetlinks die het moeten doen. Tellen doen we nergens mee (en het
+// is privacyvriendelijker zonder), dus het staat voor elke mail uit. Andere mailservers negeren
+// deze kopregels.
+const GEEN_TRACKING: Record<string, string> = {
+  "X-Mailgun-Track": "no",
+  "X-Mailgun-Track-Clicks": "no",
+  "X-Mailgun-Track-Opens": "no",
+  "X-SMTPAPI": JSON.stringify({ filters: { clicktrack: { settings: { enable: 0 } }, opentrack: { settings: { enable: 0 } } } }),
+};
+
 export async function verstuurMail({ naar, onderwerp, tekst, html, headers }: Mail): Promise<void> {
   const client = getTransporter();
   if (!client) {
     console.warn(`[mailer] Geen SMTP_HOST — mail aan ${naar} niet verstuurd, alleen gelogd.\nOnderwerp: ${onderwerp}\n${tekst}`);
     return;
   }
-  await client.sendMail({ from: afzender(), to: naar, subject: onderwerp, text: tekst, html, headers });
+  await client.sendMail({ from: afzender(), to: naar, subject: onderwerp, text: tekst, html, headers: { ...GEEN_TRACKING, ...headers } });
 }
 
 /** "Hoi Sanne" als we een naam hebben, anders gewoon "Hoi" — een naam is sinds de
@@ -64,6 +76,24 @@ export async function verstuurBevestigingsmail(naar: string, naam: string, link:
     tekst:
       `${aanhef(naam)},\n\nWelkom bij LuzeX CMMNTY. Bevestig je e-mailadres via deze link:\n${link}\n\n` +
       "Heb je je niet aangemeld? Dan kun je deze e-mail negeren.",
+  });
+}
+
+/**
+ * Voor wie zich aanmeldt met een adres dat al een account heeft. Het wachtwoord van de nieuwe
+ * aanmelding slaan we bewust níét op: dan kon iedereen met jouw e-mailadres jouw wachtwoord
+ * overschrijven. In plaats daarvan krijgt de eigenaar van de mailbox een link om zelf een
+ * (nieuw) wachtwoord te kiezen; die bevestigt ook meteen het e-mailadres.
+ */
+export async function verstuurAlLidMail(naar: string, naam: string, link: string, bevestigd: boolean): Promise<void> {
+  await verstuurMail({
+    naar,
+    onderwerp: "Je hebt al een account — LuzeX CMMNTY",
+    tekst:
+      `${aanhef(naam)},\n\nJe meldde je aan bij LuzeX CMMNTY, maar met dit e-mailadres bestaat al een account` +
+      `${bevestigd ? "" : " (nog niet bevestigd)"}. Je wachtwoord is daarom niet veranderd.\n\n` +
+      `Kies via deze link een nieuw wachtwoord${bevestigd ? "" : "; daarmee is je account meteen bevestigd"} (1 uur geldig):\n${link}\n\n` +
+      "Weet je je wachtwoord nog? Dan kun je gewoon inloggen en deze e-mail negeren.",
   });
 }
 

@@ -167,6 +167,59 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     assert.equal(rij.naam, "");
   });
 
+  test("opnieuw aanmelden met een bestaand adres: wachtwoord blijft, mail met link om er zelf een te kiezen", async () => {
+    const eerste = await app.inject({ method: "POST", url: "/api/auth/registreren", payload: { email: "ina@test.nl", wachtwoord: "eerste-wachtwoord" } });
+    assert.equal(eerste.statusCode, 200);
+    mails.length = 0;
+    // Tweede keer, met een ander wachtwoord: zelfde antwoord, zodat niet te zien is wie er lid is.
+    const tweede = await app.inject({ method: "POST", url: "/api/auth/registreren", payload: { email: "ina@test.nl", wachtwoord: "tweede-wachtwoord" } });
+    assert.deepEqual(tweede.json(), eerste.json());
+
+    // Het nieuwe wachtwoord is niet zomaar opgeslagen (anders kon iedereen het overschrijven).
+    const metTweede = await app.inject({ method: "POST", url: "/api/auth/inloggen", payload: { email: "ina@test.nl", wachtwoord: "tweede-wachtwoord" } });
+    assert.equal(metTweede.json().errorCode, "ONJUISTE_INLOGGEGEVENS");
+
+    // De mailbox krijgt een link om zelf een wachtwoord te kiezen; die bevestigt ook het adres.
+    assert.match(mails.join("\n"), /al een account/);
+    const kies = await app.inject({
+      method: "POST",
+      url: "/api/auth/wachtwoord-resetten",
+      payload: { token: laatsteLink("/wachtwoord-resetten.html"), nieuwWachtwoord: "tweede-wachtwoord" },
+    });
+    assert.equal(kies.statusCode, 200);
+    const nu = await app.inject({ method: "POST", url: "/api/auth/inloggen", payload: { email: "ina@test.nl", wachtwoord: "tweede-wachtwoord" } });
+    assert.equal(nu.statusCode, 200, nu.body);
+  });
+
+  test("admin verwijdert een account; niet de admin, niet iemand die via Stripe betaalt", async () => {
+    await app.inject({ method: "POST", url: "/api/auth/registreren", payload: { email: "weg@test.nl", wachtwoord: "geheim123" } });
+    const weg = await prisma.gebruiker.findUniqueOrThrow({ where: { email: "weg@test.nl" } });
+
+    const alsBezoeker = await app.inject({ method: "DELETE", url: `/api/admin/gebruikers/${weg.id}` });
+    assert.ok([401, 403].includes(alsBezoeker.statusCode));
+
+    const ok = await app.inject({ method: "DELETE", url: `/api/admin/gebruikers/${weg.id}`, headers: { cookie: adminCookie } });
+    assert.equal(ok.statusCode, 200);
+    assert.equal(await prisma.gebruiker.findUnique({ where: { email: "weg@test.nl" } }), null);
+    assert.equal(await prisma.profiel.findUnique({ where: { gebruikerId: weg.id } }), null);
+
+    // Daarna kan diegene zich gewoon opnieuw aanmelden.
+    const opnieuw = await app.inject({ method: "POST", url: "/api/auth/registreren", payload: { email: "weg@test.nl", wachtwoord: "nieuw-geheim" } });
+    assert.equal(opnieuw.statusCode, 200);
+    assert.ok(await prisma.gebruiker.findUnique({ where: { email: "weg@test.nl" } }));
+
+    const admin = await prisma.gebruiker.findUniqueOrThrow({ where: { email: "job@test.nl" } });
+    const adminWeg = await app.inject({ method: "DELETE", url: `/api/admin/gebruikers/${admin.id}`, headers: { cookie: adminCookie } });
+    assert.equal(adminWeg.statusCode, 400);
+
+    const betaler = await prisma.gebruiker.update({ where: { email: "weg@test.nl" }, data: { abonnement: "pro", stripeAbonnementId: "sub_test" } });
+    const betalerWeg = await app.inject({ method: "DELETE", url: `/api/admin/gebruikers/${betaler.id}`, headers: { cookie: adminCookie } });
+    assert.equal(betalerWeg.statusCode, 409);
+
+    const onbekend = await app.inject({ method: "DELETE", url: "/api/admin/gebruikers/bestaat-niet", headers: { cookie: adminCookie } });
+    assert.equal(onbekend.statusCode, 404);
+  });
+
   test("kruisproduct-Pro v2: een actief ACCRD-kvk-nummer geeft gratis Pro via de claim-route", async () => {
     // Nep-ACCRD: kent alleen kvk-nummer "11112222" toe, en alleen aan "cmmnty".
     const http = await import("node:http");

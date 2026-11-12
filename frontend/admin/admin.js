@@ -275,6 +275,7 @@ async function gebruikersPagina() {
                  <option value="pro" ${g.abonnement === "pro" ? "selected" : ""}>Pro</option>
                </select>${g.abonnement === "pro" ? `<br><span class="subtitle">${{ accrd: "via ACCRD", scrnn: "via SCRNN", handmatig: "cadeau" }[g.abonnementBron] ?? "betaald"}</span>` : ""}`
         }</td>
+        <td>${g.rol === "admin" ? "" : `<button type="button" class="secondary" data-verwijderen="${g.id}" data-email="${escapeHtml(g.email)}">Verwijderen</button>`}</td>
       </tr>`,
     )
     .join("");
@@ -302,6 +303,20 @@ async function gebruikersPagina() {
   });
 
   tbody.addEventListener("click", async (e) => {
+    const weg = e.target.closest("button[data-verwijderen]");
+    if (weg) {
+      const vraag = `Het account van ${weg.dataset.email} verwijderen?\n\nDit haalt ook het netwerkprofiel weg en kan niet ongedaan worden gemaakt. Daarna kan deze persoon zich opnieuw aanmelden.`;
+      if (!confirm(vraag)) return;
+      weg.disabled = true;
+      try {
+        await api(`/api/admin/gebruikers/${weg.dataset.verwijderen}`, { methode: "DELETE" });
+        await gebruikersPagina();
+      } catch (fout) {
+        alert(foutTekst(fout));
+        weg.disabled = false;
+      }
+      return;
+    }
     const knop = e.target.closest("button[data-bevestigen]");
     if (!knop) return;
     knop.disabled = true;
@@ -335,9 +350,18 @@ async function laadUitnodigingen() {
 
 async function laadMail() {
   const m = await api("/api/admin/mail");
-  document.getElementById("mail-status").innerHTML = m.ingesteld
+  // Waar de links in mails heen gaan. Klopt dit niet met het adres van de site, dan laadt geen
+  // enkele bevestigings- of resetlink.
+  const adres = `<code>${escapeHtml(m.linkAdres)}</code>`;
+  const linkRegel =
+    m.linkAdres !== location.origin
+      ? `<li>✗ Links in mails gaan naar ${adres}, maar je bekijkt de site nu op <code>${escapeHtml(location.origin)}</code>. Is ${adres} niet het goede adres, zet dan <code>APP_URL</code> in Render op het adres van de site (of maak hem leeg).</li>`
+      : m.linkAdres.startsWith("https://")
+        ? `<li>✓ Links in mails gaan naar ${adres}, het adres van deze site.</li>`
+        : `<li>✗ Links in mails gaan naar ${adres}, zonder https.</li>`;
+  document.getElementById("mail-status").innerHTML = (m.ingesteld
     ? `<li>✓ Mailserver ingesteld: ${escapeHtml(m.server)}</li><li>✓ Afzender: ${escapeHtml(m.afzender)}</li>`
-    : "<li>✗ Geen mailserver ingesteld. Er gaat nu géén mail de deur uit: zet <code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_WACHTWOORD</code> en <code>SMTP_AFZENDER</code> in Render.</li>";
+    : "<li>✗ Geen mailserver ingesteld. Er gaat nu géén mail de deur uit: zet <code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_WACHTWOORD</code> en <code>SMTP_AFZENDER</code> in Render.</li>") + linkRegel;
 }
 
 async function laadStripe() {
