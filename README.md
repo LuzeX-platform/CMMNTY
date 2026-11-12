@@ -29,8 +29,9 @@ deployment, eigen geheimen.
 - **Nieuwsbrief** — wekelijks (maandag) of maandelijks (de 1e), in te stellen door Job.
   Gratis-leden krijgen alleen gratis artikelen, Pro-leden alles. Met voorbeeld, testmail,
   handmatig versturen en afmeldlink (ook één-klik in Gmail/Apple Mail).
-- **Admin** (alleen Job) — artikelen beheren met live voorvertoning, gebruikers bekijken en
-  handmatig op Pro zetten, nieuwsbrief beheren.
+- **Admin** (alleen Job) — artikelen beheren met live voorvertoning, gebruikers bekijken,
+  handmatig op Pro zetten, bevestigen of verwijderen (niet wie via Stripe betaalt), nieuwsbrief
+  beheren. Onder *E-mail* staat ook waar de links in mails naartoe wijzen.
 
 **Pro zonder betaling:** zolang Stripe er niet is, zet Job iemand in *Admin → Gebruikers* op Pro.
 

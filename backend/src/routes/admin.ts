@@ -223,9 +223,31 @@ export async function adminRoutes(app: FastifyInstance) {
     return { ok: true };
   });
 
+  // Een account weghalen, bijvoorbeeld als iemand er niet meer in komt en opnieuw wil beginnen.
+  // Niet de admin, en niet iemand die via Stripe betaalt: het abonnement zou dan doorlopen
+  // zonder account erbij. Dat zeg je eerst op in Stripe.
+  app.delete("/api/admin/gebruikers/:id", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const gebruiker = await prisma.gebruiker.findUnique({ where: { id } });
+    if (!gebruiker) return reply.code(404).send({ errorCode: "NIET_GEVONDEN" });
+    if (gebruiker.rol === "admin") {
+      return reply.code(400).send({ errorCode: "ADMIN_NIET_VERWIJDERBAAR", bericht: "Het admin-account kan niet verwijderd worden." });
+    }
+    if (gebruiker.stripeAbonnementId) {
+      return reply.code(409).send({
+        errorCode: "BETAALD_ABONNEMENT",
+        bericht: "Dit lid betaalt via Stripe. Zeg het abonnement eerst op in Stripe; daarna kun je het account verwijderen.",
+      });
+    }
+    await prisma.gebruiker.delete({ where: { id } });
+    return { ok: true };
+  });
+
   // ---------- E-mail ----------
 
-  app.get("/api/admin/mail", async () => mailStatus());
+  // linkAdres: waar de links in mails (bevestigen, wachtwoord, nieuwsbrief) mee beginnen. Staat
+  // APP_URL in Render verkeerd, dan laadt geen enkele link uit een mail; zo is dat te zien.
+  app.get("/api/admin/mail", async () => ({ ...mailStatus(), linkAdres: appUrl() }));
 
   // Echte testmail, met de echte foutmelding van de mailserver als het misgaat. De
   // nieuwsbrief-testmail hierboven zegt "verstuurd" ook als er geen mailserver is. Met een adres

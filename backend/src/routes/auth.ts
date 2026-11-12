@@ -8,7 +8,7 @@ import {
   maakEenmaligToken,
   verifieerWachtwoord,
 } from "../auth.js";
-import { verstuurBevestigingsmail, verstuurWachtwoordResetMail } from "../mailer.js";
+import { verstuurAlLidMail, verstuurBevestigingsmail, verstuurWachtwoordResetMail } from "../mailer.js";
 import { appUrl } from "../nieuwsbriefVersturen.js";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import { accrdKoppelUrl, claimKruisproductPro, schoonKvkNummer, wisselKoppeltokenIn } from "../luzexKruisproduct.js";
@@ -51,12 +51,21 @@ export async function authRoutes(app: FastifyInstance) {
     const bestaand = await prisma.gebruiker.findUnique({ where: { email } });
 
     if (bestaand) {
-      // Zelfde antwoord als bij een nieuw adres, zodat niet af te tasten is wie er lid is.
-      // Nog niet bevestigd? Dan sturen we de bevestigingsmail gewoon opnieuw.
-      if (!bestaand.emailBevestigdOp) {
-        await prisma.gebruiker.update({ where: { id: bestaand.id }, data: { bevestigTokenHash: tokenHash } });
-        await verstuurBevestigingsmail(email, bestaand.naam, `${appUrl()}/bevestigen.html?token=${ruweToken}`);
-      }
+      // Zelfde antwoord als bij een nieuw adres, zodat niet af te tasten is wie er lid is. Wie
+      // zich opnieuw aanmeldt, weet zijn wachtwoord meestal niet meer (of koos nu een ander):
+      // de mailbox krijgt daarom een link om er zelf een te kiezen. Die link loopt via de
+      // reset-route, die het adres ook bevestigt. Zie verstuurAlLidMail voor waarom het nieuwe
+      // wachtwoord niet gewoon wordt opgeslagen.
+      await prisma.gebruiker.update({
+        where: { id: bestaand.id },
+        data: { resetTokenHash: tokenHash, resetTokenVerlooptOp: new Date(Date.now() + RESET_TTL_MS) },
+      });
+      await verstuurAlLidMail(
+        email,
+        bestaand.naam,
+        `${appUrl()}/wachtwoord-resetten.html?token=${ruweToken}`,
+        Boolean(bestaand.emailBevestigdOp),
+      );
       return { ok: true };
     }
 
