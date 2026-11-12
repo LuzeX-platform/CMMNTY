@@ -9,20 +9,17 @@ jobs:
   controle:
     runs-on: ubuntu-latest
     steps:
-      - name: DNS
+      - name: Mailprovider
         run: |
-          for h in cmmnty.luzex.nl www.cmmnty.luzex.nl luzex-community.onrender.com email.mg.luzex.nl mg.luzex.nl luzex.nl; do
+          for h in luzex.nl mail.luzex.nl mg.luzex.nl cmmnty.luzex.nl; do
             echo "== $h"
-            dig +noall +answer "$h" A || true
-            dig +noall +answer "$h" CNAME || true
+            for t in MX TXT; do dig +noall +answer "$h" $t || true; done
           done
-          echo "== MX/TXT mg.luzex.nl"; dig +noall +answer mg.luzex.nl MX || true; dig +noall +answer mg.luzex.nl TXT || true
-          echo "== NS luzex.nl"; dig +noall +answer luzex.nl NS || true
-      - name: HTTP
-        run: |
-          for u in https://cmmnty.luzex.nl/bevestigen.html http://cmmnty.luzex.nl/ https://luzex-community.onrender.com/bevestigen.html https://luzex-community.onrender.com/wachtwoord-resetten.html http://email.mg.luzex.nl/ https://email.mg.luzex.nl/; do
-            echo "== $u"
-            curl -sS -o /dev/null --max-time 20 -w "status=%{http_code} redirect=%{redirect_url} ip=%{remote_ip}\n" "$u" || echo "MISLUKT (exit $?)"
+          for h in _dmarc.luzex.nl s1._domainkey.luzex.nl s2._domainkey.luzex.nl mx._domainkey.luzex.nl pic._domainkey.luzex.nl k1._domainkey.luzex.nl \
+                   email.luzex.nl email.mail.luzex.nl links.luzex.nl link.luzex.nl click.luzex.nl track.luzex.nl \
+                   s1._domainkey.mail.luzex.nl mx._domainkey.mail.luzex.nl pic._domainkey.mail.luzex.nl k1._domainkey.mail.luzex.nl resend._domainkey.luzex.nl; do
+            r=$(dig +noall +answer "$h" ANY; dig +noall +answer "$h" CNAME; dig +noall +answer "$h" TXT)
+            [ -n "$r" ] && { echo "== $h"; echo "$r" | sort -u; }
           done
-          echo "== certificaat cmmnty.luzex.nl"
-          echo | timeout 15 openssl s_client -connect cmmnty.luzex.nl:443 -servername cmmnty.luzex.nl 2>/dev/null | openssl x509 -noout -subject -issuer -dates 2>/dev/null || echo "geen certificaat opgehaald"
+          for n in $(seq 1 20); do :; done
+          echo klaar
