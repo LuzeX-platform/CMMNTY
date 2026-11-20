@@ -45,7 +45,7 @@ function koppelFormulier(form, foutEl, succesEl, handler) {
       const { artikelen } = await api(`/api/artikelen?limiet=6${pro ? "" : "&toegang=gratis"}`);
       houder.innerHTML = artikelen.length
         ? artikelen.map(artikelKaartHtml).join("")
-        : '<p class="leeg">Nog geen artikelen. Het eerste komt eraan!</p>';
+        : '<p class="leeg">Nog geen artikelen. Het eerste komt eraan.</p>';
     } catch {
       houder.innerHTML = '<p class="leeg">Artikelen konden niet geladen worden.</p>';
     }
