@@ -925,25 +925,58 @@ input[type="checkbox"] {
 /* ---------- Badges ---------- */
 
 .badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 3px 10px;
   border-radius: 9px;
-  background: var(--accent-tint);
+  background: var(--surface-translucent);
+  border: 1px solid var(--border-strong);
   color: var(--text-secondary);
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1.5;
   white-space: nowrap;
 }
 
+/* Gratis: wit vlak, donkere tekst, groen stipje. (Groene tekst haalde 2,5:1 op het oude vlak.) */
 .badge-gratis {
-  background: var(--success-tint);
-  color: var(--success);
+  background: var(--surface);
+  color: var(--text);
 }
 
+.badge-stip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+}
+
+/* Pro: het grafiet-accent met een slotje, zodat het meteen opvalt tussen de kaarten. */
 .badge-pro {
   background: var(--accent);
+  border-color: var(--accent);
   color: var(--accent-contrast);
+}
+
+.badge-icoon {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+/* Categorie: een grijs vlak zonder rand, zodat Gratis (wit met stip) en Pro (grafiet) eruit springen. */
+.badge-categorie {
+  background: var(--neutral-tint);
+  border-color: transparent;
+}
+
+/* Specialismen in een profiel: rustig olijf, niet hetzelfde als het Gratis-label. */
+.badge-specialisme {
+  background: color-mix(in srgb, var(--glas-licht-olijf) 22%, var(--surface));
+  border-color: transparent;
+  color: var(--text);
 }
 
 .badge-concept {
@@ -1040,6 +1073,37 @@ input[type="checkbox"] {
 
 a.kaart:hover {
   transform: translateY(-3px);
+}
+
+/* Artikelkaarten zijn effen: glas is voor de balk, de zoekkaart en de profielen. Een rij
+   van twintig glaskaarten is druk voor het oog en zwaar voor een oudere telefoon. */
+.kaart-artikel {
+  background: var(--surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+a.kaart-artikel:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/* In de kaart een korte weergave; de volledige titel staat op de artikelpagina. */
+.kaart-artikel h3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.kaart-artikel .kaart-samenvatting {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
 }
 
 .kaart-beeld {
@@ -1143,8 +1207,14 @@ a.badge {
   margin: 22px 0 0;
 }
 
+/* Vaste verhouding: de ruimte voor de omslag staat er al voordat de foto binnen is, zodat de
+   tekst eronder niet verspringt. */
 .artikel-cover {
   width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--neutral-tint);
   border-radius: var(--radius-lg);
   margin: 28px 0 0;
   display: block;

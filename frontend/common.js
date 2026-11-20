@@ -73,23 +73,27 @@ async function vereisSessie({ admin = false } = {}) {
   return gebruiker;
 }
 
+// Pro en Gratis verschillen in kleur én vorm, zodat het verschil ook zonder kleur te zien is:
+// Pro is grafiet met een slotje, Gratis is wit met een groen stipje.
+const SLOTJE = '<svg class="badge-icoon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 7V5.2a3 3 0 0 1 6 0V7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><rect x="3.2" y="7" width="9.6" height="7" rx="1.8" fill="currentColor"/></svg>';
+
 function badgeHtml(toegang) {
   return toegang === "pro"
-    ? '<span class="badge badge-pro">Pro</span>'
-    : '<span class="badge badge-gratis">Gratis</span>';
+    ? `<span class="badge badge-pro">${SLOTJE}Pro</span>`
+    : '<span class="badge badge-gratis"><span class="badge-stip" aria-hidden="true"></span>Gratis</span>';
 }
 
 function artikelKaartHtml(a) {
   const beeld = a.coverUrl
-    ? `<div class="kaart-beeld"><img src="${escapeHtml(a.coverUrl)}" alt="" loading="lazy" /></div>`
+    ? `<div class="kaart-beeld"><img src="${escapeHtml(a.coverUrl)}" alt="" width="1600" height="900" loading="lazy" decoding="async" /></div>`
     : '<div class="kaart-beeld" aria-hidden="true"></div>';
   return `
-    <a class="kaart" href="/artikelen/${encodeURIComponent(a.slug)}">
+    <a class="kaart kaart-artikel" href="/artikelen/${encodeURIComponent(a.slug)}">
       ${beeld}
       <div class="kaart-body">
-        <div class="kaart-badges">${badgeHtml(a.toegang)}${a.categorie ? `<span class="badge">${escapeHtml(a.categorie)}</span>` : ""}</div>
+        <div class="kaart-badges">${badgeHtml(a.toegang)}${a.categorie ? `<span class="badge badge-categorie">${escapeHtml(a.categorie)}</span>` : ""}</div>
         <h3>${escapeHtml(a.titel)}</h3>
-        <p>${escapeHtml(a.samenvatting)}</p>
+        <p class="kaart-samenvatting">${escapeHtml(a.samenvatting)}</p>
         <p class="kaart-meta">${escapeHtml(a.auteurNaam)} · ${formatteerDatum(a.gepubliceerdOp)} · ${a.leestijd} min lezen</p>
         <span class="kaart-lees">Lees meer →</span>
       </div>
@@ -111,7 +115,7 @@ function profielKaartHtml(p) {
       <div class="kaart-body">
         <div class="kaart-badges">
           ${p.regio ? `<span class="badge">${escapeHtml(p.regio)}</span>` : ""}
-          ${p.specialismen.map((s) => `<span class="badge badge-gratis">${escapeHtml(s)}</span>`).join("")}
+          ${p.specialismen.map((s) => `<span class="badge badge-specialisme">${escapeHtml(s)}</span>`).join("")}
         </div>
         <h3>${escapeHtml(p.weergavenaam)}</h3>
         ${p.praktijknaam ? `<p class="profiel-praktijk">${escapeHtml(p.praktijknaam)}</p>` : ""}
