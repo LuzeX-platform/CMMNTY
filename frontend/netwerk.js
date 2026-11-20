@@ -3,6 +3,16 @@ const regioSelect = document.getElementById("regio");
 const zoekVeld = document.getElementById("zoek");
 const lijst = document.getElementById("profielen");
 const aantal = document.getElementById("aantal");
+const toonAlles = document.getElementById("toon-alles");
+
+/** "in regio Noord", "met specialisme Seksuologie", of allebei: zegt in gewone taal waarop gezocht is. */
+function zoekopdrachtInWoorden() {
+  const delen = [];
+  if (regioSelect.value) delen.push(`in regio ${regioSelect.value}`);
+  if (specialismeSelect.value) delen.push(`met specialisme ${specialismeSelect.value}`);
+  if (zoekVeld.value.trim()) delen.push(`voor "${zoekVeld.value.trim()}"`);
+  return delen.join(" ");
+}
 
 /** Zet de filters in de adresbalk, zodat een zoekopdracht te delen is (en de homepage ernaar kan linken). */
 function bewaarFiltersInUrl() {
@@ -19,10 +29,17 @@ async function laad() {
   try {
     const { profielen, totaal } = await api(`/api/directory?${params}`);
     aantal.textContent = totaal === 1 ? "1 collega" : `${totaal} collega's`;
+    // Zodra er gefilterd is, staat er altijd een knop om terug te gaan naar het hele netwerk.
+    toonAlles.hidden = !params.toString();
     if (profielen.length) {
       lijst.innerHTML = profielen.map(profielKaartHtml).join("");
     } else if (params.toString()) {
-      lijst.innerHTML = '<p class="leeg">Nog niemand gevonden met deze filters.</p>';
+      lijst.innerHTML = `
+        <div class="lege-staat">
+          <h3>Nog geen collega's ${escapeHtml(zoekopdrachtInWoorden())}.</h3>
+          <p>Probeer een ander specialisme of een andere regio, of bekijk het hele netwerk.</p>
+          <button type="button" class="pil-knop pil-knop-donker" data-toon-alles>Bekijk het hele netwerk</button>
+        </div>`;
     } else {
       aantal.textContent = "";
       lijst.innerHTML = '<p class="leeg">Het netwerk is net begonnen. Zet je praktijk er als een van de eersten in.</p>';
@@ -65,3 +82,16 @@ zoekVeld.addEventListener("input", () => {
   timer = setTimeout(laad, 300);
 });
 document.getElementById("filters").addEventListener("submit", (e) => e.preventDefault());
+
+// "Toon alle leden" en "Bekijk het hele netwerk": alle filters leeg en opnieuw laden.
+function wisFilters() {
+  specialismeSelect.value = "";
+  regioSelect.value = "";
+  zoekVeld.value = "";
+  laad();
+  specialismeSelect.focus();
+}
+toonAlles.addEventListener("click", wisFilters);
+lijst.addEventListener("click", (e) => {
+  if (e.target.closest("[data-toon-alles]")) wisFilters();
+});
