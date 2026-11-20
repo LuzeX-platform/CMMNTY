@@ -21,6 +21,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import type { PrismaClient } from "@prisma/client";
 import { appUrl } from "./nieuwsbriefVersturen.js";
+import { coverPad } from "./artikelen.js";
 
 export function escapeHtml(t: string): string {
   return t
@@ -65,6 +66,9 @@ async function schil(frontend: string, bestand: string): Promise<string> {
   return fs.readFile(path.join(frontend, bestand), "utf8");
 }
 
+/** Het slotje van het Pro-label; hetzelfde als SLOTJE in frontend/common.js. */
+const SLOTJE = '<svg class="badge-icoon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 7V5.2a3 3 0 0 1 6 0V7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><rect x="3.2" y="7" width="9.6" height="7" rx="1.8" fill="currentColor"/></svg>';
+
 function datumNl(d: Date | null): string {
   if (!d) return "";
   return d.toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
@@ -81,6 +85,7 @@ export async function artikelPagina(
     select: {
       titel: true, slug: true, samenvatting: true, toegang: true,
       categorie: true, auteurNaam: true, gepubliceerdOp: true, coverMime: true,
+      bijgewerktOp: true,
     },
   });
   if (!a) return null;
@@ -114,19 +119,33 @@ export async function artikelPagina(
   let html = zetKop(await schil(frontend, "artikel.html"), titel, a.samenvatting, url, ld);
   html = html.replace(/<meta property="og:type" content="[^"]*"/, '<meta property="og:type" content="article"');
 
+  // Dezelfde opbouw als artikel.js straks tekent (labels, kop, meta, samenvatting, omslag),
+  // zodat de pagina niet verspringt als het script de inhoud vervangt. De leestijd ontbreekt
+  // hier bewust: daarvoor zou de tekst uit de database moeten komen, en die blijft hier buiten.
+  const badges = [
+    a.toegang === "pro"
+      ? `<span class="badge badge-pro">${SLOTJE}Pro</span>`
+      : '<span class="badge badge-gratis"><span class="badge-stip" aria-hidden="true"></span>Gratis</span>',
+    a.categorie
+      ? `<a class="badge badge-categorie" href="/artikelen.html?categorie=${encodeURIComponent(a.categorie)}">${escapeHtml(a.categorie)}</a>`
+      : "",
+  ].join("");
   const meta = [
-    a.categorie ? escapeHtml(a.categorie) : "",
-    a.auteurNaam ? escapeHtml(a.auteurNaam) : "",
-    datumNl(a.gepubliceerdOp),
-    a.toegang === "pro" ? "Pro" : "Gratis met account",
-  ].filter(Boolean).join(" &middot; ");
+    a.auteurNaam ? `<span>Door ${escapeHtml(a.auteurNaam)}</span>` : "",
+    a.gepubliceerdOp ? `<span>${datumNl(a.gepubliceerdOp)}</span>` : "",
+  ].join("");
+  const cover = a.coverMime
+    ? `<img class="artikel-cover" src="${escapeHtml(coverPad(a.slug, a.bijgewerktOp))}" alt="" width="1600" height="900" decoding="async" />`
+    : "";
 
   return vulElement(html, "artikel", `
       <header class="artikel-kop">
+        <div class="kaart-badges">${badges}</div>
         <h1>${escapeHtml(a.titel)}</h1>
-        <p class="artikel-meta">${meta}</p>
+        <div class="artikel-meta">${meta}</div>
+        <p class="artikel-samenvatting">${escapeHtml(a.samenvatting)}</p>
+        ${cover}
       </header>
-      <p class="artikel-samenvatting">${escapeHtml(a.samenvatting)}</p>
       <p><a href="/inloggen.html">Log in om het hele artikel te lezen</a> of
          <a href="/registreren.html">maak een gratis account</a>.</p>`);
 }

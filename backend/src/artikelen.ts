@@ -18,6 +18,16 @@ export function maakSlug(titel: string): string {
 }
 
 /** Geschatte leestijd in minuten (200 woorden per minuut, minimaal 1). */
+/**
+ * Adres van de omslagfoto. Het versienummer (tijdstip van de laatste wijziging) maakt van elke
+ * nieuwe versie een nieuw adres: zo mag de browser de foto een jaar bewaren, en ziet iedereen
+ * toch meteen een nieuwe foto als Job die vervangt.
+ */
+export function coverPad(slug: string, bijgewerktOp?: Date | null): string {
+  const pad = `/api/artikelen/${encodeURIComponent(slug)}/cover`;
+  return bijgewerktOp ? `${pad}?v=${bijgewerktOp.getTime()}` : pad;
+}
+
 export function leestijdMinuten(markdown: string): number {
   const woorden = markdown
     .replace(/```[\s\S]*?```/g, " ")

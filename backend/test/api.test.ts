@@ -630,6 +630,28 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     fs.rmSync(map, { recursive: true, force: true });
   });
 
+  test("omslag: met versie in het adres een jaar in de cache, zonder een uur, concept nooit", async () => {
+    const basis = { samenvatting: "x", inhoud: "x", toegang: "gratis", auteurNaam: "Job", coverAfbeelding: Buffer.from("jpg"), coverMime: "image/jpeg" };
+    await prisma.artikel.create({ data: { ...basis, titel: "Met omslag", slug: "met-omslag", gepubliceerdOp: new Date("2026-09-01T08:00:00Z") } });
+    await prisma.artikel.create({ data: { ...basis, titel: "Omslag concept", slug: "omslag-concept", gepubliceerdOp: null } });
+
+    const kaart = (await app.inject({ method: "GET", url: "/api/artikelen?limiet=50" })).json()
+      .artikelen.find((a: { slug: string }) => a.slug === "met-omslag");
+    assert.match(kaart.coverUrl, /^\/api\/artikelen\/met-omslag\/cover\?v=\d+$/);
+
+    const met = await app.inject({ method: "GET", url: kaart.coverUrl });
+    assert.equal(met.statusCode, 200);
+    assert.equal(met.headers["cache-control"], "public, max-age=31536000, immutable");
+    const zonder = await app.inject({ method: "GET", url: "/api/artikelen/met-omslag/cover" });
+    assert.equal(zonder.headers["cache-control"], "public, max-age=3600");
+
+    // Een concept bestaat niet voor bezoekers, en voor de admin wordt het nergens bewaard.
+    assert.equal((await app.inject({ method: "GET", url: "/api/artikelen/omslag-concept/cover?v=1" })).statusCode, 404);
+    const admin = await app.inject({ method: "GET", url: "/api/artikelen/omslag-concept/cover?v=1", headers: { cookie: adminCookie } });
+    assert.equal(admin.headers["cache-control"], "private, no-store");
+    await prisma.artikel.deleteMany({ where: { slug: { in: ["met-omslag", "omslag-concept"] } } });
+  });
+
   test("bulk: concepten in één keer publiceren, wat al online staat houdt zijn datum", async () => {
     const maak = async (titel: string, gepubliceerdOp: string | null) =>
       (
