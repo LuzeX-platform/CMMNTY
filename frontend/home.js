@@ -1,5 +1,7 @@
-// Onder deze aantallen tonen we geen teller: "3 zorgprofessionals" verkoopt het netwerk niet.
-const TELLER_VANAF = 10;
+// De ledensectie verschijnt pas vanaf drie zichtbare profielen. Daaronder een neutrale regel, zodat
+// het netwerk niet leeg oogt. Het aantal zorgprofessionals komt van de server, en alleen vanaf 100
+// (zie TELLER_VANAF in backend/src/routes/profiel.ts); anders noemen we geen getal.
+const LEDEN_VANAF = 3;
 
 (async () => {
   const gebruiker = await haalSessie();
@@ -13,26 +15,33 @@ const TELLER_VANAF = 10;
     })
     .catch(() => {});
 
-  const netwerk = document.getElementById("uit-netwerk");
+  const stap = netwerkStap(gebruiker);
+  const eigenKnop = stap.knoppen.filter(([, href]) => href !== "/netwerk.html").slice(0, 1);
   try {
-    const { totaal, profielen } = await api("/api/netwerk/uitgelicht");
-    if (totaal >= TELLER_VANAF) {
-      document.getElementById("netwerk-teller").textContent = `${totaal} zorgprofessionals in het netwerk. Zoek op specialisme en regio.`;
+    const { profielen, zorgprofessionals } = await api("/api/netwerk/uitgelicht");
+    const teller = zorgprofessionals
+      ? `${zorgprofessionals.toLocaleString("nl-NL")} zorgprofessionals zijn aangesloten bij CMMNTY.`
+      : null;
+    if (teller) document.getElementById("netwerk-teller").textContent = `${teller} Zoek op specialisme en regio.`;
+
+    if (profielen.length >= LEDEN_VANAF) {
+      document.getElementById("uit-netwerk").innerHTML = profielen.map(profielKaartHtml).join("");
+      if (teller) {
+        const regel = document.getElementById("netwerk-teller-regel");
+        regel.textContent = teller;
+        regel.hidden = false;
+      }
+      document.getElementById("netwerk").hidden = false;
+    } else {
+      if (teller) document.getElementById("netwerk-start-tekst").textContent = `${teller} Zet je praktijk erin, dan vinden collega's en verwijzers je op specialisme en regio.`;
+      document.getElementById("netwerk-start-knoppen").innerHTML = netwerkKnoppenHtml([
+        ...eigenKnop,
+        ["Bekijk het netwerk", "/netwerk.html"],
+      ]);
+      document.getElementById("netwerk-start").hidden = false;
     }
-    // Minder dan drie profielen: vul aan met een uitnodiging, zodat er geen gat in de rij zit.
-    const stap = netwerkStap(gebruiker);
-    const uitnodiging = `
-      <div class="kaart netwerk-uitnodiging">
-        <div class="kaart-body">
-          <h3>${profielen.length ? "Jouw praktijk hier?" : "Wees een van de eersten"}</h3>
-          <p>${stap.tekst}</p>
-          <div class="cta-rij">${netwerkKnoppenHtml(stap.knoppen.filter(([, href]) => href !== "/netwerk.html").slice(0, 1))}</div>
-        </div>
-      </div>`;
-    netwerk.innerHTML = profielen.map(profielKaartHtml).join("") + (profielen.length < 3 && !gebruiker?.inNetwerk ? uitnodiging : "");
-    if (!netwerk.innerHTML.trim()) document.getElementById("netwerk").hidden = true;
   } catch {
-    document.getElementById("netwerk").hidden = true;
+    // Zonder netwerkgegevens laten we beide secties weg; de zoekkaart werkt dan nog steeds.
   }
 
   const houder = document.getElementById("uitgelicht");

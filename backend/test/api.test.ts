@@ -486,10 +486,31 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     const uitgelicht = (await app.inject({ method: "GET", url: "/api/netwerk/uitgelicht" })).json();
     assert.equal(uitgelicht.totaal, 1);
     assert.equal(uitgelicht.profielen[0].weergavenaam, "Sanne");
+    // Onder de 100 bevestigde leden noemt de homepage geen aantal.
+    assert.equal(uitgelicht.zorgprofessionals, null);
 
     // De sessie zegt of dit lid in het netwerk staat (voor de uitnodigingen op de site).
     const sessie = (await app.inject({ method: "GET", url: "/api/auth/sessie", headers: { cookie: lidCookie } })).json();
     assert.equal(sessie.gebruiker.inNetwerk, true);
+  });
+
+  test("teller op de homepage: pas vanaf 100 bevestigde leden een aantal, nooit namen", async () => {
+    const voor = (await app.inject({ method: "GET", url: "/api/netwerk/uitgelicht" })).json();
+    const bestaand = await prisma.gebruiker.count({ where: { rol: "lid", emailBevestigdOp: { not: null } } });
+    const nodig = Math.max(0, 100 - bestaand);
+    await prisma.gebruiker.createMany({
+      data: Array.from({ length: nodig }, (_, i) => ({ email: `teller${i}@test.nl`, naam: "", wachtwoordHash: "x", emailBevestigdOp: new Date() })),
+    });
+    // Onbevestigde accounts tellen niet mee.
+    await prisma.gebruiker.create({ data: { email: "teller-onbevestigd@test.nl", naam: "", wachtwoordHash: "x" } });
+    try {
+      const na = (await app.inject({ method: "GET", url: "/api/netwerk/uitgelicht" })).json();
+      assert.equal(voor.zorgprofessionals, null);
+      assert.equal(na.zorgprofessionals, 100);
+      assert.equal(na.totaal, voor.totaal);
+    } finally {
+      await prisma.gebruiker.deleteMany({ where: { email: { startsWith: "teller" } } });
+    }
   });
 
   test("nieuwsbrief: gratis-segment krijgt alleen gratis artikelen, daarna niets dubbel", async () => {
@@ -561,7 +582,7 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     const directory = (await app.inject({ method: "GET", url: "/api/directory" })).json();
     assert.equal(directory.profielen.length, 0);
     const uitgelicht = (await app.inject({ method: "GET", url: "/api/netwerk/uitgelicht" })).json();
-    assert.deepEqual(uitgelicht, { totaal: 0, profielen: [] });
+    assert.deepEqual(uitgelicht, { totaal: 0, profielen: [], zorgprofessionals: null });
   });
 
   // Het importscript echt draaien (als los proces, zoals in de Render Shell) tegen de testdatabase.

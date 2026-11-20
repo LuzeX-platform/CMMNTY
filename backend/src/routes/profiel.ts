@@ -35,6 +35,9 @@ export const profielSchema = z.object({
   gepubliceerd: z.boolean(),
 });
 
+/** Vanaf dit aantal noemt de homepage hoeveel zorgprofessionals er zijn aangesloten (keuze van Job). */
+export const TELLER_VANAF = 100;
+
 const directorySelect = {
   gebruikerId: true,
   weergavenaam: true,
@@ -110,6 +113,10 @@ export async function profielRoutes(app: FastifyInstance) {
       take: 500,
     });
     const totaal = alle.length < 500 ? alle.length : await prisma.profiel.count({ where: { gepubliceerd: true } });
-    return { totaal, profielen: kiesUitgelicht(alle, 3) };
+    // Het aantal aangesloten zorgprofessionals (bevestigde leden, zonder de admin). Alleen een
+    // getal, nooit namen, en pas vanaf TELLER_VANAF: "12 zorgprofessionals" verkoopt het netwerk
+    // niet, en dan zegt de homepage liever niets over aantallen.
+    const leden = await prisma.gebruiker.count({ where: { rol: "lid", emailBevestigdOp: { not: null } } });
+    return { totaal, profielen: kiesUitgelicht(alle, 3), zorgprofessionals: leden >= TELLER_VANAF ? leden : null };
   });
 }

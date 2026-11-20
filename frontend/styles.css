@@ -1344,8 +1344,68 @@ a.badge {
 .hero-zoek button {
   width: 100%;
   margin-top: 20px;
+  min-height: 44px;
   padding: 12px 16px;
   font-size: 15px;
+}
+
+/* Op een telefoon: de zoekkaart compact, met de twee keuzelijsten naast elkaar, direct na de
+   knoppen. Zo staat de zoekknop binnen het eerste scherm. */
+@media (max-width: 760px) {
+  .hero {
+    padding: 20px 0 40px;
+    gap: 24px;
+  }
+
+  .hero h1 {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+
+  .hero .lead {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+
+  .hero .cta-rij {
+    gap: 10px;
+  }
+
+  .hero .cta-rij .pil-knop {
+    padding: 12px 18px;
+    font-size: 14px;
+  }
+
+  .hero-zoek {
+    padding: 16px 16px 18px;
+  }
+
+  .hero-zoek .kicker {
+    display: none;
+  }
+
+  .hero-zoek h2 {
+    font-size: 18px;
+  }
+
+  .zoek-velden {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .zoek-velden label {
+    margin-top: 12px;
+  }
+
+  .zoek-velden select {
+    font-size: 14px;
+    padding: 11px 10px;
+  }
+
+  .hero-zoek button {
+    margin-top: 14px;
+  }
 }
 
 .sectie {
@@ -1400,19 +1460,31 @@ a.badge {
   margin: 48px 0 0;
 }
 
-.netwerk-uitnodiging {
-  background: var(--accent-tint);
-  border-style: dashed;
-  border-color: var(--border-strong);
+/* Minder dan drie zichtbare profielen: geen halve ledenrij, maar één rustig paneel. */
+.netwerk-start {
+  max-width: 760px;
 }
 
-.netwerk-uitnodiging .kaart-body {
-  gap: 10px;
+.netwerk-start h2 {
+  font-size: clamp(22px, 2.6vw, 28px);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
 }
 
-.netwerk-uitnodiging .cta-rij {
-  margin-top: auto;
-  padding-top: 8px;
+.netwerk-start p:not(.kicker) {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  max-width: 60ch;
+}
+
+.netwerk-start .cta-rij {
+  margin-top: 20px;
+}
+
+.netwerk-teller-regel {
+  margin: -12px 0 20px;
+  color: var(--text-secondary);
 }
 
 .profiel-kaart .kaart-body {
