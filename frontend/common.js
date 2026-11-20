@@ -182,11 +182,18 @@ function tekenBalk(gebruiker) {
       `<a href="${item.href}"${item.match.some((m) => pad.startsWith(m)) ? ' class="actief" aria-current="page"' : ""}>${item.label}</a>`,
   ).join("");
 
-  const acties = gebruiker
-    ? `${gebruiker.rol === "admin" ? '<a class="text-link" href="/admin/">Admin</a>' : ""}
-       <a class="pil-knop pil-knop-donker" href="/dashboard/">Mijn CMMNTY</a>`
-    : `<a class="text-link balk-inloggen" href="/inloggen.html">Inloggen</a>
-       <a class="pil-knop pil-knop-donker" href="/registreren.html">Gratis lid worden</a>`;
+  // De hoofdknop staat rechts in de balk. Op een telefoon krijgt hij een kortere tekst, en op de
+  // smalste telefoons staat hij in het uitklapmenu (zie styles.css).
+  const hoofdknop = gebruiker
+    ? { href: "/dashboard/", lang: "Mijn CMMNTY", kort: "Mijn CMMNTY" }
+    : { href: "/registreren.html", lang: "Gratis lid worden", kort: "Lid worden" };
+  const extraMobiel = gebruiker
+    ? `${gebruiker.rol === "admin" ? '<a class="alleen-mobiel" href="/admin/">Admin</a>' : ""}`
+    : '<a class="alleen-mobiel" href="/inloggen.html">Inloggen</a>';
+
+  const acties = `${gebruiker?.rol === "admin" ? '<a class="text-link balk-inloggen" href="/admin/">Admin</a>' : ""}
+       ${gebruiker ? "" : '<a class="text-link balk-inloggen" href="/inloggen.html">Inloggen</a>'}
+       <a class="pil-knop pil-knop-donker" href="${hoofdknop.href}"><span class="knop-lang">${hoofdknop.lang}</span><span class="knop-kort">${hoofdknop.kort}</span></a>`;
 
   houder.className = "balkhouder";
   houder.innerHTML = `
@@ -194,10 +201,34 @@ function tekenBalk(gebruiker) {
       <a href="/" class="merk" aria-label="LuzeX CMMNTY — naar de homepage">
         <span class="brand-logo" role="img" aria-label="CMMNTY — Samen beter in de zorg."></span>
       </a>
-      <nav class="balk-nav" aria-label="Hoofdnavigatie">${links}</nav>
+      <nav class="balk-nav" id="balk-nav" aria-label="Hoofdnavigatie">${links}${extraMobiel}<a class="pil-knop pil-knop-donker alleen-mobiel" href="${hoofdknop.href}">${hoofdknop.lang}</a></nav>
       <div class="balk-acties">${acties}</div>
+      <button type="button" class="balk-menuknop" aria-expanded="false" aria-controls="balk-nav" aria-label="Menu openen"><span></span><span></span><span></span></button>
     </div>`;
+
+  const balk = houder.querySelector(".balk");
+  const menuknop = houder.querySelector(".balk-menuknop");
+  const zetOpen = (open) => {
+    balk.classList.toggle("open", open);
+    menuknop.setAttribute("aria-expanded", String(open));
+    menuknop.setAttribute("aria-label", open ? "Menu sluiten" : "Menu openen");
+  };
+  menuknop.addEventListener("click", () => zetOpen(!balk.classList.contains("open")));
+  houder.querySelector(".balk-nav").addEventListener("click", (e) => {
+    if (e.target.closest("a")) zetOpen(false);
+  });
+  houder.sluitMenu = () => {
+    if (!balk.classList.contains("open")) return false;
+    zetOpen(false);
+    menuknop.focus();
+    return true;
+  };
 }
+
+// Escape sluit het uitklapmenu. Eén keer gekoppeld; de balk wordt twee keer getekend.
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") document.getElementById("balk")?.sluitMenu?.();
+});
 
 function tekenVoet() {
   const voet = document.getElementById("voet");

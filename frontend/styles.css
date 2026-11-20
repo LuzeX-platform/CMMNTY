@@ -463,44 +463,150 @@ body::after {
   min-height: 44px;
 }
 
-@media (max-width: 760px) {
+/* De menuknop en de extra menu-items bestaan alleen op een smal scherm. */
+.balk-menuknop,
+.balk-nav .alleen-mobiel,
+.knop-kort {
+  display: none;
+}
+
+/* Op een telefoon en een smalle tablet: één rij met logo, knop en menuknop. Het menu klapt
+   eronder uit. Tot 900px, want op 768px paste de volledige balk niet en schoof de pagina opzij. */
+@media (max-width: 900px) {
   .balk {
     flex-wrap: wrap;
     border-radius: 26px;
-    padding: 10px 10px 10px 16px;
-    gap: 8px;
+    padding: 8px 6px 8px 14px;
+    gap: 6px;
   }
 
+  /* Zonder de ondertitel: die werd op deze maat 4 à 5 pixels hoog en was niet te lezen. */
   .balk .brand-logo {
-    width: min(45vw, 197px);
+    width: 136px;
+    background-image: url("/assets/cmmnty-logo-zwart-compact.svg");
   }
-
 
   .balk-acties {
     margin-left: auto;
+    gap: 6px;
   }
 
-  /* Op een telefoon past alleen het merk plus één knop op de eerste rij. "Inloggen" staat
-     ook in de hero en onder "Gratis lid worden", dus die mag hier weg. */
-  .balk-inloggen {
+  /* "Inloggen" staat op een telefoon in het uitklapmenu. */
+  .balk-acties .balk-inloggen {
     display: none;
   }
 
+  .balk .pil-knop {
+    padding: 10px 14px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+
+  .knop-lang {
+    display: none;
+  }
+
+  .knop-kort {
+    display: inline;
+  }
+
+  .balk-menuknop {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text);
+  }
+
+  .balk-menuknop:hover,
+  .balk-menuknop:active {
+    background: var(--accent-tint);
+  }
+
+  .balk-menuknop span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform 0.2s var(--ease), opacity 0.2s var(--ease);
+  }
+
+  .balk.open .balk-menuknop span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .balk.open .balk-menuknop span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .balk.open .balk-menuknop span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
   .balk-nav {
+    display: none;
     order: 3;
     width: 100%;
-    justify-content: space-around;
-    padding: 2px 4px 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    margin-top: 4px;
+    padding: 4px 0 2px;
+    border-top: 1px solid var(--border-strong);
+  }
+
+  .balk.open .balk-nav {
+    display: flex;
   }
 
   .balk-nav a {
-    font-size: 14px;
+    font-size: 16px;
+    min-height: 48px;
+    padding: 0 8px;
+    border-bottom: none;
+    border-radius: var(--radius-sm);
   }
 
-  .balk .pil-knop {
-    padding: 9px 14px;
-    font-size: 13.5px;
-    min-height: 0;
+  .balk-nav a.actief {
+    font-weight: 600;
+    background: var(--accent-tint);
+  }
+
+  .balk-nav .alleen-mobiel {
+    display: inline-flex;
+  }
+
+  .balk-nav .pil-knop.alleen-mobiel {
+    display: none;
+  }
+}
+
+@media (prefers-color-scheme: dark) and (max-width: 900px) {
+  .balk .brand-logo {
+    background-image: url("/assets/cmmnty-logo-wit-compact.svg");
+  }
+}
+
+/* Op de smalste telefoons past de knop niet naast het logo: dan staat hij in het menu. */
+@media (max-width: 374px) {
+  .balk-acties .pil-knop {
+    display: none;
+  }
+
+  .balk-nav .pil-knop.alleen-mobiel {
+    display: inline-flex;
+    justify-content: center;
+    margin: 6px 0 4px;
+    color: var(--accent-contrast);
+    min-height: 44px;
+    border-radius: var(--radius-pill);
   }
 }
 
