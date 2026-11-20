@@ -403,6 +403,19 @@ body::after {
 
 /* ---------- De zwevende balk (zelfde onderdeel als op luzex.nl en ACCRD) ---------- */
 
+/* Ruimte voor de balk vóórdat common.js hem tekent. Zonder dit schuift de hele pagina een stukje
+   omlaag zodra de balk verschijnt. De hoogtes zijn gemeten: 83px breed, 78px vanaf 900px en smaller. */
+#balk:empty {
+  display: block;
+  min-height: 83.34px;
+}
+
+@media (max-width: 900px) {
+  #balk:empty {
+    min-height: 78px;
+  }
+}
+
 .balkhouder {
   position: sticky;
   top: 0;
@@ -753,8 +766,9 @@ textarea::placeholder {
   color: var(--text-secondary);
 }
 
+/* Geen outline: none meer. De vaste focusring (:focus-visible, bovenaan) geldt ook voor velden
+   en vinkjes; de zachte gloed eromheen blijft als extra. */
 input:focus, select:focus, textarea:focus {
-  outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 4px var(--accent-ring);
 }
@@ -769,9 +783,11 @@ input[type="checkbox"] {
   flex-shrink: 0;
 }
 
+/* Het hele label is klikbaar; minstens 44px hoog zodat het vinkje ook met een duim te raken is. */
 .vinkje {
   display: flex;
   align-items: flex-start;
+  min-height: 44px;
   gap: 10px;
   font-size: 14px;
   font-weight: 500;
@@ -966,10 +982,13 @@ input[type="checkbox"] {
   flex-shrink: 0;
 }
 
-/* Categorie: een grijs vlak zonder rand, zodat Gratis (wit met stip) en Pro (grafiet) eruit springen. */
+/* Categorie: een grijs vlak zonder rand, zodat Gratis (wit met stip) en Pro (grafiet) eruit springen.
+   Donkere tekst: boven een artikel ligt het label op de greige achtergrond, waar de zachtere
+   tekstkleur maar 4,0:1 haalde. */
 .badge-categorie {
   background: var(--neutral-tint);
   border-color: transparent;
+  color: var(--text);
 }
 
 /* Specialismen in een profiel: rustig olijf, niet hetzelfde als het Gratis-label. */
@@ -1155,6 +1174,11 @@ a.badge {
   padding-top: 8px;
   font-size: 13px !important;
   color: var(--text-tertiary) !important;
+}
+
+/* Op de effen artikelkaart haalde de lichtste tekstkleur in donker thema maar 3,35:1. */
+.kaart-artikel .kaart-meta {
+  color: var(--text-secondary) !important;
 }
 
 .kaart-lees {

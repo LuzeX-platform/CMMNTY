@@ -31,6 +31,7 @@ const LEDEN_VANAF = 3;
         regel.textContent = teller;
         regel.hidden = false;
       }
+      document.getElementById("netwerk-start").hidden = true;
       document.getElementById("netwerk").hidden = false;
     } else {
       if (teller) document.getElementById("netwerk-start-tekst").textContent = `${teller} Zet je praktijk erin, dan vinden collega's en verwijzers je op specialisme en regio.`;
@@ -38,10 +39,9 @@ const LEDEN_VANAF = 3;
         ...eigenKnop,
         ["Bekijk het netwerk", "/netwerk.html"],
       ]);
-      document.getElementById("netwerk-start").hidden = false;
     }
   } catch {
-    // Zonder netwerkgegevens laten we beide secties weg; de zoekkaart werkt dan nog steeds.
+    // Zonder netwerkgegevens blijft de uitnodiging staan; de zoekkaart werkt dan nog steeds.
   }
 
   const houder = document.getElementById("uitgelicht");

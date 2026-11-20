@@ -83,9 +83,12 @@ function badgeHtml(toegang) {
     : '<span class="badge badge-gratis"><span class="badge-stip" aria-hidden="true"></span>Gratis</span>';
 }
 
-function artikelKaartHtml(a) {
+// meteen: de bovenste kaarten van een lijst laden hun foto direct; de rest pas als je ernaartoe scrolt.
+// (Via .map(artikelKaartHtml) komt hier een getal binnen; dat telt als "niet meteen".)
+function artikelKaartHtml(a, opties) {
+  const laden = opties?.meteen ? "eager" : "lazy";
   const beeld = a.coverUrl
-    ? `<div class="kaart-beeld"><img src="${escapeHtml(a.coverUrl)}" alt="" width="1600" height="900" loading="lazy" decoding="async" /></div>`
+    ? `<div class="kaart-beeld"><img src="${escapeHtml(a.coverUrl)}" alt="" width="1600" height="900" loading="${laden}" decoding="async" /></div>`
     : '<div class="kaart-beeld" aria-hidden="true"></div>';
   return `
     <a class="kaart kaart-artikel" href="/artikelen/${encodeURIComponent(a.slug)}">

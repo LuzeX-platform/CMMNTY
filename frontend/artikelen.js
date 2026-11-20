@@ -27,7 +27,7 @@ async function laad() {
   try {
     const data = await api(`/api/artikelen?${params}`);
     lijst.innerHTML = data.artikelen.length
-      ? data.artikelen.map(artikelKaartHtml).join("")
+      ? data.artikelen.map((a, i) => artikelKaartHtml(a, { meteen: i < 3 })).join("")
       : '<p class="leeg">Geen artikelen gevonden met deze filters.</p>';
     paginering.innerHTML =
       data.paginas > 1
