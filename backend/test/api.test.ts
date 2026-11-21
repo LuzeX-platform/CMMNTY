@@ -454,7 +454,7 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
       method: "PUT",
       url: "/api/profiel",
       headers: { cookie: lidCookie },
-      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Seksuologie"], telefoon: "", website: "", contactEmail: "", bio: "Hoi", regio: "Oost", gepubliceerd: true },
+      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Traumabehandeling"], telefoon: "", website: "", contactEmail: "", bio: "Hoi", regio: "Oost", gepubliceerd: true },
     });
     assert.equal(zonderContact.statusCode, 400);
 
@@ -462,7 +462,7 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
       method: "PUT",
       url: "/api/profiel",
       headers: { cookie: lidCookie },
-      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Seksuologie"], telefoon: "06-12345678", website: "www.praktijkvries.nl", contactEmail: "", bio: "Hoi", regio: "Oost", gepubliceerd: true },
+      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Traumabehandeling"], telefoon: "06-12345678", website: "www.praktijkvries.nl", contactEmail: "", bio: "Hoi", regio: "Oost", gepubliceerd: true },
     });
     assert.equal(ok.statusCode, 200, ok.body);
     assert.equal(ok.json().website, "https://www.praktijkvries.nl");
@@ -475,7 +475,7 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     });
     assert.equal(teLang.statusCode, 400);
 
-    const treffer = (await app.inject({ method: "GET", url: "/api/directory?specialisme=Seksuologie&regio=Oost" })).json();
+    const treffer = (await app.inject({ method: "GET", url: "/api/directory?specialisme=Traumabehandeling&regio=Oost" })).json();
     assert.equal(treffer.profielen.length, 1);
     assert.equal(treffer.totaal, 1);
     const mis = (await app.inject({ method: "GET", url: "/api/directory?regio=Noord" })).json();
@@ -492,6 +492,36 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     // De sessie zegt of dit lid in het netwerk staat (voor de uitnodigingen op de site).
     const sessie = (await app.inject({ method: "GET", url: "/api/auth/sessie", headers: { cookie: lidCookie } })).json();
     assert.equal(sessie.gebruiker.inNetwerk, true);
+  });
+
+  test("specialismen: Seksuologie en Relatietherapie zijn niet meer te kiezen, te zien of te vinden", async () => {
+    const keuzes = (await app.inject({ method: "GET", url: "/api/keuzelijsten" })).json();
+    assert.ok(!keuzes.specialismen.includes("Seksuologie") && !keuzes.specialismen.includes("Relatietherapie"));
+    assert.deepEqual(keuzes.specialismeGroepen.map((g: { naam: string }) => g.naam), ["Algemeen", "Doelgroep en thema", "Anders"]);
+
+    const kiezen = await app.inject({
+      method: "PUT",
+      url: "/api/profiel",
+      headers: { cookie: lidCookie },
+      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Seksuologie"], telefoon: "06-12345678", website: "", contactEmail: "", bio: "Hoi", regio: "Oost", gepubliceerd: true },
+    });
+    assert.equal(kiezen.statusCode, 400);
+
+    // Een lid dat het eerder koos: profiel blijft zichtbaar, alleen die keuze niet.
+    const profiel = await prisma.profiel.findFirstOrThrow({ where: { weergavenaam: "Sanne" } });
+    await prisma.profiel.update({ where: { gebruikerId: profiel.gebruikerId }, data: { specialismen: ["Seksuologie", "Traumabehandeling"] } });
+    const lijst = (await app.inject({ method: "GET", url: "/api/directory" })).json();
+    const sanne = lijst.profielen.find((p: { weergavenaam: string }) => p.weergavenaam === "Sanne");
+    assert.deepEqual(sanne.specialismen, ["Traumabehandeling"]);
+    const uitgelicht = (await app.inject({ method: "GET", url: "/api/netwerk/uitgelicht" })).json();
+    assert.ok(!JSON.stringify(uitgelicht).includes("Seksuologie"));
+    // Zoeken op het oude specialisme filtert niet meer (geeft dus gewoon het hele netwerk).
+    const oud = (await app.inject({ method: "GET", url: "/api/directory?specialisme=Seksuologie" })).json();
+    assert.equal(oud.totaal, lijst.totaal);
+    assert.ok(!JSON.stringify(oud).includes("Seksuologie"));
+    // De gegevens zelf zijn niet aangepast.
+    assert.deepEqual((await prisma.profiel.findUniqueOrThrow({ where: { gebruikerId: profiel.gebruikerId } })).specialismen, ["Seksuologie", "Traumabehandeling"]);
+    await prisma.profiel.update({ where: { gebruikerId: profiel.gebruikerId }, data: { specialismen: ["Traumabehandeling"] } });
   });
 
   test("teller op de homepage: pas vanaf 100 bevestigde leden een aantal, nooit namen", async () => {

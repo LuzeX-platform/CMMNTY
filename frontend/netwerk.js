@@ -5,7 +5,7 @@ const lijst = document.getElementById("profielen");
 const aantal = document.getElementById("aantal");
 const toonAlles = document.getElementById("toon-alles");
 
-/** "in regio Noord", "met specialisme Seksuologie", of allebei: zegt in gewone taal waarop gezocht is. */
+/** "in regio Noord", "met specialisme Traumabehandeling", of allebei: zegt in gewone taal waarop gezocht is. */
 function zoekopdrachtInWoorden() {
   const delen = [];
   if (regioSelect.value) delen.push(`in regio ${regioSelect.value}`);
@@ -56,8 +56,8 @@ const opties = (lijst) => lijst.map((w) => `<option value="${escapeHtml(w)}">${e
   // Eerst de keuzelijsten, dan pas de filters uit de URL invullen: een <select> neemt alleen een
   // waarde aan die als optie bestaat.
   try {
-    const { specialismen, regios } = await api("/api/keuzelijsten");
-    specialismeSelect.insertAdjacentHTML("beforeend", opties(specialismen));
+    const { specialismeGroepen, regios } = await api("/api/keuzelijsten");
+    specialismeSelect.insertAdjacentHTML("beforeend", specialismeOptiesHtml(specialismeGroepen));
     regioSelect.insertAdjacentHTML("beforeend", opties(regios));
   } catch {
     // Zonder keuzelijsten werkt zoeken op naam nog steeds.

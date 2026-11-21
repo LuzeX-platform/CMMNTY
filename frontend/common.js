@@ -154,6 +154,18 @@ function netwerkStap(gebruiker) {
   };
 }
 
+/** De specialismen als <option>s, in groepen (<optgroup>), voor de zoeklijsten. */
+function specialismeOptiesHtml(groepen) {
+  return groepen
+    .map(
+      (g) =>
+        `<optgroup label="${escapeHtml(g.naam)}">${g.specialismen
+          .map((s) => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`)
+          .join("")}</optgroup>`,
+    )
+    .join("");
+}
+
 function netwerkKnoppenHtml(knoppen) {
   return knoppen
     .map(([label, href], i) => `<a class="pil-knop ${i === 0 ? "pil-knop-donker" : "pil-knop-glas"}" href="${href}">${label}</a>`)

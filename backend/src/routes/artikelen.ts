@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../db.js";
 import { coverPad, leestijdMinuten, magVolledigLezen, renderMarkdown, vergrendelReden } from "../artikelen.js";
-import { CATEGORIEEN, REGIOS, SPECIALISMEN } from "../constanten.js";
+import { CATEGORIEEN, REGIOS, SPECIALISME_GROEPEN, SPECIALISMEN } from "../constanten.js";
 import { leesSessie } from "../plugins/requireAuth.js";
 
 const PER_PAGINA = 12;
@@ -57,6 +57,7 @@ async function bezoekerVan(request: import("fastify").FastifyRequest) {
 export async function artikelRoutes(app: FastifyInstance) {
   app.get("/api/keuzelijsten", async () => ({
     specialismen: SPECIALISMEN,
+    specialismeGroepen: SPECIALISME_GROEPEN,
     regios: REGIOS,
     categorieen: CATEGORIEEN,
   }));

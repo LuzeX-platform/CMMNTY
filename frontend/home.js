@@ -8,9 +8,9 @@ const LEDEN_VANAF = 3;
 
   // Netwerk: zoekvak, teller en een paar uitgelichte collega's.
   api("/api/keuzelijsten")
-    .then(({ specialismen, regios }) => {
+    .then(({ specialismeGroepen, regios }) => {
       const opties = (lijst) => lijst.map((w) => `<option value="${escapeHtml(w)}">${escapeHtml(w)}</option>`).join("");
-      document.getElementById("hero-specialisme").insertAdjacentHTML("beforeend", opties(specialismen));
+      document.getElementById("hero-specialisme").insertAdjacentHTML("beforeend", specialismeOptiesHtml(specialismeGroepen));
       document.getElementById("hero-regio").insertAdjacentHTML("beforeend", opties(regios));
     })
     .catch(() => {});

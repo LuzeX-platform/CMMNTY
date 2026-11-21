@@ -374,11 +374,13 @@ body::after {
 /* CMMNTY-lockup: 707,3 × 126 (= 5,613). Het is 126 hoog in plaats van 120 omdat de
    g van "zorg" een onderstok heeft; daarom 277px breed, zodat de letters even groot staan als
    in de andere LuzeX-producten (47px voor de bovenste 120). */
+/* Het logo zonder de ondertitel "Samen beter in de zorg.": die werd in de balk en de voettekst
+   maar 4 à 8 pixels hoog en was niet te lezen (keuze van Job). De zin staat groot op de homepage. */
 .brand-logo {
   display: block;
   width: 277px;
   aspect-ratio: 5.613;
-  background-image: url("/assets/cmmnty-logo-zwart.svg");
+  background-image: url("/assets/cmmnty-logo-zwart-compact.svg");
   background-repeat: no-repeat;
   background-position: left center;
   background-size: contain;
@@ -387,7 +389,7 @@ body::after {
 
 @media (prefers-color-scheme: dark) {
   .brand-logo {
-    background-image: url("/assets/cmmnty-logo-wit.svg");
+    background-image: url("/assets/cmmnty-logo-wit-compact.svg");
   }
 }
 
@@ -493,10 +495,8 @@ body::after {
     gap: 6px;
   }
 
-  /* Zonder de ondertitel: die werd op deze maat 4 à 5 pixels hoog en was niet te lezen. */
   .balk .brand-logo {
     width: 136px;
-    background-image: url("/assets/cmmnty-logo-zwart-compact.svg");
   }
 
   .balk-acties {
@@ -601,12 +601,6 @@ body::after {
   }
 }
 
-@media (prefers-color-scheme: dark) and (max-width: 900px) {
-  .balk .brand-logo {
-    background-image: url("/assets/cmmnty-logo-wit-compact.svg");
-  }
-}
-
 /* Op de smalste telefoons past de knop niet naast het logo: dan staat hij in het menu. */
 @media (max-width: 374px) {
   .balk-acties .pil-knop {
@@ -671,9 +665,11 @@ button.secondary:hover {
   background: var(--border-strong);
 }
 
+/* Wit op rood haalt in licht thema 5,4:1, maar op het lichtere rood van donker thema maar 3,4:1.
+   --accent-contrast draait mee: wit in licht thema, bijna-zwart (4,9:1) in donker thema. */
 button.gevaar {
   background: var(--danger);
-  color: #fff;
+  color: var(--accent-contrast);
 }
 
 .pil-knop {
@@ -733,7 +729,9 @@ button.gevaar {
 
 /* ---------- Formulieren ---------- */
 
-label {
+/* .veld-kop: hetzelfde kopje als een label, voor een groep velden (zoals de specialismen). */
+label,
+.veld-kop {
   display: block;
   font-size: 12.5px;
   font-weight: 600;
@@ -1862,11 +1860,34 @@ table.tabel {
   gap: 8px;
 }
 
+/* Specialismen in het profiel, per groep. */
+.chip-groepen {
+  display: grid;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.chip-groep {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.chip-groep legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
 .chip {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 12px;
+  min-height: 44px;
+  padding: 7px 14px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border-strong);
   font-size: 13.5px;

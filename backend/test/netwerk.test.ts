@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { kiesUitgelicht } from "../src/netwerk.js";
+import { SPECIALISME_GROEPEN, SPECIALISMEN } from "../src/constanten.js";
 
 const profielen = [
   { id: "a", bio: null },
@@ -33,4 +34,11 @@ test("kiesUitgelicht: willekeurig, en laat de invoer ongemoeid", () => {
 test("kiesUitgelicht: lege lijst of aantal 0 geeft niets", () => {
   assert.deepEqual(kiesUitgelicht([], 3), []);
   assert.deepEqual(kiesUitgelicht(profielen, 0), []);
+});
+
+test("specialismen: elke naam staat in precies één groep, en niets over seksualiteit of relaties", () => {
+  const inGroepen = SPECIALISME_GROEPEN.flatMap((g) => g.specialismen);
+  assert.deepEqual([...inGroepen].sort(), [...SPECIALISMEN].sort());
+  assert.equal(new Set(inGroepen).size, inGroepen.length);
+  assert.ok(!/seks|relatie/i.test(JSON.stringify(SPECIALISME_GROEPEN)));
 });

@@ -55,10 +55,14 @@ function koppelFormulier(form, foutEl, succesEl, handler) {
     const form = document.getElementById("formulier");
     const [profiel, keuzes] = await Promise.all([api("/api/profiel"), api("/api/keuzelijsten")]);
 
-    document.getElementById("specialismen").innerHTML = keuzes.specialismen
+    // In groepen, net als in de zoeklijsten. Een eerder gekozen specialisme dat niet meer in de
+    // lijst staat, krijgt geen vinkje en valt bij de volgende keer opslaan vanzelf weg.
+    const chip = (s) =>
+      `<label class="chip"><input type="checkbox" value="${escapeHtml(s)}" ${profiel.specialismen.includes(s) ? "checked" : ""} />${escapeHtml(s)}</label>`;
+    document.getElementById("specialismen").innerHTML = keuzes.specialismeGroepen
       .map(
-        (s) =>
-          `<label class="chip"><input type="checkbox" value="${escapeHtml(s)}" ${profiel.specialismen.includes(s) ? "checked" : ""} />${escapeHtml(s)}</label>`,
+        (g) =>
+          `<fieldset class="chip-groep"><legend>${escapeHtml(g.naam)}</legend><div class="chips">${g.specialismen.map(chip).join("")}</div></fieldset>`,
       )
       .join("");
     const regio = document.getElementById("regio");
