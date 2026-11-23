@@ -107,6 +107,13 @@
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
   --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.14), 0 4px 12px rgba(0, 0, 0, 0.06);
 
+  /* Huisstijl LuzeX (november 2026): één lettertype voor koppen én lopende tekst, op één plek
+     gedefinieerd. Geen webfonts: op de Macs en iPhones van de doelgroep is dit gewoon SF Pro,
+     en de site laadt zo nul lettertypen over het netwerk. */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Helvetica, Arial, sans-serif;
+  /* Donkerbruin: één baan per pagina, niet meer. */
+  --diep: #3b2e24;
+
   --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
   --sidebar-width: 260px;
 }
@@ -258,7 +265,7 @@ html {
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family: var(--font);
   -webkit-font-smoothing: antialiased;
   background: var(--bg);
   color: var(--text);
@@ -275,7 +282,7 @@ main {
 }
 
 h1, h2, h3 {
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.015em;
   margin: 0;
 }
@@ -292,6 +299,25 @@ a:hover {
 
 [hidden] {
   display: none !important;
+}
+
+/* Huisstijl: zichtbare focus voor wie met het toetsenbord werkt, op elk onderdeel. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Alleen voor schermlezers: een kop die de structuur compleet maakt zonder in beeld te staan. */
+.visueel-verborgen {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ---------- Het licht achter het glas (zelfde vlekken als de ACCRD-landingspagina) ---------- */
@@ -348,11 +374,13 @@ body::after {
 /* CMMNTY-lockup: 707,3 × 126 (= 5,613). Het is 126 hoog in plaats van 120 omdat de
    g van "zorg" een onderstok heeft; daarom 277px breed, zodat de letters even groot staan als
    in de andere LuzeX-producten (47px voor de bovenste 120). */
+/* Het logo zonder de ondertitel "Samen beter in de zorg.": die werd in de balk en de voettekst
+   maar 4 à 8 pixels hoog en was niet te lezen (keuze van Job). De zin staat groot op de homepage. */
 .brand-logo {
   display: block;
   width: 277px;
   aspect-ratio: 5.613;
-  background-image: url("/assets/cmmnty-logo-zwart.svg");
+  background-image: url("/assets/cmmnty-logo-zwart-compact.svg");
   background-repeat: no-repeat;
   background-position: left center;
   background-size: contain;
@@ -361,7 +389,7 @@ body::after {
 
 @media (prefers-color-scheme: dark) {
   .brand-logo {
-    background-image: url("/assets/cmmnty-logo-wit.svg");
+    background-image: url("/assets/cmmnty-logo-wit-compact.svg");
   }
 }
 
@@ -376,6 +404,19 @@ body::after {
 
 
 /* ---------- De zwevende balk (zelfde onderdeel als op luzex.nl en ACCRD) ---------- */
+
+/* Ruimte voor de balk vóórdat common.js hem tekent. Zonder dit schuift de hele pagina een stukje
+   omlaag zodra de balk verschijnt. De hoogtes zijn gemeten: 83px breed, 78px vanaf 900px en smaller. */
+#balk:empty {
+  display: block;
+  min-height: 83.34px;
+}
+
+@media (max-width: 900px) {
+  #balk:empty {
+    min-height: 78px;
+  }
+}
 
 .balkhouder {
   position: sticky;
@@ -411,7 +452,10 @@ body::after {
   text-decoration: none;
   font-size: 15px;
   font-weight: 500;
-  padding: 6px 2px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 2px;
   border-bottom: 2px solid transparent;
 }
 
@@ -426,48 +470,150 @@ body::after {
   gap: 10px;
 }
 
-.balk-acties .text-link {
+.balk-acties .text-link,
+.sectie-kop .text-link {
   font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 
-@media (max-width: 760px) {
+/* De menuknop en de extra menu-items bestaan alleen op een smal scherm. */
+.balk-menuknop,
+.balk-nav .alleen-mobiel,
+.knop-kort {
+  display: none;
+}
+
+/* Op een telefoon en een smalle tablet: één rij met logo, knop en menuknop. Het menu klapt
+   eronder uit. Tot 900px, want op 768px paste de volledige balk niet en schoof de pagina opzij. */
+@media (max-width: 900px) {
   .balk {
     flex-wrap: wrap;
     border-radius: 26px;
-    padding: 10px 10px 10px 16px;
-    gap: 8px;
+    padding: 8px 6px 8px 14px;
+    gap: 6px;
   }
 
   .balk .brand-logo {
-    width: min(45vw, 197px);
+    width: 136px;
   }
-
 
   .balk-acties {
     margin-left: auto;
+    gap: 6px;
   }
 
-  /* Op een telefoon past alleen het merk plus één knop op de eerste rij. "Inloggen" staat
-     ook in de hero en onder "Gratis lid worden", dus die mag hier weg. */
-  .balk-inloggen {
+  /* "Inloggen" staat op een telefoon in het uitklapmenu. */
+  .balk-acties .balk-inloggen {
     display: none;
   }
 
+  .balk .pil-knop {
+    padding: 10px 14px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+
+  .knop-lang {
+    display: none;
+  }
+
+  .knop-kort {
+    display: inline;
+  }
+
+  .balk-menuknop {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text);
+  }
+
+  .balk-menuknop:hover,
+  .balk-menuknop:active {
+    background: var(--accent-tint);
+  }
+
+  .balk-menuknop span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform 0.2s var(--ease), opacity 0.2s var(--ease);
+  }
+
+  .balk.open .balk-menuknop span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .balk.open .balk-menuknop span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .balk.open .balk-menuknop span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
   .balk-nav {
+    display: none;
     order: 3;
     width: 100%;
-    justify-content: space-around;
-    padding: 2px 4px 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    margin-top: 4px;
+    padding: 4px 0 2px;
+    border-top: 1px solid var(--border-strong);
+  }
+
+  .balk.open .balk-nav {
+    display: flex;
   }
 
   .balk-nav a {
-    font-size: 14px;
+    font-size: 16px;
+    min-height: 48px;
+    padding: 0 8px;
+    border-bottom: none;
+    border-radius: var(--radius-sm);
   }
 
-  .balk .pil-knop {
-    padding: 9px 14px;
-    font-size: 13.5px;
-    min-height: 0;
+  .balk-nav a.actief {
+    font-weight: 600;
+    background: var(--accent-tint);
+  }
+
+  .balk-nav .alleen-mobiel {
+    display: inline-flex;
+  }
+
+  .balk-nav .pil-knop.alleen-mobiel {
+    display: none;
+  }
+}
+
+/* Op de smalste telefoons past de knop niet naast het logo: dan staat hij in het menu. */
+@media (max-width: 374px) {
+  .balk-acties .pil-knop {
+    display: none;
+  }
+
+  .balk-nav .pil-knop.alleen-mobiel {
+    display: inline-flex;
+    justify-content: center;
+    margin: 6px 0 4px;
+    color: var(--accent-contrast);
+    min-height: 44px;
+    border-radius: var(--radius-pill);
   }
 }
 
@@ -519,9 +665,11 @@ button.secondary:hover {
   background: var(--border-strong);
 }
 
+/* Wit op rood haalt in licht thema 5,4:1, maar op het lichtere rood van donker thema maar 3,4:1.
+   --accent-contrast draait mee: wit in licht thema, bijna-zwart (4,9:1) in donker thema. */
 button.gevaar {
   background: var(--danger);
-  color: #fff;
+  color: var(--accent-contrast);
 }
 
 .pil-knop {
@@ -533,7 +681,7 @@ button.gevaar {
   padding: 13px 26px;
   border-radius: var(--radius-pill);
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -581,7 +729,9 @@ button.gevaar {
 
 /* ---------- Formulieren ---------- */
 
-label {
+/* .veld-kop: hetzelfde kopje als een label, voor een groep velden (zoals de specialismen). */
+label,
+.veld-kop {
   display: block;
   font-size: 12.5px;
   font-weight: 600;
@@ -611,11 +761,12 @@ textarea {
 
 input::placeholder,
 textarea::placeholder {
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
 }
 
+/* Geen outline: none meer. De vaste focusring (:focus-visible, bovenaan) geldt ook voor velden
+   en vinkjes; de zachte gloed eromheen blijft als extra. */
 input:focus, select:focus, textarea:focus {
-  outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 4px var(--accent-ring);
 }
@@ -630,9 +781,11 @@ input[type="checkbox"] {
   flex-shrink: 0;
 }
 
+/* Het hele label is klikbaar; minstens 44px hoog zodat het vinkje ook met een duim te raken is. */
 .vinkje {
   display: flex;
   align-items: flex-start;
+  min-height: 44px;
   gap: 10px;
   font-size: 14px;
   font-weight: 500;
@@ -786,25 +939,61 @@ input[type="checkbox"] {
 /* ---------- Badges ---------- */
 
 .badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 3px 10px;
   border-radius: 9px;
-  background: var(--accent-tint);
+  background: var(--surface-translucent);
+  border: 1px solid var(--border-strong);
   color: var(--text-secondary);
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1.5;
   white-space: nowrap;
 }
 
+/* Gratis: wit vlak, donkere tekst, groen stipje. (Groene tekst haalde 2,5:1 op het oude vlak.) */
 .badge-gratis {
-  background: var(--success-tint);
-  color: var(--success);
+  background: var(--surface);
+  color: var(--text);
 }
 
+.badge-stip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+}
+
+/* Pro: het grafiet-accent met een slotje, zodat het meteen opvalt tussen de kaarten. */
 .badge-pro {
   background: var(--accent);
+  border-color: var(--accent);
   color: var(--accent-contrast);
+}
+
+.badge-icoon {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+/* Categorie: een grijs vlak zonder rand, zodat Gratis (wit met stip) en Pro (grafiet) eruit springen.
+   Donkere tekst: boven een artikel ligt het label op de greige achtergrond, waar de zachtere
+   tekstkleur maar 4,0:1 haalde. */
+.badge-categorie {
+  background: var(--neutral-tint);
+  border-color: transparent;
+  color: var(--text);
+}
+
+/* Specialismen in een profiel: rustig olijf, niet hetzelfde als het Gratis-label. */
+.badge-specialisme {
+  background: color-mix(in srgb, var(--glas-licht-olijf) 22%, var(--surface));
+  border-color: transparent;
+  color: var(--text);
 }
 
 .badge-concept {
@@ -839,6 +1028,14 @@ input[type="checkbox"] {
 
 .filters label {
   margin-top: 0;
+}
+
+/* Op een telefoon de filtervelden over de volle breedte, niet afgekapt op 280px. */
+@media (max-width: 640px) {
+  .filters .filter {
+    max-width: none;
+    flex-basis: 100%;
+  }
 }
 
 .segment {
@@ -895,6 +1092,37 @@ a.kaart:hover {
   transform: translateY(-3px);
 }
 
+/* Artikelkaarten zijn effen: glas is voor de balk, de zoekkaart en de profielen. Een rij
+   van twintig glaskaarten is druk voor het oog en zwaar voor een oudere telefoon. */
+.kaart-artikel {
+  background: var(--surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+a.kaart-artikel:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/* In de kaart een korte weergave; de volledige titel staat op de artikelpagina. */
+.kaart-artikel h3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.kaart-artikel .kaart-samenvatting {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
 .kaart-beeld {
   aspect-ratio: 16 / 9;
   background: linear-gradient(135deg, var(--glas-licht-zand), var(--glas-licht-terracotta));
@@ -944,6 +1172,11 @@ a.badge {
   padding-top: 8px;
   font-size: 13px !important;
   color: var(--text-tertiary) !important;
+}
+
+/* Op de effen artikelkaart haalde de lichtste tekstkleur in donker thema maar 3,35:1. */
+.kaart-artikel .kaart-meta {
+  color: var(--text-secondary) !important;
 }
 
 .kaart-lees {
@@ -996,8 +1229,14 @@ a.badge {
   margin: 22px 0 0;
 }
 
+/* Vaste verhouding: de ruimte voor de omslag staat er al voordat de foto binnen is, zodat de
+   tekst eronder niet verspringt. */
 .artikel-cover {
   width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--neutral-tint);
   border-radius: var(--radius-lg);
   margin: 28px 0 0;
   display: block;
@@ -1100,7 +1339,7 @@ a.badge {
 
 .donker-blok {
   position: relative;
-  background: #3b2e24;
+  background: var(--diep);
   color: #f5efe7;
   border-radius: var(--radius-lg);
   padding: clamp(40px, 5vw, 64px) clamp(24px, 4vw, 48px);
@@ -1137,7 +1376,7 @@ a.badge {
   border-radius: 50%;
   border: 1.5px solid rgba(255, 255, 255, 0.55);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 12px;
 }
 
@@ -1205,8 +1444,68 @@ a.badge {
 .hero-zoek button {
   width: 100%;
   margin-top: 20px;
+  min-height: 44px;
   padding: 12px 16px;
   font-size: 15px;
+}
+
+/* Op een telefoon: de zoekkaart compact, met de twee keuzelijsten naast elkaar, direct na de
+   knoppen. Zo staat de zoekknop binnen het eerste scherm. */
+@media (max-width: 760px) {
+  .hero {
+    padding: 20px 0 40px;
+    gap: 24px;
+  }
+
+  .hero h1 {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+
+  .hero .lead {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+
+  .hero .cta-rij {
+    gap: 10px;
+  }
+
+  .hero .cta-rij .pil-knop {
+    padding: 12px 18px;
+    font-size: 14px;
+  }
+
+  .hero-zoek {
+    padding: 16px 16px 18px;
+  }
+
+  .hero-zoek .kicker {
+    display: none;
+  }
+
+  .hero-zoek h2 {
+    font-size: 18px;
+  }
+
+  .zoek-velden {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .zoek-velden label {
+    margin-top: 12px;
+  }
+
+  .zoek-velden select {
+    font-size: 14px;
+    padding: 11px 10px;
+  }
+
+  .hero-zoek button {
+    margin-top: 14px;
+  }
 }
 
 .sectie {
@@ -1236,13 +1535,59 @@ a.badge {
 
 /* ---------- Netwerk (praktijkprofielen van leden) ---------- */
 
-.netwerk-acties:not(:empty) {
+/* Er staat hier altijd één knop (lid worden, je praktijk erin, of je profiel); de ruimte is
+   alvast gereserveerd, zodat de pagina niet verspringt als de sessie binnen is. */
+.netwerk-acties {
   margin-top: 24px;
+  min-height: 44px;
+}
+
+/* Aantal resultaten en de knop om alle filters los te laten. Vaste hoogte, zodat de kaarten
+   eronder niet verspringen als de knop verschijnt. */
+.netwerk-resultaatbalk {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-height: 44px;
+  margin: -12px 0 16px;
 }
 
 .netwerk-aantal {
-  margin: -12px 0 16px;
+  margin: 0;
   font-weight: 600;
+}
+
+.netwerk-resultaatbalk .pil-knop {
+  padding: 10px 18px;
+  font-size: 14px;
+}
+
+/* Geen resultaat: een duidelijk blok met wat er gezocht is en een uitweg. */
+.lege-staat {
+  grid-column: 1 / -1;
+  align-self: start;
+  padding: 32px 28px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  max-width: 640px;
+}
+
+.lege-staat h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.lege-staat p {
+  margin: 0 0 20px;
+  color: var(--text-secondary);
+}
+
+/* Reserveer ruimte voor de kaarten, zodat de voettekst niet verspringt tijdens het laden. */
+#profielen {
+  min-height: 320px;
 }
 
 /* Uitnodiging om de volgende stap in het netwerk te zetten: onder artikelen en op het dashboard. */
@@ -1261,19 +1606,31 @@ a.badge {
   margin: 48px 0 0;
 }
 
-.netwerk-uitnodiging {
-  background: var(--accent-tint);
-  border-style: dashed;
-  border-color: var(--border-strong);
+/* Minder dan drie zichtbare profielen: geen halve ledenrij, maar één rustig paneel. */
+.netwerk-start {
+  max-width: 760px;
 }
 
-.netwerk-uitnodiging .kaart-body {
-  gap: 10px;
+.netwerk-start h2 {
+  font-size: clamp(22px, 2.6vw, 28px);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
 }
 
-.netwerk-uitnodiging .cta-rij {
-  margin-top: auto;
-  padding-top: 8px;
+.netwerk-start p:not(.kicker) {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  max-width: 60ch;
+}
+
+.netwerk-start .cta-rij {
+  margin-top: 20px;
+}
+
+.netwerk-teller-regel {
+  margin: -12px 0 20px;
+  color: var(--text-secondary);
 }
 
 .profiel-kaart .kaart-body {
@@ -1387,7 +1744,7 @@ table.tabel {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   padding: 0 10px 10px;
   border-bottom: 1px solid var(--border-strong);
   white-space: nowrap;
@@ -1452,7 +1809,7 @@ table.tabel {
 
 .stat-waarde {
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
@@ -1503,11 +1860,34 @@ table.tabel {
   gap: 8px;
 }
 
+/* Specialismen in het profiel, per groep. */
+.chip-groepen {
+  display: grid;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.chip-groep {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.chip-groep legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
 .chip {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 12px;
+  min-height: 44px;
+  padding: 7px 14px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border-strong);
   font-size: 13.5px;
@@ -1570,26 +1950,36 @@ table.tabel {
 .voet-kolom {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
 }
 
 .voet-kop {
   margin: 0 0 4px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
 }
 
+/* Raakdoelen minstens 44px (huisstijl): de links zelf zijn hoog genoeg, de ruimte ertussen niet nodig. */
 .voet-kolom a {
   font-size: 14px;
   color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  align-self: flex-start;
+}
+
+.voet-logo {
+  display: inline-block;
+  align-self: flex-start;
 }
 
 .voet-copyright {
   margin: 20px 0 0;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-size: 12px;
 }
 

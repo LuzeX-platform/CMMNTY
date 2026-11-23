@@ -10,7 +10,7 @@ function slotHtml(reden, toegang) {
     const pro = toegang === "pro";
     return `
       <div class="panel slot">
-        ${pro ? '<span class="badge badge-pro">Pro</span>' : '<span class="badge badge-gratis">Gratis</span>'}
+        ${badgeHtml(toegang)}
         <h2 style="margin-top:12px">Log in om verder te lezen</h2>
         <p>${pro
           ? "Dit is een Pro-artikel. Log in met je Pro-account om het hele artikel te lezen."
@@ -23,7 +23,7 @@ function slotHtml(reden, toegang) {
   }
   return `
     <div class="panel slot">
-      <span class="badge badge-pro">Pro</span>
+      ${badgeHtml("pro")}
       <h2 style="margin-top:12px">Dit artikel is voor Pro-leden</h2>
       <p>Met Pro lees je alle Pro-artikelen, voor € 5 per maand.</p>
       <div class="formulier-acties">
@@ -60,7 +60,7 @@ function slotHtml(reden, toegang) {
     houder.innerHTML = `
       ${a.voorbeeld ? `<p class="melding voorbeeld-melding"><strong>Voorbeeld</strong> — dit artikel is nog niet gepubliceerd. Alleen jij (admin) ziet deze pagina.</p>` : ""}
       <header class="artikel-kop">
-        <div class="kaart-badges">${badgeHtml(a.toegang)}${a.categorie ? `<a class="badge" href="/artikelen.html?categorie=${encodeURIComponent(a.categorie)}">${escapeHtml(a.categorie)}</a>` : ""}</div>
+        <div class="kaart-badges">${badgeHtml(a.toegang)}${a.categorie ? `<a class="badge badge-categorie" href="/artikelen.html?categorie=${encodeURIComponent(a.categorie)}">${escapeHtml(a.categorie)}</a>` : ""}</div>
         <h1>${escapeHtml(a.titel)}</h1>
         <div class="artikel-meta">
           <span>Door ${escapeHtml(a.auteurNaam)}</span>
@@ -68,7 +68,7 @@ function slotHtml(reden, toegang) {
           <span>${a.leestijd} min lezen</span>
         </div>
         <p class="artikel-samenvatting">${escapeHtml(a.samenvatting)}</p>
-        ${a.coverUrl ? `<img class="artikel-cover" src="${escapeHtml(a.coverUrl)}" alt="" />` : ""}
+        ${a.coverUrl ? `<img class="artikel-cover" src="${escapeHtml(a.coverUrl)}" alt="" width="1600" height="900" decoding="async" />` : ""}
       </header>
       ${a.inhoudHtml !== null
         ? `<div class="artikel-inhoud">${a.inhoudHtml /* door de server gesaneerd (sanitize-html) */}</div>`

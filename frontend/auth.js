@@ -72,7 +72,7 @@ if (pagina === "bevestigen") {
     }
     try {
       await api("/api/auth/bevestigen", { methode: "POST", body: { token } });
-      status.textContent = "Gelukt! Je e-mailadres is bevestigd. Je wordt doorgestuurd…";
+      status.textContent = "Gelukt. Je e-mailadres is bevestigd. Je wordt doorgestuurd…";
       setTimeout(() => (window.location.href = "/dashboard/"), 1200);
     } catch {
       status.textContent = "Deze link is ongeldig of al gebruikt. Al bevestigd? Log dan gewoon in.";

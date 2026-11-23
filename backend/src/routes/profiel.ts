@@ -35,6 +35,18 @@ export const profielSchema = z.object({
   gepubliceerd: z.boolean(),
 });
 
+/**
+ * Toont van een profiel alleen de specialismen die nog in de lijst staan. Wie eerder iets koos
+ * dat er inmiddels uit is (Seksuologie, Relatietherapie), houdt zijn profiel en zijn gegevens;
+ * alleen die ene keuze is niet meer te zien en niet meer te vinden.
+ */
+export function alleenBekendeSpecialismen<T extends { specialismen: string[] }>(profiel: T): T {
+  return { ...profiel, specialismen: profiel.specialismen.filter((s) => (SPECIALISMEN as readonly string[]).includes(s)) };
+}
+
+/** Vanaf dit aantal noemt de homepage hoeveel zorgprofessionals er zijn aangesloten (keuze van Job). */
+export const TELLER_VANAF = 100;
+
 const directorySelect = {
   gebruikerId: true,
   weergavenaam: true,
@@ -78,7 +90,10 @@ export async function profielRoutes(app: FastifyInstance) {
   app.get("/api/directory", async (request) => {
     const q = request.query as { specialisme?: string; regio?: string; zoek?: string };
     const where: Prisma.ProfielWhereInput = { gepubliceerd: true };
-    if (q.specialisme) where.specialismen = { has: q.specialisme };
+    // Een specialisme dat niet (meer) in de lijst staat, telt niet als filter.
+    if (q.specialisme && (SPECIALISMEN as readonly string[]).includes(q.specialisme)) {
+      where.specialismen = { has: q.specialisme };
+    }
     if (q.regio) where.regio = q.regio;
     if (q.zoek?.trim()) {
       const zoek = q.zoek.trim().slice(0, 100);
@@ -97,7 +112,7 @@ export async function profielRoutes(app: FastifyInstance) {
       }),
       prisma.profiel.count({ where }),
     ]);
-    return { profielen, totaal };
+    return { profielen: profielen.map(alleenBekendeSpecialismen), totaal };
   });
 
   // Openbaar, voor de homepage: hoeveel mensen er in het netwerk staan en een paar willekeurige
@@ -110,6 +125,10 @@ export async function profielRoutes(app: FastifyInstance) {
       take: 500,
     });
     const totaal = alle.length < 500 ? alle.length : await prisma.profiel.count({ where: { gepubliceerd: true } });
-    return { totaal, profielen: kiesUitgelicht(alle, 3) };
+    // Het aantal aangesloten zorgprofessionals (bevestigde leden, zonder de admin). Alleen een
+    // getal, nooit namen, en pas vanaf TELLER_VANAF: "12 zorgprofessionals" verkoopt het netwerk
+    // niet, en dan zegt de homepage liever niets over aantallen.
+    const leden = await prisma.gebruiker.count({ where: { rol: "lid", emailBevestigdOp: { not: null } } });
+    return { totaal, profielen: kiesUitgelicht(alle, 3).map(alleenBekendeSpecialismen), zorgprofessionals: leden >= TELLER_VANAF ? leden : null };
   });
 }

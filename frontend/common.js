@@ -73,23 +73,30 @@ async function vereisSessie({ admin = false } = {}) {
   return gebruiker;
 }
 
+// Pro en Gratis verschillen in kleur én vorm, zodat het verschil ook zonder kleur te zien is:
+// Pro is grafiet met een slotje, Gratis is wit met een groen stipje.
+const SLOTJE = '<svg class="badge-icoon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 7V5.2a3 3 0 0 1 6 0V7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><rect x="3.2" y="7" width="9.6" height="7" rx="1.8" fill="currentColor"/></svg>';
+
 function badgeHtml(toegang) {
   return toegang === "pro"
-    ? '<span class="badge badge-pro">Pro</span>'
-    : '<span class="badge badge-gratis">Gratis</span>';
+    ? `<span class="badge badge-pro">${SLOTJE}Pro</span>`
+    : '<span class="badge badge-gratis"><span class="badge-stip" aria-hidden="true"></span>Gratis</span>';
 }
 
-function artikelKaartHtml(a) {
+// meteen: de bovenste kaarten van een lijst laden hun foto direct; de rest pas als je ernaartoe scrolt.
+// (Via .map(artikelKaartHtml) komt hier een getal binnen; dat telt als "niet meteen".)
+function artikelKaartHtml(a, opties) {
+  const laden = opties?.meteen ? "eager" : "lazy";
   const beeld = a.coverUrl
-    ? `<div class="kaart-beeld"><img src="${escapeHtml(a.coverUrl)}" alt="" loading="lazy" /></div>`
+    ? `<div class="kaart-beeld"><img src="${escapeHtml(a.coverUrl)}" alt="" width="1600" height="900" loading="${laden}" decoding="async" /></div>`
     : '<div class="kaart-beeld" aria-hidden="true"></div>';
   return `
-    <a class="kaart" href="/artikelen/${encodeURIComponent(a.slug)}">
+    <a class="kaart kaart-artikel" href="/artikelen/${encodeURIComponent(a.slug)}">
       ${beeld}
       <div class="kaart-body">
-        <div class="kaart-badges">${badgeHtml(a.toegang)}${a.categorie ? `<span class="badge">${escapeHtml(a.categorie)}</span>` : ""}</div>
+        <div class="kaart-badges">${badgeHtml(a.toegang)}${a.categorie ? `<span class="badge badge-categorie">${escapeHtml(a.categorie)}</span>` : ""}</div>
         <h3>${escapeHtml(a.titel)}</h3>
-        <p>${escapeHtml(a.samenvatting)}</p>
+        <p class="kaart-samenvatting">${escapeHtml(a.samenvatting)}</p>
         <p class="kaart-meta">${escapeHtml(a.auteurNaam)} · ${formatteerDatum(a.gepubliceerdOp)} · ${a.leestijd} min lezen</p>
         <span class="kaart-lees">Lees meer →</span>
       </div>
@@ -111,7 +118,7 @@ function profielKaartHtml(p) {
       <div class="kaart-body">
         <div class="kaart-badges">
           ${p.regio ? `<span class="badge">${escapeHtml(p.regio)}</span>` : ""}
-          ${p.specialismen.map((s) => `<span class="badge badge-gratis">${escapeHtml(s)}</span>`).join("")}
+          ${p.specialismen.map((s) => `<span class="badge badge-specialisme">${escapeHtml(s)}</span>`).join("")}
         </div>
         <h3>${escapeHtml(p.weergavenaam)}</h3>
         ${p.praktijknaam ? `<p class="profiel-praktijk">${escapeHtml(p.praktijknaam)}</p>` : ""}
@@ -145,6 +152,18 @@ function netwerkStap(gebruiker) {
     tekst: "Zoek in het netwerk op specialisme en regio. Voor een verwijzing, overleg of vervanging.",
     knoppen: [["Bekijk het netwerk", "/netwerk.html"], ["Mijn netwerkprofiel", "/dashboard/profiel.html"]],
   };
+}
+
+/** De specialismen als <option>s, in groepen (<optgroup>), voor de zoeklijsten. */
+function specialismeOptiesHtml(groepen) {
+  return groepen
+    .map(
+      (g) =>
+        `<optgroup label="${escapeHtml(g.naam)}">${g.specialismen
+          .map((s) => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`)
+          .join("")}</optgroup>`,
+    )
+    .join("");
 }
 
 function netwerkKnoppenHtml(knoppen) {
@@ -182,11 +201,18 @@ function tekenBalk(gebruiker) {
       `<a href="${item.href}"${item.match.some((m) => pad.startsWith(m)) ? ' class="actief" aria-current="page"' : ""}>${item.label}</a>`,
   ).join("");
 
-  const acties = gebruiker
-    ? `${gebruiker.rol === "admin" ? '<a class="text-link" href="/admin/">Admin</a>' : ""}
-       <a class="pil-knop pil-knop-donker" href="/dashboard/">Mijn CMMNTY</a>`
-    : `<a class="text-link balk-inloggen" href="/inloggen.html">Inloggen</a>
-       <a class="pil-knop pil-knop-donker" href="/registreren.html">Gratis lid worden</a>`;
+  // De hoofdknop staat rechts in de balk. Op een telefoon krijgt hij een kortere tekst, en op de
+  // smalste telefoons staat hij in het uitklapmenu (zie styles.css).
+  const hoofdknop = gebruiker
+    ? { href: "/dashboard/", lang: "Mijn CMMNTY", kort: "Mijn CMMNTY" }
+    : { href: "/registreren.html", lang: "Gratis lid worden", kort: "Lid worden" };
+  const extraMobiel = gebruiker
+    ? `${gebruiker.rol === "admin" ? '<a class="alleen-mobiel" href="/admin/">Admin</a>' : ""}`
+    : '<a class="alleen-mobiel" href="/inloggen.html">Inloggen</a>';
+
+  const acties = `${gebruiker?.rol === "admin" ? '<a class="text-link balk-inloggen" href="/admin/">Admin</a>' : ""}
+       ${gebruiker ? "" : '<a class="text-link balk-inloggen" href="/inloggen.html">Inloggen</a>'}
+       <a class="pil-knop pil-knop-donker" href="${hoofdknop.href}"><span class="knop-lang">${hoofdknop.lang}</span><span class="knop-kort">${hoofdknop.kort}</span></a>`;
 
   houder.className = "balkhouder";
   houder.innerHTML = `
@@ -194,10 +220,34 @@ function tekenBalk(gebruiker) {
       <a href="/" class="merk" aria-label="LuzeX CMMNTY — naar de homepage">
         <span class="brand-logo" role="img" aria-label="CMMNTY — Samen beter in de zorg."></span>
       </a>
-      <nav class="balk-nav" aria-label="Hoofdnavigatie">${links}</nav>
+      <nav class="balk-nav" id="balk-nav" aria-label="Hoofdnavigatie">${links}${extraMobiel}<a class="pil-knop pil-knop-donker alleen-mobiel" href="${hoofdknop.href}">${hoofdknop.lang}</a></nav>
       <div class="balk-acties">${acties}</div>
+      <button type="button" class="balk-menuknop" aria-expanded="false" aria-controls="balk-nav" aria-label="Menu openen"><span></span><span></span><span></span></button>
     </div>`;
+
+  const balk = houder.querySelector(".balk");
+  const menuknop = houder.querySelector(".balk-menuknop");
+  const zetOpen = (open) => {
+    balk.classList.toggle("open", open);
+    menuknop.setAttribute("aria-expanded", String(open));
+    menuknop.setAttribute("aria-label", open ? "Menu sluiten" : "Menu openen");
+  };
+  menuknop.addEventListener("click", () => zetOpen(!balk.classList.contains("open")));
+  houder.querySelector(".balk-nav").addEventListener("click", (e) => {
+    if (e.target.closest("a")) zetOpen(false);
+  });
+  houder.sluitMenu = () => {
+    if (!balk.classList.contains("open")) return false;
+    zetOpen(false);
+    menuknop.focus();
+    return true;
+  };
 }
+
+// Escape sluit het uitklapmenu. Eén keer gekoppeld; de balk wordt twee keer getekend.
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") document.getElementById("balk")?.sluitMenu?.();
+});
 
 function tekenVoet() {
   const voet = document.getElementById("voet");
@@ -206,7 +256,7 @@ function tekenVoet() {
   voet.innerHTML = `
     <div class="voet-boven">
       <div class="voet-merk">
-        <a href="https://luzex.nl" class="brand-logo" role="img" aria-label="CMMNTY — Samen beter in de zorg."></a>
+        <a href="https://luzex.nl" class="voet-logo" aria-label="CMMNTY, onderdeel van LuzeX: naar luzex.nl"><span class="brand-logo" aria-hidden="true"></span></a>
         <p class="voet-tagline">Zorginnovatie in jip-en-janneke taal. Voor zorgprofessionals die het zelf doen.</p>
       </div>
       <div class="voet-kolom">

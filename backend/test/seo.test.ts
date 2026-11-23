@@ -63,6 +63,15 @@ test("artikelpagina ontsnapt HTML in de titel", async () => {
   assert.ok(html.includes("&lt;img src=x"));
 });
 
+test("artikelpagina toont meteen dezelfde opbouw als het script: labels en omslag met versie", async () => {
+  const metDatum = { ...ARTIKEL, bijgewerktOp: new Date("2026-10-02T09:00:00Z") };
+  const html = (await artikelPagina(nepPrisma([metDatum]), FRONTEND, "agenda-en-avg")) as string;
+  assert.match(html, /<span class="badge badge-pro"><svg[^>]*aria-hidden="true"/);
+  assert.match(html, /<a class="badge badge-categorie" href="\/artikelen\.html\?categorie=Wet%20%26%20regelgeving">Wet &amp; regelgeving<\/a>/);
+  assert.ok(html.includes(`src="/api/artikelen/agenda-en-avg/cover?v=${metDatum.bijgewerktOp.getTime()}"`));
+  assert.match(html, /<img class="artikel-cover"[^>]*width="1600" height="900"/);
+});
+
 test("onbekende slug geeft null, zodat de route 404 kan sturen", async () => {
   assert.equal(await artikelPagina(nepPrisma([]), FRONTEND, "bestaat-niet"), null);
 });

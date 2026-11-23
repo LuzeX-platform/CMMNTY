@@ -1,8 +1,8 @@
 import type { FastifyInstance } from "fastify";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../db.js";
-import { leestijdMinuten, magVolledigLezen, renderMarkdown, vergrendelReden } from "../artikelen.js";
-import { CATEGORIEEN, REGIOS, SPECIALISMEN } from "../constanten.js";
+import { coverPad, leestijdMinuten, magVolledigLezen, renderMarkdown, vergrendelReden } from "../artikelen.js";
+import { CATEGORIEEN, REGIOS, SPECIALISME_GROEPEN, SPECIALISMEN } from "../constanten.js";
 import { leesSessie } from "../plugins/requireAuth.js";
 
 const PER_PAGINA = 12;
@@ -18,6 +18,7 @@ const kaartSelect = {
   auteurNaam: true,
   gepubliceerdOp: true,
   coverMime: true,
+  bijgewerktOp: true,
   inhoud: true,
 } satisfies Prisma.ArtikelSelect;
 
@@ -34,7 +35,7 @@ export function naarKaart(a: KaartRij) {
     auteurNaam: a.auteurNaam,
     gepubliceerdOp: a.gepubliceerdOp,
     leestijd: leestijdMinuten(a.inhoud),
-    coverUrl: a.coverMime ? `/api/artikelen/${encodeURIComponent(a.slug)}/cover` : null,
+    coverUrl: a.coverMime ? coverPad(a.slug, a.bijgewerktOp) : null,
   };
 }
 
@@ -56,6 +57,7 @@ async function bezoekerVan(request: import("fastify").FastifyRequest) {
 export async function artikelRoutes(app: FastifyInstance) {
   app.get("/api/keuzelijsten", async () => ({
     specialismen: SPECIALISMEN,
+    specialismeGroepen: SPECIALISME_GROEPEN,
     regios: REGIOS,
     categorieen: CATEGORIEEN,
   }));
@@ -141,10 +143,18 @@ export async function artikelRoutes(app: FastifyInstance) {
     });
     if (!artikel?.coverAfbeelding || !artikel.coverMime) return reply.code(404).send({ errorCode: "NIET_GEVONDEN" });
     const openbaar = artikel.gepubliceerdOp !== null && artikel.gepubliceerdOp <= new Date();
+    // Met een versie in het adres (?v=, zie coverPad) verandert de foto onder dat adres nooit
+    // meer: dan mag hij een jaar bewaard worden. Zonder versie (oude links, linkvoorbeelden)
+    // een uur. Een concept-afbeelding nooit in gedeelde caches.
+    const metVersie = typeof (request.query as { v?: string }).v === "string";
+    const cache = !openbaar
+      ? "private, no-store"
+      : metVersie
+        ? "public, max-age=31536000, immutable"
+        : "public, max-age=3600";
     return reply
       .header("Content-Type", artikel.coverMime)
-      // Een concept-afbeelding niet laten bewaren door gedeelde caches.
-      .header("Cache-Control", openbaar ? "public, max-age=3600" : "private, no-store")
+      .header("Cache-Control", cache)
       .send(Buffer.from(artikel.coverAfbeelding));
   });
 }

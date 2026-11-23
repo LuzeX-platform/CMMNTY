@@ -43,8 +43,8 @@
         </div>
       </div>
 
-      <label>Specialisme(n) <span style="font-weight:400">— maximaal 5</span></label>
-      <div class="chips" id="specialismen"></div>
+      <p class="veld-kop" id="specialismen-kop">Specialisme(n) <span style="font-weight:400">— maximaal 5</span></p>
+      <div class="chip-groepen" id="specialismen" role="group" aria-labelledby="specialismen-kop"></div>
 
       <label for="regio">Regio</label>
       <select id="regio"><option value="">Kies een regio</option></select>
@@ -77,7 +77,7 @@
   </main>
 
   <footer id="voet"></footer>
-  <script src="/common.js"></script>
-  <script src="/dashboard/dashboard.js"></script>
+  <script src="/common.js" defer></script>
+  <script src="/dashboard/dashboard.js" defer></script>
 </body>
 </html>

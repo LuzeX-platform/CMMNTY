@@ -454,7 +454,7 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
       method: "PUT",
       url: "/api/profiel",
       headers: { cookie: lidCookie },
-      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Seksuologie"], telefoon: "", website: "", contactEmail: "", bio: "Hoi", regio: "Oost", gepubliceerd: true },
+      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Traumabehandeling"], telefoon: "", website: "", contactEmail: "", bio: "Hoi", regio: "Oost", gepubliceerd: true },
     });
     assert.equal(zonderContact.statusCode, 400);
 
@@ -462,7 +462,7 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
       method: "PUT",
       url: "/api/profiel",
       headers: { cookie: lidCookie },
-      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Seksuologie"], telefoon: "06-12345678", website: "www.praktijkvries.nl", contactEmail: "", bio: "Hoi", regio: "Oost", gepubliceerd: true },
+      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Traumabehandeling"], telefoon: "06-12345678", website: "www.praktijkvries.nl", contactEmail: "", bio: "Hoi", regio: "Oost", gepubliceerd: true },
     });
     assert.equal(ok.statusCode, 200, ok.body);
     assert.equal(ok.json().website, "https://www.praktijkvries.nl");
@@ -475,7 +475,7 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     });
     assert.equal(teLang.statusCode, 400);
 
-    const treffer = (await app.inject({ method: "GET", url: "/api/directory?specialisme=Seksuologie&regio=Oost" })).json();
+    const treffer = (await app.inject({ method: "GET", url: "/api/directory?specialisme=Traumabehandeling&regio=Oost" })).json();
     assert.equal(treffer.profielen.length, 1);
     assert.equal(treffer.totaal, 1);
     const mis = (await app.inject({ method: "GET", url: "/api/directory?regio=Noord" })).json();
@@ -486,10 +486,61 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     const uitgelicht = (await app.inject({ method: "GET", url: "/api/netwerk/uitgelicht" })).json();
     assert.equal(uitgelicht.totaal, 1);
     assert.equal(uitgelicht.profielen[0].weergavenaam, "Sanne");
+    // Onder de 100 bevestigde leden noemt de homepage geen aantal.
+    assert.equal(uitgelicht.zorgprofessionals, null);
 
     // De sessie zegt of dit lid in het netwerk staat (voor de uitnodigingen op de site).
     const sessie = (await app.inject({ method: "GET", url: "/api/auth/sessie", headers: { cookie: lidCookie } })).json();
     assert.equal(sessie.gebruiker.inNetwerk, true);
+  });
+
+  test("specialismen: Seksuologie en Relatietherapie zijn niet meer te kiezen, te zien of te vinden", async () => {
+    const keuzes = (await app.inject({ method: "GET", url: "/api/keuzelijsten" })).json();
+    assert.ok(!keuzes.specialismen.includes("Seksuologie") && !keuzes.specialismen.includes("Relatietherapie"));
+    assert.deepEqual(keuzes.specialismeGroepen.map((g: { naam: string }) => g.naam), ["Algemeen", "Doelgroep en thema", "Anders"]);
+
+    const kiezen = await app.inject({
+      method: "PUT",
+      url: "/api/profiel",
+      headers: { cookie: lidCookie },
+      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Seksuologie"], telefoon: "06-12345678", website: "", contactEmail: "", bio: "Hoi", regio: "Oost", gepubliceerd: true },
+    });
+    assert.equal(kiezen.statusCode, 400);
+
+    // Een lid dat het eerder koos: profiel blijft zichtbaar, alleen die keuze niet.
+    const profiel = await prisma.profiel.findFirstOrThrow({ where: { weergavenaam: "Sanne" } });
+    await prisma.profiel.update({ where: { gebruikerId: profiel.gebruikerId }, data: { specialismen: ["Seksuologie", "Traumabehandeling"] } });
+    const lijst = (await app.inject({ method: "GET", url: "/api/directory" })).json();
+    const sanne = lijst.profielen.find((p: { weergavenaam: string }) => p.weergavenaam === "Sanne");
+    assert.deepEqual(sanne.specialismen, ["Traumabehandeling"]);
+    const uitgelicht = (await app.inject({ method: "GET", url: "/api/netwerk/uitgelicht" })).json();
+    assert.ok(!JSON.stringify(uitgelicht).includes("Seksuologie"));
+    // Zoeken op het oude specialisme filtert niet meer (geeft dus gewoon het hele netwerk).
+    const oud = (await app.inject({ method: "GET", url: "/api/directory?specialisme=Seksuologie" })).json();
+    assert.equal(oud.totaal, lijst.totaal);
+    assert.ok(!JSON.stringify(oud).includes("Seksuologie"));
+    // De gegevens zelf zijn niet aangepast.
+    assert.deepEqual((await prisma.profiel.findUniqueOrThrow({ where: { gebruikerId: profiel.gebruikerId } })).specialismen, ["Seksuologie", "Traumabehandeling"]);
+    await prisma.profiel.update({ where: { gebruikerId: profiel.gebruikerId }, data: { specialismen: ["Traumabehandeling"] } });
+  });
+
+  test("teller op de homepage: pas vanaf 100 bevestigde leden een aantal, nooit namen", async () => {
+    const voor = (await app.inject({ method: "GET", url: "/api/netwerk/uitgelicht" })).json();
+    const bestaand = await prisma.gebruiker.count({ where: { rol: "lid", emailBevestigdOp: { not: null } } });
+    const nodig = Math.max(0, 100 - bestaand);
+    await prisma.gebruiker.createMany({
+      data: Array.from({ length: nodig }, (_, i) => ({ email: `teller${i}@test.nl`, naam: "", wachtwoordHash: "x", emailBevestigdOp: new Date() })),
+    });
+    // Onbevestigde accounts tellen niet mee.
+    await prisma.gebruiker.create({ data: { email: "teller-onbevestigd@test.nl", naam: "", wachtwoordHash: "x" } });
+    try {
+      const na = (await app.inject({ method: "GET", url: "/api/netwerk/uitgelicht" })).json();
+      assert.equal(voor.zorgprofessionals, null);
+      assert.equal(na.zorgprofessionals, 100);
+      assert.equal(na.totaal, voor.totaal);
+    } finally {
+      await prisma.gebruiker.deleteMany({ where: { email: { startsWith: "teller" } } });
+    }
   });
 
   test("nieuwsbrief: gratis-segment krijgt alleen gratis artikelen, daarna niets dubbel", async () => {
@@ -561,7 +612,7 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     const directory = (await app.inject({ method: "GET", url: "/api/directory" })).json();
     assert.equal(directory.profielen.length, 0);
     const uitgelicht = (await app.inject({ method: "GET", url: "/api/netwerk/uitgelicht" })).json();
-    assert.deepEqual(uitgelicht, { totaal: 0, profielen: [] });
+    assert.deepEqual(uitgelicht, { totaal: 0, profielen: [], zorgprofessionals: null });
   });
 
   // Het importscript echt draaien (als los proces, zoals in de Render Shell) tegen de testdatabase.
@@ -607,6 +658,28 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     // Nog een keer: niets meer te doen.
     assert.match(draai("--afbeeldingen-aanvullen"), /0 afbeelding\(en\) toegevoegd/);
     fs.rmSync(map, { recursive: true, force: true });
+  });
+
+  test("omslag: met versie in het adres een jaar in de cache, zonder een uur, concept nooit", async () => {
+    const basis = { samenvatting: "x", inhoud: "x", toegang: "gratis", auteurNaam: "Job", coverAfbeelding: Buffer.from("jpg"), coverMime: "image/jpeg" };
+    await prisma.artikel.create({ data: { ...basis, titel: "Met omslag", slug: "met-omslag", gepubliceerdOp: new Date("2026-09-01T08:00:00Z") } });
+    await prisma.artikel.create({ data: { ...basis, titel: "Omslag concept", slug: "omslag-concept", gepubliceerdOp: null } });
+
+    const kaart = (await app.inject({ method: "GET", url: "/api/artikelen?limiet=50" })).json()
+      .artikelen.find((a: { slug: string }) => a.slug === "met-omslag");
+    assert.match(kaart.coverUrl, /^\/api\/artikelen\/met-omslag\/cover\?v=\d+$/);
+
+    const met = await app.inject({ method: "GET", url: kaart.coverUrl });
+    assert.equal(met.statusCode, 200);
+    assert.equal(met.headers["cache-control"], "public, max-age=31536000, immutable");
+    const zonder = await app.inject({ method: "GET", url: "/api/artikelen/met-omslag/cover" });
+    assert.equal(zonder.headers["cache-control"], "public, max-age=3600");
+
+    // Een concept bestaat niet voor bezoekers, en voor de admin wordt het nergens bewaard.
+    assert.equal((await app.inject({ method: "GET", url: "/api/artikelen/omslag-concept/cover?v=1" })).statusCode, 404);
+    const admin = await app.inject({ method: "GET", url: "/api/artikelen/omslag-concept/cover?v=1", headers: { cookie: adminCookie } });
+    assert.equal(admin.headers["cache-control"], "private, no-store");
+    await prisma.artikel.deleteMany({ where: { slug: { in: ["met-omslag", "omslag-concept"] } } });
   });
 
   test("bulk: concepten in één keer publiceren, wat al online staat houdt zijn datum", async () => {

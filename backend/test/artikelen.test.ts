@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { leestijdMinuten, maakSlug, magVolledigLezen, publicatieVolgorde, renderMarkdown, vergrendelReden } from "../src/artikelen.js";
+import { coverPad, leestijdMinuten, maakSlug, magVolledigLezen, publicatieVolgorde, renderMarkdown, vergrendelReden } from "../src/artikelen.js";
 
 test("maakSlug: leesbaar, zonder accenten en leestekens", () => {
   assert.equal(maakSlug("Hoe AI je administratie 2 uur per week kan besparen"), "hoe-ai-je-administratie-2-uur-per-week-kan-besparen");
@@ -57,4 +57,9 @@ test("publicatieVolgorde: nieuwste import bovenaan, binnen een import bestand 01
     ["week43-01", "week43-02", "los-artikel", "week41-01", "week41-02"],
   );
   assert.deepEqual(publicatieVolgorde([]), []);
+});
+
+test("coverPad: versie in het adres als de wijzigingsdatum bekend is", () => {
+  assert.equal(coverPad("a b"), "/api/artikelen/a%20b/cover");
+  assert.equal(coverPad("x", new Date("2026-11-20T10:00:00Z")), `/api/artikelen/x/cover?v=${Date.parse("2026-11-20T10:00:00Z")}`);
 });

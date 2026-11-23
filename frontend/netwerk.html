@@ -58,12 +58,16 @@
       </div>
     </form>
 
-    <p class="subtitle netwerk-aantal" id="aantal" aria-live="polite"></p>
+    <h2 class="visueel-verborgen">Collega's in het netwerk</h2>
+    <div class="netwerk-resultaatbalk">
+      <p class="subtitle netwerk-aantal" id="aantal" aria-live="polite"></p>
+      <button type="button" class="pil-knop pil-knop-glas" id="toon-alles" hidden>Toon alle leden</button>
+    </div>
     <div class="kaarten" id="profielen"><p class="leeg">Profielen laden…</p></div>
   </main>
 
   <footer id="voet"></footer>
-  <script src="/common.js"></script>
-  <script src="/netwerk.js"></script>
+  <script src="/common.js" defer></script>
+  <script src="/netwerk.js" defer></script>
 </body>
 </html>
