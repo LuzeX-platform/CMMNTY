@@ -219,7 +219,7 @@ function netwerkBlokHtml(gebruiker) {
 const NAV = [
   { href: "/netwerk.html", label: "Netwerk", match: ["/netwerk"] },
   { href: "/artikelen.html", label: "Artikelen", match: ["/artikelen"] },
-  { href: "/#over", label: "Over", match: [] },
+  { href: "/over.html", label: "Over", match: ["/over"] },
 ];
 
 function tekenBalk(gebruiker) {
