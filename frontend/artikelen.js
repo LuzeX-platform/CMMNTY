@@ -20,14 +20,15 @@ function zetUrl() {
 
 async function laad() {
   zetUrl();
-  const params = new URLSearchParams({ pagina: staat.pagina });
+  // Dertien per pagina: één groot uitgelicht, daaronder vier volle rijen van drie.
+  const params = new URLSearchParams({ pagina: staat.pagina, limiet: 13 });
   if (staat.toegang) params.set("toegang", staat.toegang);
   if (staat.categorie) params.set("categorie", staat.categorie);
   if (staat.zoek) params.set("zoek", staat.zoek);
   try {
     const data = await api(`/api/artikelen?${params}`);
     lijst.innerHTML = data.artikelen.length
-      ? data.artikelen.map((a, i) => artikelKaartHtml(a, { meteen: i < 3 })).join("")
+      ? artikelenMetUitgelichtHtml(data.artikelen)
       : '<p class="leeg">Geen artikelen gevonden met deze filters.</p>';
     paginering.innerHTML =
       data.paginas > 1

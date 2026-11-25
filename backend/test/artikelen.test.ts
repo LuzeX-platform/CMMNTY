@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { coverPad, leestijdMinuten, maakSlug, magVolledigLezen, publicatieVolgorde, renderMarkdown, vergrendelReden } from "../src/artikelen.js";
+import { coverPad, leestijdMinuten, zetBlokken, maakSlug, magVolledigLezen, publicatieVolgorde, renderMarkdown, vergrendelReden } from "../src/artikelen.js";
 
 test("maakSlug: leesbaar, zonder accenten en leestekens", () => {
   assert.equal(maakSlug("Hoe AI je administratie 2 uur per week kan besparen"), "hoe-ai-je-administratie-2-uur-per-week-kan-besparen");
@@ -62,4 +62,31 @@ test("publicatieVolgorde: nieuwste import bovenaan, binnen een import bestand 01
 test("coverPad: versie in het adres als de wijzigingsdatum bekend is", () => {
   assert.equal(coverPad("a b"), "/api/artikelen/a%20b/cover");
   assert.equal(coverPad("x", new Date("2026-11-20T10:00:00Z")), `/api/artikelen/x/cover?v=${Date.parse("2026-11-20T10:00:00Z")}`);
+});
+
+test("vaste kopjes worden een eigen blok, de rest blijft zoals het is", () => {
+  const html = renderMarkdown(
+    "Intro.\n\n## Wat is er gebeurd?\n\nTekst.\n\n## Wat zegt het onderzoek níét?\n\n- a\n\n" +
+      "## Wat betekent dit voor jou?\n\nJij.\n\n### Subkop\n\nNog meer.\n\n## Morgen al beginnen?\n\n- doe dit\n\n## Bronnen\n\n- [x](https://x.nl)",
+  );
+  assert.ok(html.includes("<h2>Wat is er gebeurd?</h2>"));
+  assert.ok(!/<section[^>]*>\s*<h2>Wat is er gebeurd/.test(html), "gewone kopjes krijgen geen blok");
+  assert.match(html, /<section class="blok blok-letop">\s*<h2>Wat zegt het onderzoek níét\?<\/h2>/);
+  // Een h3 binnen de sectie blijft binnen hetzelfde blok.
+  assert.match(html, /<section class="blok blok-jou">\s*<h2>Wat betekent dit voor jou\?<\/h2>[\s\S]*<h3>Subkop<\/h3>[\s\S]*?<\/section>\s*<section class="blok blok-actie">/);
+  assert.match(html, /<section class="blok-bronnen">\s*<h2>Bronnen<\/h2>[\s\S]*<\/section>\s*$/);
+  assert.equal((html.match(/<section/g) ?? []).length, (html.match(/<\/section>/g) ?? []).length);
+});
+
+test("In het kort: een citaat dat zo begint, wordt een samenvattingsblok", () => {
+  const html = renderMarkdown("> **In het kort**\n>\n> - een\n> - twee\n\nTekst.\n\n> Gewoon citaat.");
+  assert.match(html, /^<blockquote class="blok blok-kort">\s*<p class="blok-kicker">In het kort<\/p>\s*<ul>/);
+  assert.match(html, /<blockquote>\s*<p>Gewoon citaat\.<\/p>/);
+});
+
+test("zetBlokken voegt alleen vaste opmaak toe: de tekst van het kopje komt nergens anders terecht", () => {
+  const html = zetBlokken('<h2>Morgen al beginnen? &lt;script&gt;</h2><p>x</p>');
+  assert.equal(html, '<section class="blok blok-actie">\n<h2>Morgen al beginnen? &lt;script&gt;</h2><p>x</p>\n</section>\n');
+  // Ook na het opschonen kan een kopje geen script binnensmokkelen.
+  assert.ok(!renderMarkdown("## Morgen al beginnen? <script>alert(1)</script>").includes("<script"));
 });

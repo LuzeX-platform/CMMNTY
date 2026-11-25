@@ -1184,6 +1184,95 @@ a.badge {
   font-size: 14px;
 }
 
+/* ---------- Uitgelicht artikel: groot en liggend, als de voorpagina van een tijdschrift ---------- */
+.kaart-groot {
+  grid-column: 1 / -1;
+  display: grid;
+  /* Breed beeld, smalle tekst: zo blijft de illustratie (16:9) vrijwel heel. */
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+}
+
+.kaart-groot .kaart-beeld {
+  aspect-ratio: auto;
+  height: 100%;
+  min-height: 300px;
+}
+
+.kaart-groot .kaart-body {
+  padding: clamp(22px, 2.6vw, 34px);
+  justify-content: center;
+  gap: 10px;
+}
+
+.kaart-groot h3 {
+  font-size: clamp(24px, 2.4vw, 32px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.kaart-groot .kaart-samenvatting {
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.kaart-groot .kaart-meta {
+  margin-top: 4px !important;
+}
+
+.kaart-groot .kaart-lees {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 6px;
+  padding: 0 20px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+a.kaart-groot:hover .kaart-lees {
+  background: var(--accent-hover);
+}
+
+@media (max-width: 900px) {
+  .kaart-groot {
+    grid-template-columns: 1fr;
+  }
+
+  .kaart-groot .kaart-beeld {
+    aspect-ratio: 16 / 9;
+    height: auto;
+    min-height: 0;
+  }
+
+  .kaart-groot h3 {
+    font-size: 24px;
+  }
+}
+
+/* Ruimte voor de artikelen op de homepage zolang ze laden, zodat het netwerkblok eronder niet
+   verspringt. De maten zijn gemeten op de echte kaarten. */
+#uitgelicht:has(> .laden) {
+  min-height: 860px;
+}
+
+@media (max-width: 900px) {
+  #uitgelicht:has(> .laden) {
+    min-height: 1700px;
+  }
+}
+
+@media (max-width: 760px) {
+  #uitgelicht:has(> .laden) {
+    min-height: 1900px;
+  }
+}
+
 .paginering {
   display: flex;
   justify-content: center;
@@ -1274,6 +1363,143 @@ a.badge {
   padding: 4px 0 4px 20px;
   border-left: 3px solid var(--glas-licht-terracotta);
   color: var(--text-secondary);
+}
+
+/* ---------- Blokken in een artikel (zie zetBlokken in backend/src/artikelen.ts) ----------
+   Vaste kopjes krijgen een eigen blok, zodat een lang stuk tekst afwisseling krijgt. */
+.artikel-inhoud .blok {
+  margin: 36px 0;
+  padding: 26px 28px 6px;
+  border-radius: var(--radius-lg);
+}
+
+.artikel-inhoud .blok > h2:first-child {
+  margin-top: 0;
+  font-size: 23px;
+}
+
+/* "Wat betekent dit voor jou?": wit vlak dat boven de tekst uitkomt. */
+.artikel-inhoud .blok-jou {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+/* "Morgen al beginnen?": het ene donkere blok van de pagina, met vinkjes. */
+.artikel-inhoud .blok-actie {
+  background: var(--diep);
+  color: #fff;
+}
+
+.artikel-inhoud .blok-actie h2,
+.artikel-inhoud .blok-actie strong,
+.artikel-inhoud .blok-actie a {
+  color: #fff;
+}
+
+.artikel-inhoud .blok-actie ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.artikel-inhoud .blok-actie ul > li {
+  position: relative;
+  padding-left: 38px;
+  margin-bottom: 14px;
+}
+
+.artikel-inhoud .blok-actie ul > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.2em;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.artikel-inhoud .blok-actie ul > li::after {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: calc(0.2em + 6px);
+  width: 6px;
+  height: 11px;
+  border: solid #fff;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+
+.artikel-inhoud .blok-actie :focus-visible {
+  outline-color: #fff;
+}
+
+/* Kanttekeningen: rustig, licht vlak met een streep. */
+.artikel-inhoud .blok-letop {
+  background: rgba(255, 255, 255, 0.42);
+  border-left: 4px solid var(--glas-licht-terracotta);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .artikel-inhoud .blok-letop {
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+/* "In het kort" bovenaan een artikel. */
+.artikel-inhoud blockquote.blok-kort {
+  margin: 0 0 32px;
+  padding: 22px 26px 4px;
+  border-left: 0;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+/* Lijstjes in een blok minder ver inspringen: het blok zelf heeft al ruimte aan de zijkant. */
+.artikel-inhoud .blok ul,
+.artikel-inhoud .blok ol {
+  padding-left: 22px;
+}
+
+.artikel-inhoud .blok-kicker {
+  margin: 0 0 8px !important;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* Bronnen: klein en rustig onderaan. */
+.artikel-inhoud .blok-bronnen {
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-strong);
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.artikel-inhoud .blok-bronnen h2 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.artikel-inhoud .blok-bronnen li {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 640px) {
+  .artikel-inhoud .blok {
+    padding: 22px 20px 4px;
+    margin: 30px -4px;
+  }
 }
 
 .artikel-inhoud img {
