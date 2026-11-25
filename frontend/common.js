@@ -154,6 +154,36 @@ function netwerkStap(gebruiker) {
   };
 }
 
+/**
+ * Het uitgelichte artikel: dezelfde kaart, maar groot en liggend, met de illustratie links.
+ * Bovenaan de homepage en de artikelenlijst, zodat er meteen een beeld in de pagina staat.
+ */
+function artikelUitgelichtHtml(a) {
+  const beeld = a.coverUrl
+    ? `<div class="kaart-beeld"><img src="${escapeHtml(a.coverUrl)}" alt="" width="1600" height="900" loading="eager" decoding="async" /></div>`
+    : '<div class="kaart-beeld" aria-hidden="true"></div>';
+  return `
+    <a class="kaart kaart-artikel kaart-groot" href="/artikelen/${encodeURIComponent(a.slug)}">
+      ${beeld}
+      <div class="kaart-body">
+        <div class="kaart-badges">${badgeHtml(a.toegang)}${a.categorie ? `<span class="badge badge-categorie">${escapeHtml(a.categorie)}</span>` : ""}</div>
+        <h3>${escapeHtml(a.titel)}</h3>
+        <p class="kaart-samenvatting">${escapeHtml(a.samenvatting)}</p>
+        <p class="kaart-meta">${escapeHtml(a.auteurNaam)} · ${formatteerDatum(a.gepubliceerdOp)} · ${a.leestijd} min lezen</p>
+        <span class="kaart-lees">Lees verder →</span>
+      </div>
+    </a>`;
+}
+
+/**
+ * Een lijst artikelen met het eerste groot uitgelicht en de rest als gewone kaarten. Alleen de
+ * grote foto laadt meteen; de kaarten eronder staan onder de vouw en laden pas bij het scrollen.
+ */
+function artikelenMetUitgelichtHtml(artikelen) {
+  const [eerste, ...rest] = artikelen;
+  return artikelUitgelichtHtml(eerste) + rest.map((a) => artikelKaartHtml(a)).join("");
+}
+
 /** De specialismen als <option>s, in groepen (<optgroup>), voor de zoeklijsten. */
 function specialismeOptiesHtml(groepen) {
   return groepen
@@ -189,7 +219,7 @@ function netwerkBlokHtml(gebruiker) {
 const NAV = [
   { href: "/netwerk.html", label: "Netwerk", match: ["/netwerk"] },
   { href: "/artikelen.html", label: "Artikelen", match: ["/artikelen"] },
-  { href: "/#over", label: "Over", match: [] },
+  { href: "/over.html", label: "Over", match: ["/over"] },
 ];
 
 function tekenBalk(gebruiker) {

@@ -197,6 +197,7 @@ export async function sitemapXml(prisma: PrismaClient): Promise<string> {
     { loc: `${basis}/`, prio: "1.0", freq: "weekly" },
     { loc: `${basis}/artikelen.html`, prio: "0.9", freq: "weekly" },
     { loc: `${basis}/netwerk.html`, prio: "0.8", freq: "weekly" },
+    { loc: `${basis}/over.html`, prio: "0.5", freq: "monthly" },
   ];
 
   const regels = [

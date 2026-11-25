@@ -58,6 +58,27 @@ Jip-en-janneke taal: korte zinnen, geen jargon, geen hype. Schrijf voor zorgverl
 algemeen (niet alleen ggz-zzp'ers). Eindig praktisch, bijvoorbeeld met "Wat betekent dit voor
 jou?" en "Morgen al beginnen?".
 
+## Opbouw (sinds november 2026)
+
+- **Begin met "In het kort"**: drie korte punten, als citaat met dit kopje erboven. De site
+  maakt er een wit samenvattingsblok van:
+
+  ```markdown
+  > **In het kort**
+  >
+  > - Eerste punt.
+  > - Tweede punt.
+  > - Derde punt.
+  ```
+
+- **Gebruik de vaste kopjes**, letterlijk zo. De site zet ze automatisch in een eigen blok
+  (`zetBlokken` in `backend/src/artikelen.ts`):
+  - "Wat betekent dit voor jou?": wit blok;
+  - "Morgen al beginnen?": donker blok met vinkjes (zet hier een lijstje neer);
+  - "Wat zegt het onderzoek níét?" / "Wat het onderzoek níét zegt" / "De kanttekeningen":
+    licht blok met een streep;
+  - "Bronnen" (zet het importscript er zelf onder): klein en rustig.
+
 ## Techniek
 
 - Map: `content/artikelen/zorgtech-week-NN/`, bestanden `01-…md`, `02-…md`. NN is het

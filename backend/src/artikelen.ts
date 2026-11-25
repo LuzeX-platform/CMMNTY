@@ -45,7 +45,47 @@ const TOEGESTANE_TAGS = [
   "ul", "ol", "li", "a", "code", "pre", "img", "table", "thead", "tbody", "tr", "th", "td",
 ];
 
+/**
+ * Vaste kopjes die de site als eigen blok toont, zodat een lang artikel afwisseling krijgt
+ * zonder dat er iets aan de tekst verandert. De sectie loopt van het kopje tot het volgende h2.
+ */
+const BLOKKEN: { kop: RegExp; klasse: string }[] = [
+  { kop: /^(wat betekent dit voor jou|waarom dit jou aangaat)/i, klasse: "blok blok-jou" },
+  { kop: /^(morgen al beginnen|wat kun je nu al doen)/i, klasse: "blok blok-actie" },
+  {
+    kop: /^(wat (het onderzoek|zegt het onderzoek|weten we nog) n[ií][eé]t|wat (het|kan het) (\(nog\) |nog )?niet|wat we nog niet weten|wat is nog niet besloten|(de )?kanttekeningen|hoe voorzichtig moet je zijn)/i,
+    klasse: "blok blok-letop",
+  },
+  { kop: /^bronnen$/i, klasse: "blok-bronnen" },
+];
+
+/**
+ * Zet de vaste secties in een eigen <section> en maakt van een citaat dat begint met
+ * "**In het kort**" een samenvattingsblok. Werkt op HTML die al is opgeschoond: er komen
+ * alleen vaste tags en klassen bij, niets uit de tekst zelf.
+ */
+export function zetBlokken(html: string): string {
+  const metBlokken = html
+    .split(/(?=<h2[\s>])/)
+    .map((deel) => {
+      const kop = deel.match(/^<h2[^>]*>([\s\S]*?)<\/h2>/);
+      if (!kop) return deel;
+      const tekst = kop[1].replace(/<[^>]+>/g, "").trim();
+      const blok = BLOKKEN.find((b) => b.kop.test(tekst));
+      return blok ? `<section class="${blok.klasse}">\n${deel.trim()}\n</section>\n` : deel;
+    })
+    .join("");
+  return metBlokken.replace(
+    /<blockquote>\s*<p><strong>In het kort:?<\/strong><\/p>/gi,
+    '<blockquote class="blok blok-kort">\n<p class="blok-kicker">In het kort</p>',
+  );
+}
+
 export function renderMarkdown(markdown: string): string {
+  return zetBlokken(opgeschoond(markdown));
+}
+
+function opgeschoond(markdown: string): string {
   const ruweHtml = marked.parse(markdown, { async: false, gfm: true, breaks: false }) as string;
   return sanitizeHtml(ruweHtml, {
     allowedTags: TOEGESTANE_TAGS,

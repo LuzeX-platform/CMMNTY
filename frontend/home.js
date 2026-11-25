@@ -46,9 +46,9 @@ const LEDEN_VANAF = 3;
 
   const houder = document.getElementById("uitgelicht");
   try {
-    const { artikelen } = await api("/api/artikelen?limiet=3");
+    const { artikelen } = await api("/api/artikelen?limiet=4");
     houder.innerHTML = artikelen.length
-      ? artikelen.map(artikelKaartHtml).join("")
+      ? artikelenMetUitgelichtHtml(artikelen)
       : '<p class="leeg">Binnenkort verschijnt hier het eerste artikel.</p>';
   } catch {
     houder.innerHTML = '<p class="leeg">Artikelen konden niet geladen worden.</p>';
