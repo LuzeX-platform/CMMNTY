@@ -243,6 +243,26 @@ async function editorPagina() {
 
 // ---------- Gebruikers ----------
 
+/**
+ * Wat een lid als registratie invulde, met een knop om het als gecontroleerd te markeren.
+ * Nakijken doet Job zelf in de openbare registers (BIG-register, SKJ-register, AGB-register).
+ */
+function registratieCelHtml(g) {
+  const p = g.profiel;
+  if (!p) return "—";
+  const regels = [
+    p.bigNummer && `BIG ${escapeHtml(p.bigNummer)}`,
+    p.skjNummer && `SKJ ${escapeHtml(p.skjNummer)}`,
+    p.agbCode && `AGB ${escapeHtml(p.agbCode)}`,
+    p.beroepsvereniging && escapeHtml(p.beroepsvereniging),
+  ].filter(Boolean);
+  if (!regels.length) return "—";
+  const knop = p.registratieGecontroleerdOp
+    ? `<span class="badge badge-gecontroleerd"><span class="badge-stip" aria-hidden="true"></span>Gecontroleerd</span><br><button type="button" class="secondary" data-registratie="${g.id}" data-gecontroleerd="false">Intrekken</button>`
+    : `<button type="button" class="secondary" data-registratie="${g.id}" data-gecontroleerd="true">Markeer als gecontroleerd</button>`;
+  return `${regels.join("<br>")}<br>${p.bigNummer ? '<a class="text-link" href="https://www.bigregister.nl/" target="_blank" rel="noopener">BIG-register ↗</a><br>' : ""}${knop}`;
+}
+
 async function gebruikersPagina() {
   const { gebruikers } = await api("/api/admin/gebruikers");
   const leden = gebruikers.filter((g) => g.rol !== "admin");
@@ -266,6 +286,7 @@ async function gebruikersPagina() {
         <td>${g.rol === "admin" ? '<span class="badge badge-pro">Admin</span>' : g.emailBevestigdOp ? '<span class="badge badge-gratis">Bevestigd</span>' : `<span class="badge badge-ingepland">Onbevestigd</span><br><button type="button" class="secondary" data-bevestigen="${g.id}">Bevestigen</button>`}</td>
         <td>${g.nieuwsbrief ? "Ja" : "Nee"}</td>
         <td>${g.profiel?.gepubliceerd ? "Zichtbaar" : "—"}</td>
+        <td>${registratieCelHtml(g)}</td>
         <td>${formatteerDatum(g.aangemaaktOp)}</td>
         <td>${
           g.rol === "admin"
@@ -314,6 +335,21 @@ async function gebruikersPagina() {
       } catch (fout) {
         alert(foutTekst(fout));
         weg.disabled = false;
+      }
+      return;
+    }
+    const registratie = e.target.closest("button[data-registratie]");
+    if (registratie) {
+      registratie.disabled = true;
+      try {
+        await api(`/api/admin/profielen/${registratie.dataset.registratie}/registratie`, {
+          methode: "PATCH",
+          body: { gecontroleerd: registratie.dataset.gecontroleerd === "true" },
+        });
+        await gebruikersPagina();
+      } catch (fout) {
+        alert(foutTekst(fout));
+        registratie.disabled = false;
       }
       return;
     }

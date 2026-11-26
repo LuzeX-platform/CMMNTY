@@ -46,8 +46,42 @@
       <p class="veld-kop" id="specialismen-kop">Specialisme(n) <span style="font-weight:400">— maximaal 5</span></p>
       <div class="chip-groepen" id="specialismen" role="group" aria-labelledby="specialismen-kop"></div>
 
-      <label for="regio">Regio</label>
-      <select id="regio"><option value="">Kies een regio</option></select>
+      <div class="veld-rij">
+        <div>
+          <label for="plaats">Plaats van je praktijk</label>
+          <input id="plaats" type="text" maxlength="60" autocomplete="address-level2" placeholder="Bijvoorbeeld Enschede" />
+        </div>
+        <div>
+          <label for="regio">Provincie</label>
+          <select id="regio"><option value="">Kies een provincie</option></select>
+        </div>
+      </div>
+
+      <fieldset class="registratie-velden">
+        <legend>Registratie <span style="font-weight:400">— vul in wat je hebt</span></legend>
+        <p class="veld-hint">Verwijzers zien dit op je profiel. Job controleert de nummers in de openbare registers. Daarna krijgt je profiel het label "Registratie gecontroleerd". Wijzig je later iets, dan controleert hij het opnieuw.</p>
+        <p class="veld-hint" id="registratie-status" hidden></p>
+        <div class="veld-rij">
+          <div>
+            <label for="bigNummer">BIG-nummer</label>
+            <input id="bigNummer" type="text" inputmode="numeric" maxlength="15" placeholder="11 cijfers" />
+          </div>
+          <div>
+            <label for="skjNummer">SKJ-registratienummer</label>
+            <input id="skjNummer" type="text" inputmode="numeric" maxlength="15" />
+          </div>
+        </div>
+        <div class="veld-rij">
+          <div>
+            <label for="agbCode">AGB-code</label>
+            <input id="agbCode" type="text" inputmode="numeric" maxlength="10" placeholder="8 cijfers" />
+          </div>
+          <div>
+            <label for="beroepsvereniging">Beroepsvereniging</label>
+            <input id="beroepsvereniging" type="text" maxlength="80" placeholder="Bijvoorbeeld NIP of LVVP" />
+          </div>
+        </div>
+      </fieldset>
 
       <div class="veld-rij">
         <div>

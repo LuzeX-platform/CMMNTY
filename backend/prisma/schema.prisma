@@ -11,99 +11,111 @@ datasource db {
 }
 
 model Gebruiker {
-  id                  String    @id @default(uuid())
-  email               String    @unique
-  wachtwoordHash      String
-  naam                String
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  wachtwoordHash        String
+  naam                  String
   // "lid" of "admin". Admin (Job) wordt alleen via de seed aangemaakt, nooit via registratie.
-  rol                 String    @default("lid")
+  rol                   String    @default("lid")
   // "gratis" of "pro". Gezet door de admin (handmatig), Stripe (routes/abonnement.ts) of
   // Kruisproduct-Pro (kruisproductCron.ts) — welke van de drie, zie abonnementBron hieronder.
-  abonnement          String    @default("gratis")
+  abonnement            String    @default("gratis")
   // "accrd" | null. Alleen informatief gezet als Pro kwam van een actief ACCRD-account (zie
   // luzexKruisproduct.ts + kruisproductCron.ts); null bij een handmatige toekenning door de
   // admin. De cron gebruikt dit NIET als filter — zie kruisproductKvkNummer hieronder.
-  abonnementBron      String?
+  abonnementBron        String?
   // Het kvk-nummer waarmee deze Pro-status geclaimd is bij ACCRD (Kruisproduct-Pro v2). Null
   // bij een handmatige toekenning of bij wie nooit geclaimd heeft. Dit veld is het enige
   // waarop de cron filtert welke rijen hij mag aanraken: zo blijft een handmatige toekenning
   // altijd buiten bereik, ook als iemand ooit per ongeluk abonnementBron zou zetten.
-  kruisproductKvkNummer String?  @unique @map("kruisproduct_kvk_nummer")
+  kruisproductKvkNummer String?   @unique @map("kruisproduct_kvk_nummer")
   // Eigen, echte betaling via Stripe Checkout (los van Kruisproduct-Pro hierboven, zie
   // routes/abonnement.ts). Eén Stripe-klant per gebruiker, hergebruikt bij een tweede
   // checkout-poging; blijft staan na opzeggen zodat het Billing Portal de klant terugvindt.
-  stripeKlantId       String?   @unique @map("stripe_klant_id")
+  stripeKlantId         String?   @unique @map("stripe_klant_id")
   // Alleen gezet zolang het abonnement actief/trialing is; null na opzeggen of een mislukte
   // incasso. Niet @unique: Stripe geeft bij een nieuwe termijn soms een andere id.
-  stripeAbonnementId  String?   @map("stripe_abonnement_id")
-  emailBevestigdOp    DateTime?
+  stripeAbonnementId    String?   @map("stripe_abonnement_id")
+  emailBevestigdOp      DateTime?
   // Alleen de sha256-hash van het token staat hier; het ruwe token staat alleen in de mail.
-  bevestigTokenHash   String?   @unique
-  resetTokenHash      String?   @unique
-  resetTokenVerlooptOp DateTime?
-  nieuwsbrief         Boolean   @default(true)
-  mislukteInlogpogingen Int     @default(0)
-  vergrendeldTot      DateTime?
-  aangemaaktOp        DateTime  @default(now())
-  bijgewerktOp        DateTime  @updatedAt
+  bevestigTokenHash     String?   @unique
+  resetTokenHash        String?   @unique
+  resetTokenVerlooptOp  DateTime?
+  nieuwsbrief           Boolean   @default(true)
+  mislukteInlogpogingen Int       @default(0)
+  vergrendeldTot        DateTime?
+  aangemaaktOp          DateTime  @default(now())
+  bijgewerktOp          DateTime  @updatedAt
 
-  profiel  Profiel?
+  profiel Profiel?
 }
 
 // ZZP-directory. Eén profiel per gebruiker; alleen zichtbaar als `gepubliceerd`.
 model Profiel {
-  gebruikerId   String   @id
-  gebruiker     Gebruiker @relation(fields: [gebruikerId], references: [id], onDelete: Cascade)
-  weergavenaam  String
-  praktijknaam  String?
-  specialismen  String[]
-  telefoon      String?
-  website       String?
-  contactEmail  String?
-  bio           String?  @db.VarChar(250)
-  regio         String?
-  gepubliceerd  Boolean  @default(false)
-  bijgewerktOp  DateTime @updatedAt
+  gebruikerId                String    @id
+  gebruiker                  Gebruiker @relation(fields: [gebruikerId], references: [id], onDelete: Cascade)
+  weergavenaam               String
+  praktijknaam               String?
+  specialismen               String[]
+  telefoon                   String?
+  website                    String?
+  contactEmail               String?
+  bio                        String?   @db.VarChar(250)
+  // Provincie (of "Landelijk / online"). Profielen van vóór november 2026 kunnen nog een oude,
+  // grove regio hebben, zoals "Noord"; die blijft staan tot het lid zijn profiel bijwerkt.
+  regio                      String?
+  // De plaats van de praktijk, vrij in te vullen. Zoekbaar en zichtbaar op het profiel.
+  plaats                     String?
+  // Registraties: alleen wat het lid zelf invult. Job controleert ze in de openbare registers;
+  // registratieGecontroleerdOp is de datum van die controle en gaat terug naar null zodra het
+  // lid een van deze vier velden wijzigt.
+  bigNummer                  String?
+  skjNummer                  String?
+  agbCode                    String?
+  beroepsvereniging          String?
+  registratieGecontroleerdOp DateTime?
+  gepubliceerd               Boolean   @default(false)
+  bijgewerktOp               DateTime  @updatedAt
 }
 
 model Artikel {
-  id            String    @id @default(uuid())
-  titel         String
-  slug          String    @unique
-  samenvatting  String
-  inhoud        String    // Markdown
+  id              String    @id @default(uuid())
+  titel           String
+  slug            String    @unique
+  samenvatting    String
+  inhoud          String // Markdown
   // "gratis" of "pro"
-  toegang       String    @default("gratis")
-  categorie     String?
-  auteurNaam    String    @default("Job")
+  toegang         String    @default("gratis")
+  categorie       String?
+  auteurNaam      String    @default("Job")
   coverAfbeelding Bytes?
-  coverMime     String?
+  coverMime       String?
   // null = concept. Een datum in de toekomst = ingepland; verschijnt vanzelf.
-  gepubliceerdOp DateTime?
-  aangemaaktOp  DateTime  @default(now())
-  bijgewerktOp  DateTime  @updatedAt
+  gepubliceerdOp  DateTime?
+  aangemaaktOp    DateTime  @default(now())
+  bijgewerktOp    DateTime  @updatedAt
 
   @@index([gepubliceerdOp])
 }
 
 model NieuwsbriefVerzending {
-  id           String   @id @default(uuid())
-  verstuurdOp  DateTime @default(now())
+  id               String   @id @default(uuid())
+  verstuurdOp      DateTime @default(now())
   // "gratis" of "pro"
-  segment      String
-  artikelIds   String[]
+  segment          String
+  artikelIds       String[]
   aantalOntvangers Int
   // "automatisch" (cron) of "handmatig" (admin-knop)
-  aanleiding   String   @default("automatisch")
+  aanleiding       String   @default("automatisch")
 
   @@index([verstuurdOp])
 }
 
 // Eén rij (id = "standaard") met instellingen die Job zelf in het adminpaneel beheert.
 model Instellingen {
-  id                    String @id @default("standaard")
+  id                    String  @id @default("standaard")
   // "wekelijks", "maandelijks" of "uit"
-  nieuwsbriefFrequentie String @default("wekelijks")
+  nieuwsbriefFrequentie String  @default("wekelijks")
   // Ondertekeningsgeheim van de Stripe-webhook die de admin met één klik aanmaakt (Admin →
   // Gebruikers → Stripe). Liever in Render (STRIPE_WEBHOOK_GEHEIM, gaat voor), maar het met de
   // hand overzetten uit een Render Shell bleek in de praktijk niet te lukken. Het geheim

@@ -2372,3 +2372,68 @@ table.tabel {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Netwerkprofiel: plaats en registratie ---------- */
+.profiel-plaats {
+  margin: -2px 0 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.profiel-registratie {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.profiel-registratie ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+
+.profiel-registratie li {
+  margin: 0;
+}
+
+.registratie-zelf {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* Gecontroleerd: zelfde vorm als het Gratis-label (wit met groen stipje). */
+.badge-gecontroleerd {
+  align-self: flex-start;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.badge-gecontroleerd .badge-stip {
+  background: var(--success);
+}
+
+.registratie-velden {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  margin: 22px 0 4px;
+  padding: 8px 16px 16px;
+}
+
+.registratie-velden legend {
+  padding: 0 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.filter-vinkje {
+  flex-basis: 100%;
+  margin: 4px 0 0;
+  align-items: center;
+}

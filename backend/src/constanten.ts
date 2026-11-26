@@ -30,7 +30,24 @@ export const SPECIALISME_GROEPEN: readonly { naam: string; specialismen: readonl
   { naam: "Anders", specialismen: ["Coaching", "Overig"] },
 ];
 
-export const REGIOS = ["Noord", "Oost", "Zuid", "West", "Midden", "Randstad", "Landelijk / online"] as const;
+// Provincies (sinds november 2026; eerder zeven grove regio's zoals "Noord", te grof voor een
+// verwijzer: Groningen en Enschede vielen allebei onder "Noord/Oost"). De plaats van de praktijk
+// staat in een eigen veld en is zoekbaar.
+export const REGIOS = [
+  "Groningen",
+  "Friesland",
+  "Drenthe",
+  "Overijssel",
+  "Flevoland",
+  "Gelderland",
+  "Utrecht",
+  "Noord-Holland",
+  "Zuid-Holland",
+  "Zeeland",
+  "Noord-Brabant",
+  "Limburg",
+  "Landelijk / online",
+] as const;
 
 export const CATEGORIEEN = [
   "AI & automatisering",

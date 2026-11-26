@@ -181,7 +181,17 @@ export async function adminRoutes(app: FastifyInstance) {
         nieuwsbrief: true,
         emailBevestigdOp: true,
         aangemaaktOp: true,
-        profiel: { select: { gepubliceerd: true, praktijknaam: true } },
+        profiel: {
+          select: {
+            gepubliceerd: true,
+            praktijknaam: true,
+            bigNummer: true,
+            skjNummer: true,
+            agbCode: true,
+            beroepsvereniging: true,
+            registratieGecontroleerdOp: true,
+          },
+        },
       },
     });
     return { gebruikers };
@@ -205,6 +215,24 @@ export async function adminRoutes(app: FastifyInstance) {
       },
     });
     if (count === 0) return reply.code(404).send({ errorCode: "NIET_GEVONDEN" });
+    return { ok: true };
+  });
+
+  // Job heeft de registratie van een lid nagekeken in de openbare registers (BIG, SKJ, AGB):
+  // het profiel krijgt dan het label "Registratie gecontroleerd". Intrekken kan ook.
+  app.patch("/api/admin/profielen/:gebruikerId/registratie", async (request, reply) => {
+    const { gebruikerId } = request.params as { gebruikerId: string };
+    const parsed = z.object({ gecontroleerd: z.boolean() }).safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ errorCode: "ONGELDIGE_INVOER" });
+    const profiel = await prisma.profiel.findUnique({ where: { gebruikerId } });
+    if (!profiel) return reply.code(404).send({ errorCode: "NIET_GEVONDEN" });
+    if (parsed.data.gecontroleerd && !profiel.bigNummer && !profiel.skjNummer && !profiel.agbCode && !profiel.beroepsvereniging) {
+      return reply.code(400).send({ errorCode: "GEEN_REGISTRATIE", bericht: "Dit lid heeft nog geen registratie ingevuld." });
+    }
+    await prisma.profiel.update({
+      where: { gebruikerId },
+      data: { registratieGecontroleerdOp: parsed.data.gecontroleerd ? new Date() : null },
+    });
     return { ok: true };
   });
 

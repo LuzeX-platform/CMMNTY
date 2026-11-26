@@ -71,9 +71,19 @@ function koppelFormulier(form, foutEl, succesEl, handler) {
       keuzes.regios.map((r) => `<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join(""),
     );
 
-    for (const sleutel of ["weergavenaam", "praktijknaam", "telefoon", "contactEmail", "website", "bio", "regio"]) {
+    const velden = ["weergavenaam", "praktijknaam", "telefoon", "contactEmail", "website", "bio", "regio", "plaats", "bigNummer", "skjNummer", "agbCode", "beroepsvereniging"];
+    for (const sleutel of velden) {
       document.getElementById(sleutel).value = profiel[sleutel] ?? "";
     }
+    const toonControle = (p) => {
+      const status = document.getElementById("registratie-status");
+      const heeftRegistratie = p.bigNummer || p.skjNummer || p.agbCode || p.beroepsvereniging;
+      status.hidden = !heeftRegistratie;
+      status.textContent = p.registratieGecontroleerdOp
+        ? `Gecontroleerd op ${formatteerDatum(p.registratieGecontroleerdOp)}.`
+        : "Nog niet gecontroleerd.";
+    };
+    toonControle(profiel);
     document.getElementById("gepubliceerd").checked = profiel.gepubliceerd;
 
     const bio = document.getElementById("bio");
@@ -95,10 +105,17 @@ function koppelFormulier(form, foutEl, succesEl, handler) {
           website: waarde("website"),
           bio: waarde("bio"),
           regio: waarde("regio"),
+          plaats: waarde("plaats"),
+          bigNummer: waarde("bigNummer"),
+          skjNummer: waarde("skjNummer"),
+          agbCode: waarde("agbCode"),
+          beroepsvereniging: waarde("beroepsvereniging"),
           gepubliceerd: document.getElementById("gepubliceerd").checked,
         },
       });
       document.getElementById("website").value = opgeslagen.website ?? "";
+      for (const sleutel of ["bigNummer", "skjNummer", "agbCode"]) document.getElementById(sleutel).value = opgeslagen[sleutel] ?? "";
+      toonControle(opgeslagen);
       return opgeslagen.gepubliceerd ? "Opgeslagen — je staat in het netwerk." : "Opgeslagen. Je profiel is niet zichtbaar in het netwerk.";
     });
   }
