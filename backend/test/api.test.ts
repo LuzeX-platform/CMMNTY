@@ -454,7 +454,7 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
       method: "PUT",
       url: "/api/profiel",
       headers: { cookie: lidCookie },
-      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Traumabehandeling"], telefoon: "", website: "", contactEmail: "", bio: "Hoi", regio: "Oost", gepubliceerd: true },
+      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Traumabehandeling"], telefoon: "", website: "", contactEmail: "", bio: "Hoi", regio: "Overijssel", gepubliceerd: true },
     });
     assert.equal(zonderContact.statusCode, 400);
 
@@ -462,7 +462,7 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
       method: "PUT",
       url: "/api/profiel",
       headers: { cookie: lidCookie },
-      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Traumabehandeling"], telefoon: "06-12345678", website: "www.praktijkvries.nl", contactEmail: "", bio: "Hoi", regio: "Oost", gepubliceerd: true },
+      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Traumabehandeling"], telefoon: "06-12345678", website: "www.praktijkvries.nl", contactEmail: "", bio: "Hoi", regio: "Overijssel", gepubliceerd: true },
     });
     assert.equal(ok.statusCode, 200, ok.body);
     assert.equal(ok.json().website, "https://www.praktijkvries.nl");
@@ -475,10 +475,10 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     });
     assert.equal(teLang.statusCode, 400);
 
-    const treffer = (await app.inject({ method: "GET", url: "/api/directory?specialisme=Traumabehandeling&regio=Oost" })).json();
+    const treffer = (await app.inject({ method: "GET", url: "/api/directory?specialisme=Traumabehandeling&regio=Overijssel" })).json();
     assert.equal(treffer.profielen.length, 1);
     assert.equal(treffer.totaal, 1);
-    const mis = (await app.inject({ method: "GET", url: "/api/directory?regio=Noord" })).json();
+    const mis = (await app.inject({ method: "GET", url: "/api/directory?regio=Groningen" })).json();
     assert.equal(mis.profielen.length, 0);
     assert.equal(mis.totaal, 0);
 
@@ -494,6 +494,49 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
     assert.equal(sessie.gebruiker.inNetwerk, true);
   });
 
+  test("netwerk: plaats en registratie, controle door de admin, en het filter op BIG/SKJ", async () => {
+    const basis = { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Traumabehandeling"], telefoon: "06-12345678", website: "", contactEmail: "", bio: "Hoi", regio: "Overijssel", gepubliceerd: true };
+    const zet = (extra: Record<string, unknown>) => app.inject({ method: "PUT", url: "/api/profiel", headers: { cookie: lidCookie }, payload: { ...basis, ...extra } });
+
+    // Oude, grove regio's bestaan niet meer als keuze.
+    assert.equal((await zet({ regio: "Oost" })).statusCode, 400);
+    // Een BIG-nummer heeft 11 cijfers; spaties en puntjes mogen, we bewaren alleen de cijfers.
+    const fout = await zet({ bigNummer: "1234" });
+    assert.equal(fout.statusCode, 400);
+    assert.ok(fout.json().details.bigNummer);
+    assert.equal((await zet({ agbCode: "123" })).statusCode, 400);
+    const goed = await zet({ plaats: "Enschede", bigNummer: "123 456 789 01", agbCode: "94-001234", beroepsvereniging: "NIP" });
+    assert.equal(goed.statusCode, 200, goed.body);
+    assert.equal(goed.json().bigNummer, "12345678901");
+    assert.equal(goed.json().agbCode, "94001234");
+    assert.equal(goed.json().registratieGecontroleerdOp, null);
+
+    // Zoeken op plaats, en het filter op registratie.
+    const lijst = (url: string) => app.inject({ method: "GET", url }).then((r) => r.json());
+    const opPlaats = await lijst("/api/directory?zoek=enschede");
+    assert.equal(opPlaats.totaal, 1);
+    assert.equal(opPlaats.profielen[0].plaats, "Enschede");
+    assert.equal((await lijst("/api/directory?geregistreerd=1")).totaal, 1);
+    assert.equal((await lijst("/api/directory?geregistreerd=1&zoek=bestaatniet")).totaal, 0);
+
+    // Alleen de admin markeert als gecontroleerd; daarna staat de datum op het openbare profiel.
+    const gebruikerId = (await prisma.profiel.findFirstOrThrow({ where: { weergavenaam: "Sanne" } })).gebruikerId;
+    const controle = (cookie: string, gecontroleerd: boolean) =>
+      app.inject({ method: "PATCH", url: `/api/admin/profielen/${gebruikerId}/registratie`, headers: { cookie }, payload: { gecontroleerd } });
+    assert.equal((await controle(lidCookie, true)).statusCode, 403);
+    assert.equal((await controle(adminCookie, true)).statusCode, 200);
+    assert.ok((await lijst("/api/directory?zoek=enschede")).profielen[0].registratieGecontroleerdOp);
+
+    // Gewijzigde registratie = opnieuw controleren; andere velden wijzigen laat de controle staan.
+    assert.equal((await zet({ plaats: "Hengelo", bigNummer: "12345678901", agbCode: "94001234", beroepsvereniging: "NIP" })).json().registratieGecontroleerdOp !== null, true);
+    assert.equal((await zet({ plaats: "Hengelo", bigNummer: "12345678902", agbCode: "94001234", beroepsvereniging: "NIP" })).json().registratieGecontroleerdOp, null);
+
+    // Zonder registratie valt er niets te controleren.
+    await zet({ plaats: "", bigNummer: "", agbCode: "", beroepsvereniging: "" });
+    assert.equal((await controle(adminCookie, true)).statusCode, 400);
+    assert.equal((await lijst("/api/directory?geregistreerd=1")).totaal, 0);
+  });
+
   test("specialismen: Seksuologie en Relatietherapie zijn niet meer te kiezen, te zien of te vinden", async () => {
     const keuzes = (await app.inject({ method: "GET", url: "/api/keuzelijsten" })).json();
     assert.ok(!keuzes.specialismen.includes("Seksuologie") && !keuzes.specialismen.includes("Relatietherapie"));
@@ -503,7 +546,7 @@ describe("API", { skip: !TEST_DB && "TEST_DATABASE_URL niet gezet" }, () => {
       method: "PUT",
       url: "/api/profiel",
       headers: { cookie: lidCookie },
-      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Seksuologie"], telefoon: "06-12345678", website: "", contactEmail: "", bio: "Hoi", regio: "Oost", gepubliceerd: true },
+      payload: { weergavenaam: "Sanne", praktijknaam: "Praktijk Vries", specialismen: ["Seksuologie"], telefoon: "06-12345678", website: "", contactEmail: "", bio: "Hoi", regio: "Overijssel", gepubliceerd: true },
     });
     assert.equal(kiezen.statusCode, 400);
 

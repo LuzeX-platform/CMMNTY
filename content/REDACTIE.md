@@ -32,7 +32,12 @@ Niet:
 | Artikelen totaal | 4 à 5 |
 | Waarvan over AI | **1, maximaal 2** |
 | Waarvan Pro | **1 à 2**: de meest interessante, met de meeste diepgang |
+| Waarvan praktijk & regels | **1** (sinds november 2026): iets wat zelfstandigen in hun praktijk raakt, zoals Wet DBA, Wkkgz, contractering met verzekeraars of gemeenten, Wmo/Jeugdwet, privacy. Categorie "Praktijkvoering" of "Regels en wetgeving" |
 | Waarvan buiten de zorg ("Tech & trends") | hooguit 1, alleen als het echt groot is |
+
+Het praktijkartikel telt mee in de 4 à 5; het hoeft geen innovatie te zijn, wel nieuws van de
+afgelopen week (een besluit, een uitspraak, een nieuwe regel of richtlijn). Is er die week niets,
+zeg dat dan tegen Job in plaats van iets ouds op te rakelen.
 
 Spreid de onderwerpen over de sectoren: liever ziekenhuis, thuiszorg én ggz dan drie keer ggz.
 Is er in een sector die week niets wat echt de moeite waard is, laat het dan weg: liever vier

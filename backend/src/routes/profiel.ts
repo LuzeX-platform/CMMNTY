@@ -7,6 +7,10 @@ import { requireLid } from "../plugins/requireAuth.js";
 import { kiesUitgelicht } from "../netwerk.js";
 
 const leegNaarNull = (v: unknown) => (typeof v === "string" && v.trim() === "" ? null : v);
+const alleenCijfers = (v: unknown) => {
+  const w = leegNaarNull(v);
+  return typeof w === "string" ? w.replace(/[\s.\-]/g, "") : w;
+};
 
 // Een website zonder https:// ervoor ("www.praktijk.nl") is wat mensen intypen; dat vullen we
 // aan in plaats van het af te keuren.
@@ -32,8 +36,17 @@ export const profielSchema = z.object({
   contactEmail: z.preprocess(leegNaarNull, z.string().trim().email("Ongeldig e-mailadres").max(200).nullable()),
   bio: z.preprocess(leegNaarNull, z.string().trim().max(250, "Maximaal 250 tekens").nullable()),
   regio: z.preprocess(leegNaarNull, z.enum(REGIOS).nullable()),
+  plaats: z.preprocess(leegNaarNull, z.string().trim().max(60, "Maximaal 60 tekens").nullable()).optional(),
+  // Registraties: optioneel. Spaties en puntjes mogen, we bewaren alleen de cijfers.
+  bigNummer: z.preprocess(alleenCijfers, z.string().regex(/^\d{11}$/, "Een BIG-nummer heeft 11 cijfers").nullable()).optional(),
+  skjNummer: z.preprocess(alleenCijfers, z.string().regex(/^\d{4,12}$/, "Vul je SKJ-registratienummer in (alleen cijfers)").nullable()).optional(),
+  agbCode: z.preprocess(alleenCijfers, z.string().regex(/^\d{8}$/, "Een AGB-code heeft 8 cijfers").nullable()).optional(),
+  beroepsvereniging: z.preprocess(leegNaarNull, z.string().trim().max(80, "Maximaal 80 tekens").nullable()).optional(),
   gepubliceerd: z.boolean(),
 });
+
+/** De velden waarvan Job de controle moet overdoen als het lid er een van wijzigt. */
+const REGISTRATIEVELDEN = ["bigNummer", "skjNummer", "agbCode", "beroepsvereniging"] as const;
 
 /**
  * Toont van een profiel alleen de specialismen die nog in de lijst staan. Wie eerder iets koos
@@ -57,6 +70,12 @@ const directorySelect = {
   contactEmail: true,
   bio: true,
   regio: true,
+  plaats: true,
+  bigNummer: true,
+  skjNummer: true,
+  agbCode: true,
+  beroepsvereniging: true,
+  registratieGecontroleerdOp: true,
 } satisfies Prisma.ProfielSelect;
 
 export async function profielRoutes(app: FastifyInstance) {
@@ -82,14 +101,23 @@ export async function profielRoutes(app: FastifyInstance) {
       });
     }
     const gebruikerId = request.gebruiker!.gebruikerId;
-    return prisma.profiel.upsert({ where: { gebruikerId }, update: data, create: { gebruikerId, ...data } });
+    // Een gecontroleerde registratie die het lid daarna wijzigt, is niet meer gecontroleerd.
+    const huidig = await prisma.profiel.findUnique({ where: { gebruikerId } });
+    const registratieGewijzigd = REGISTRATIEVELDEN.some(
+      (veld) => data[veld] !== undefined && (data[veld] ?? null) !== (huidig?.[veld] ?? null),
+    );
+    const update = registratieGewijzigd ? { ...data, registratieGecontroleerdOp: null } : data;
+    return prisma.profiel.upsert({ where: { gebruikerId }, update, create: { gebruikerId, ...data } });
   });
 
   // Openbaar: iedereen mag het netwerk bekijken — het is reclame voor de praktijken. (Het
   // API-pad heet nog /api/directory, de oude naam; alleen de pagina en de teksten heten "Netwerk".)
   app.get("/api/directory", async (request) => {
-    const q = request.query as { specialisme?: string; regio?: string; zoek?: string };
+    const q = request.query as { specialisme?: string; regio?: string; zoek?: string; geregistreerd?: string };
     const where: Prisma.ProfielWhereInput = { gepubliceerd: true };
+    const en: Prisma.ProfielWhereInput[] = [];
+    // "Alleen met BIG- of SKJ-registratie": voor verwijzers die naar geregistreerde zorg zoeken.
+    if (q.geregistreerd === "1") en.push({ OR: [{ bigNummer: { not: null } }, { skjNummer: { not: null } }] });
     // Een specialisme dat niet (meer) in de lijst staat, telt niet als filter.
     if (q.specialisme && (SPECIALISMEN as readonly string[]).includes(q.specialisme)) {
       where.specialismen = { has: q.specialisme };
@@ -97,12 +125,16 @@ export async function profielRoutes(app: FastifyInstance) {
     if (q.regio) where.regio = q.regio;
     if (q.zoek?.trim()) {
       const zoek = q.zoek.trim().slice(0, 100);
-      where.OR = [
-        { weergavenaam: { contains: zoek, mode: "insensitive" } },
-        { praktijknaam: { contains: zoek, mode: "insensitive" } },
-        { bio: { contains: zoek, mode: "insensitive" } },
-      ];
+      en.push({
+        OR: [
+          { weergavenaam: { contains: zoek, mode: "insensitive" } },
+          { praktijknaam: { contains: zoek, mode: "insensitive" } },
+          { plaats: { contains: zoek, mode: "insensitive" } },
+          { bio: { contains: zoek, mode: "insensitive" } },
+        ],
+      });
     }
+    if (en.length) where.AND = en;
     const [profielen, totaal] = await Promise.all([
       prisma.profiel.findMany({
         where,

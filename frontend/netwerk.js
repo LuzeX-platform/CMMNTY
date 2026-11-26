@@ -1,16 +1,18 @@
 const specialismeSelect = document.getElementById("specialisme");
 const regioSelect = document.getElementById("regio");
 const zoekVeld = document.getElementById("zoek");
+const geregistreerd = document.getElementById("geregistreerd");
 const lijst = document.getElementById("profielen");
 const aantal = document.getElementById("aantal");
 const toonAlles = document.getElementById("toon-alles");
 
-/** "in regio Noord", "met specialisme Traumabehandeling", of allebei: zegt in gewone taal waarop gezocht is. */
+/** "in Overijssel", "met specialisme Traumabehandeling", of allebei: zegt in gewone taal waarop gezocht is. */
 function zoekopdrachtInWoorden() {
   const delen = [];
-  if (regioSelect.value) delen.push(`in regio ${regioSelect.value}`);
+  if (regioSelect.value) delen.push(regioSelect.value === "Landelijk / online" ? "die landelijk of online werken" : `in ${regioSelect.value}`);
   if (specialismeSelect.value) delen.push(`met specialisme ${specialismeSelect.value}`);
   if (zoekVeld.value.trim()) delen.push(`voor "${zoekVeld.value.trim()}"`);
+  if (geregistreerd.checked) delen.push("met een BIG- of SKJ-registratie");
   return delen.join(" ");
 }
 
@@ -20,6 +22,7 @@ function bewaarFiltersInUrl() {
   if (specialismeSelect.value) params.set("specialisme", specialismeSelect.value);
   if (regioSelect.value) params.set("regio", regioSelect.value);
   if (zoekVeld.value.trim()) params.set("zoek", zoekVeld.value.trim());
+  if (geregistreerd.checked) params.set("geregistreerd", "1");
   history.replaceState(null, "", params.toString() ? `?${params}` : location.pathname);
   return params;
 }
@@ -65,6 +68,7 @@ const opties = (lijst) => lijst.map((w) => `<option value="${escapeHtml(w)}">${e
   specialismeSelect.value = queryParam("specialisme") ?? "";
   regioSelect.value = queryParam("regio") ?? "";
   zoekVeld.value = queryParam("zoek") ?? "";
+  geregistreerd.checked = queryParam("geregistreerd") === "1";
   laad();
 })();
 
@@ -76,6 +80,7 @@ haalSessie().then((gebruiker) => {
 
 specialismeSelect.addEventListener("change", laad);
 regioSelect.addEventListener("change", laad);
+geregistreerd.addEventListener("change", laad);
 let timer;
 zoekVeld.addEventListener("input", () => {
   clearTimeout(timer);
@@ -88,6 +93,7 @@ function wisFilters() {
   specialismeSelect.value = "";
   regioSelect.value = "";
   zoekVeld.value = "";
+  geregistreerd.checked = false;
   laad();
   specialismeSelect.focus();
 }

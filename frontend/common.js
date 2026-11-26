@@ -105,6 +105,27 @@ function artikelKaartHtml(a, opties) {
 
 // ---------- Netwerk ----------
 
+/**
+ * Registraties op een profielkaart. Wat het lid zelf invulde, met erbij of Job het heeft
+ * nagekeken in de openbare registers. Zonder registratie: niets (geen lege kop).
+ */
+function registratieHtml(p) {
+  const regels = [];
+  if (p.bigNummer) regels.push(`<li>BIG ${escapeHtml(p.bigNummer)}</li>`);
+  if (p.skjNummer) regels.push(`<li>SKJ ${escapeHtml(p.skjNummer)}</li>`);
+  if (p.agbCode) regels.push(`<li>AGB ${escapeHtml(p.agbCode)}</li>`);
+  if (p.beroepsvereniging) regels.push(`<li>${escapeHtml(p.beroepsvereniging)}</li>`);
+  if (!regels.length) return "";
+  const status = p.registratieGecontroleerdOp
+    ? '<span class="badge badge-gecontroleerd"><span class="badge-stip" aria-hidden="true"></span>Registratie gecontroleerd</span>'
+    : '<span class="registratie-zelf">Zelf opgegeven</span>';
+  return `
+        <div class="profiel-registratie">
+          ${status}
+          <ul>${regels.join("")}</ul>
+        </div>`;
+}
+
 function profielKaartHtml(p) {
   const contact = [];
   if (p.telefoon) contact.push(`<li>📞 <a href="tel:${escapeHtml(p.telefoon.replace(/[^0-9+]/g, ""))}">${escapeHtml(p.telefoon)}</a></li>`);
@@ -122,7 +143,9 @@ function profielKaartHtml(p) {
         </div>
         <h3>${escapeHtml(p.weergavenaam)}</h3>
         ${p.praktijknaam ? `<p class="profiel-praktijk">${escapeHtml(p.praktijknaam)}</p>` : ""}
+        ${p.plaats ? `<p class="profiel-plaats">${escapeHtml(p.plaats)}</p>` : ""}
         ${p.bio ? `<p>${escapeHtml(p.bio)}</p>` : ""}
+        ${registratieHtml(p)}
         <ul class="profiel-contact">${contact.join("")}</ul>
       </div>
     </div>`;
